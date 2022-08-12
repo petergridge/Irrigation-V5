@@ -1,19 +1,17 @@
-# Irrigation Component V4 <img src="https://github.com/petergridge/irrigation_component_v4/blob/main/icon.png" alt="drawing" width="75"/>
+# Irrigation Component V5 <img src="https://github.com/petergridge/irrigation_component_v4/blob/main/icon.png" alt="drawing" width="75"/>
 
-This release is a significant change in the configuration from Version 4. 
+This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration load is greatly reduced. 
 
-Helpers are now automatically created when the display name is defined. All input_text, input_number and input_boolean helpers are automatically created
+Helpers are now automatically created when the display name is defined. 
+* Input_text, input_number and input_boolean helpers are automatically created. 
+* Providing the display text will trigger the creation of the helpers. 
+* Where the helpers are mandatory or provide core funtionality they will be created with default display text. 
 
 sees the delivery of a **custom card https://github.com/petergridge/irrigation_card** to render the program options specified in the configuration.
 
-The driver for this project is to provide an easy to configure user interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card.
+The driver for this project is to provide an easy to use interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
 
 This program is essentially a scheduling tool, one user has also used this to schedule the running of his lawn mower, so the use is far broader than I anticipated.
-
-![irrigation|690x469,50%](irrigation1.JPG) 
-**Image 1:** All attributes rendered using the companion custom card
-
-All the inputs of the platform are Home Assistant helpers for example the start time is provided via a input_datetime. 
 
 The information provided by the configuraton is evaluated to trigger the irrigation action according to the inputs provided.
 
