@@ -182,8 +182,7 @@ A self contained working sample configuration is provided in the packages direct
                 enable_zone: Zone aktivieren
 ```
 ## MANUALLY CREATED INPUTS
-The following attributes must be created.
-
+You will need to created the following entities if you want to use the features.
 |Attribute       |Valid types   |Description|
 |:---            |:---   |:---       |
 |zone|switch|This is the switch that represents the solenoid to be triggered. This is the only mandatory manually created element|
