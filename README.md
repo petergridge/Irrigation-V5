@@ -194,6 +194,10 @@ You will need to created the following entities if you want to use the features.
 
 ## AUTOMATICALLY CREATED INPUTS
 These inputs will be created for every instance. If no friendly name is provided a default value will be used.
+The naming convention for inputs is:
+* program_entity for program level inputs. e.g. afternoon_start_time
+* program_zone_entity for zone level inputs e.g. afternoon_lawn_enable_zone
+
 |Attribute       |Description|
 |:---            |:---       |
 |start_time|If the friendly name is not defined the defaul value will be 'Start time'|
@@ -246,7 +250,9 @@ irrigationprogram.stop_programs:
 
 ## REVISION HISTORY
 
-### 5.0.1
+### 5.0.0
 * Essentially the same functionality as version 4
-* Now creates most of the helpers required
+* Major redevelopment of the configuration 
+* auto create helper entities that do not require intervention. All input_boolean, input_text, input_number, input_datetime are now created automatically if required.
+* When optional funtionality requires a helper only the friendly name is required to trigger the creation of the object.
 
