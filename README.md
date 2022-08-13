@@ -181,12 +181,45 @@ A self contained working sample configuration is provided in the packages direct
                 zone_group: Zonengruppe
                 enable_zone: Zone aktivieren
 ```
+## MANUALLY CREATED INPUTS
+The following attributes must be created.
+
+|Attribute       |Valid types   |Description|
+|:---            |:---   |:---       |
+|zone|switch|This is the switch that represents the solenoid to be triggered. This is the only mandatory manually created element|
+|[run_freq](#run-days-and-run-frequency)|input_select|Indicate how often to run. If not provided will run every day|
+|[controller_monitor](#monitor-controller-feature)|binary_sensor|If your controller can provide a sensor to detect if the irrigation controller is online. Schedule will not execute if offline|
+|[water_adjustment](#water-adjustment-feature)|sensor, input_number|Provide this if you want to affect the amount of watering without changing the base timing based on external information. A multiplication factor applied to decrease or increase the watering time|
+|[flow_sensor](#time-or-volume-based-watering)|sensor|Provide this sensoe if you have a flow meter and want to water based on volume not time|
+|[rain_sensor](#rain-sensor-feature)|binary_sensor|True or On will prevent the irrigation starting|
+
+## AUTOMATICALLY CREATED INPUTS
+These inputs will be created for every instance. If no friendly name is provided a default value will be used.
+|Attribute       |Description|
+|:---            |:---       |
+|start_time|If the friendly name is not defined the defaul value will be 'Start time'|
+|show_config|If the friendly name is not defined the defaul value will be 'Show configuration'|
+|irrigation_on|If the friendly name is not defined the defaul value will be 'Enable irrigation' |
+|water|If the friendly name is not defined the defaul value will be 'Water'|
+|enable_zone|If the friendly name is not defined the defaul value will be 'Enable zone'|
+|ignore_rain_sensor|This item will created if rain sensor is defined. If the friendly name is not defined the defaul value will be 'Ignore rain sensor'|
+
+## INPUTS CREATED ONLY WHEN FUNCTIONALITY IS NEEDED
+These inputs will be created only if a friendly name is defined. Create these if you need to implent the funtionality they provide.
+|Attribute       |Description|
+|:---            |:---       |
+|inter_zone_delay|Display name for the auto generated helper, for example 'Inter zone Delay' |
+|name|This is the name displayed for the zone, if not provided the friendly name from the associated switch will be used|
+|[wait](#eco-feature)|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
+|[repeat](#eco-feature)|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
+|[zone_group](#zone-group)|Display name for the auto generated helper, default is Zone Group|
+
 ## CONFIGURATION VARIABLES
+The definition of the YAML configuration:
 |Attribute       |Type   |Mandatory|Description|
 |:---            |:---   |:---     |:---       |
-|program         |string |Required |Name of the switch, exposed as switch.program|
+|&nbsp;&nbsp;&nbsp;&nbsp;friendly_name|string|Optional|Display name for the irrigationprogram switch|
 |&nbsp;&nbsp;&nbsp;&nbsp;start_time|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Start time'|
-|&nbsp;&nbsp;&nbsp;&nbsp;name|string|Optional|Display name for the irrigation program switch|
 |&nbsp;&nbsp;&nbsp;&nbsp;show_config|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Show configuration' |
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
@@ -194,7 +227,7 @@ A self contained working sample configuration is provided in the packages direct
 |&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|string |Optional|Display name for the auto generated helper, for example 'Inter zone Delay' |
 |&nbsp;&nbsp;&nbsp;&nbsp;zones|list|Required|List of zones to run|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name|string|Required|This is the name displayed for the zone|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name|string|Optional|This is the name displayed for the zone|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Water' |
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#water-adjustment-feature)|sensor, input_number|Optional|A factor,applied to the watering time to decrease or increase the watering time|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|string |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
