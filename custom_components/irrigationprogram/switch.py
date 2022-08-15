@@ -340,7 +340,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_REMAINING))
             self._ATTRS [a] = ('%d:%02d:%02d' % (0, 0, 0))
 
-            if zone.get(ATTR_FLOW_SENSOR) is not None:
+            if zone.get(ATTR_FLOW_SENSOR) is None:
                 self._water_intial = DFLT_WATER_INITIAL_T
                 self._water_max    = DFLT_WATER_MAX_T
                 self._water_step   = DFLT_WATER_STEP_T
@@ -612,10 +612,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     loop.create_task(self._irrigationzones[zn-1].async_turn_on())
                     event_data = {
                         "device_id": self._device_id,
+                        "action": "zone_turned_on",
                         "zone": self._irrigationzones[zn-1].name(),
                         "pump": self._irrigationzones[zn-1].pump(),
                     }
-                    self.hass.bus.async_fire("zone_turned_on", event_data)
+                    self.hass.bus.async_fire("irrigation_event", event_data)
                     await asyncio.sleep(1)
 
             '''wait for the zones to complete'''
