@@ -289,7 +289,9 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
-
+### 5.0.1
+* Implement zone_turned_on event to allow custom triggering of other automations if required
+* Bug fixed  where get_last_state is None
 ### 5.0.0
 * Essentially the same functionality as version 4
 * Major redevelopment of the configuration 
