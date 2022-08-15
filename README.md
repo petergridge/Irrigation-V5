@@ -157,15 +157,16 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 
 The *zone_turned_on* event provides this information:
 ```
-event_type: zone_turned_on
+event_type: irrigation_event
 data:
   device_id: afternoon
+  action: zone_turned_on
   zone: zone_1
-  pump: switch.pump
+  pump: switch.dummy_pump
 origin: LOCAL
-time_fired: "2022-08-15T22:02:02.966887+00:00"
+time_fired: "2022-08-15T23:33:36.358814+00:00"
 context:
-  id: 01GAHRECTPKKZDQ90KP3H1X3SV
+  id: 01GAHXP1F6KQWTM6Z6PEJ69KDM
   parent_id: null
   user_id: null
 ```
@@ -175,9 +176,10 @@ alias: pump_keep_alive
 description: "Let the pump device know that HA is still alive so it does not time out and shut down"
 trigger:
   - platform: event
-    event_type: zone_turned_on
+    event_type: irrigation_event
     event_data:
       pump: switch.pump
+      action: zone_turned_on
 action: ---- Put your action here ----
 mode: single
 ```
