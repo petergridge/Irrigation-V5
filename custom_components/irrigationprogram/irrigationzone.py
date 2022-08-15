@@ -39,6 +39,7 @@ class irrigationzone:
         hass,
         name,
         switch,
+        pump,
         run_freq,
         rain_sensor,
         ignore_rain_sensor,
@@ -55,6 +56,7 @@ class irrigationzone:
         self.hass                = hass
         self._name               = name
         self._switch             = switch
+        self._pump               = pump
         self._run_freq           = run_freq
         self._rain_sensor        = rain_sensor
         self._ignore_rain_sensor = ignore_rain_sensor

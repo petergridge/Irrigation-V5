@@ -268,7 +268,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     async def async_added_to_hass(self):
 
         state = await self.async_get_last_state()
-        self._last_run = state.attributes.get(ATTR_LAST_RAN)
+        self._last_run = None
+        if state is not None:
+            self._last_run = state.attributes.get(ATTR_LAST_RAN)
         '''ensure the last ran date is set'''
         try:
             z = dt_util.as_timestamp(self._last_run)
@@ -349,11 +351,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await create_input_number(a,local_name,self._water_intial,self._water_max,self._water_step,'slider',self._water_uom,'mdi:water')
             z_water = ('%s.%s'% ('input_number',a))
 
+            z_hist_flow = None
             if zone.get(ATTR_FLOW_SENSOR) is not None:
                 a = slugify('%s_%s_%s' % (self._friendly_name ,z_name, ATTR_FLOW_SENSOR))
                 self._ATTRS [a] = zone.get(ATTR_FLOW_SENSOR)
                 a = slugify('%s_%s_%s' % (self._friendly_name ,z_name, 'historical_flow'))
-                z_hist_flow = state.attributes.get(a)
+                if state is not None:
+                    z_hist_flow = state.attributes.get(a)
                 if z_hist_flow is None:
                     z_hist_flow = 1
 
@@ -402,6 +406,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._irrigationzones.append(irrigationzone(self.hass,
                                                         z_name,
                                                         zone.get(ATTR_ZONE),
+                                                        zone.get(ATTR_PUMP),
                                                         zone.get(ATTR_RUN_FREQ,self._run_freq),
                                                         zone.get(ATTR_RAIN_SENSOR),
                                                         z_ignore_rain_sensor,
@@ -605,7 +610,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if not self._stop:
                 for zn in group:
                     loop.create_task(self._irrigationzones[zn-1].async_turn_on())
-                await asyncio.sleep(1)
+                    event_data = {
+                        "device_id": self._device_id,
+                        "zone": self._irrigationzones[zn-1].name(),
+                        "pump": self._irrigationzones[zn-1].pump(),
+                    }
+                    self.hass.bus.async_fire("zone_turned_on", event_data)
+                    await asyncio.sleep(1)
 
             '''wait for the zones to complete'''
             zns_running = True
