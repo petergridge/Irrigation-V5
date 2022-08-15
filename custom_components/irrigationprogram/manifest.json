@@ -1,7 +1,7 @@
 {
   "domain": "irrigationprogram",
   "name": "Irrigation controller component",
-  "version": "5.0.0",
+  "version": "5.0.2",
   "documentation": "https://github.com/petergridge/irrigation_component_v4",
   "issue_tracker": "https://github.com/petergridge/irrigation_component_v4/issues",
   "dependencies": [],
