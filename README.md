@@ -153,13 +153,42 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 * *wait* sets the length of time to wait between watering cycles
 * *repeat* defines the number of watering cycles to run
 
+### Events
+
+The *zone_turned_on* event provides this information:
+```
+event_type: zone_turned_on
+data:
+  device_id: afternoon
+  zone: zone_1
+  pump: switch.pump
+origin: LOCAL
+time_fired: "2022-08-15T22:02:02.966887+00:00"
+context:
+  id: 01GAHRECTPKKZDQ90KP3H1X3SV
+  parent_id: null
+  user_id: null
+```
+An automation can then use this data to fire the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered.
+``` yaml
+alias: pump_keep_alive
+description: "Let the pump device know that HA is still alive so it does not time out and shut down"
+trigger:
+  - platform: event
+    event_type: zone_turned_on
+    event_data:
+      pump: switch.pump
+action: ---- Put your action here ----
+mode: single
+```
+
 ## CONFIGURATION
 
 A self contained working sample configuration is provided in the packages directory of this repository.
 
 ### Example configuration.yaml entry
+This is a complete set of configuration to anable all features.
 ```yaml
-
 switch:
       - platform: irrigationprogram
         switches: 
@@ -183,6 +212,14 @@ switch:
                 water_adjustment: input_number.irrigation_adjust_water
                 flow_sensor: input_number.irrigation_flow_sensor
                 run_freq: input_select.afternoon_zone1_frequency
+```
+This is the minimal configuration to create a fuctional program that runs every day.
+```
+      - platform: irrigationprogram
+        switches: 
+          morning:
+            zones:
+              - zone: switch.zone_1
 ```
 ## MANUALLY CREATED INPUTS
 You will need to created the following entities if you want to use the features.
