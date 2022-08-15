@@ -211,8 +211,8 @@ switch:
                 repeat: Repeat
                 rain_sensor: binary_sensor.raining
                 enable_zone: Enable zone
-                water_adjustment: input_number.irrigation_adjust_water
-                flow_sensor: input_number.irrigation_flow_sensor
+                water_adjustment: sensor.irrigation_adjust_water
+                flow_sensor: sensor.irrigation_flow_sensor
                 run_freq: input_select.afternoon_zone1_frequency
 ```
 This is the minimal configuration to create a fuctional program that runs every day.
