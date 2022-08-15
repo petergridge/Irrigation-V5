@@ -289,6 +289,8 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+### 5.0.2
+* Update Event model now *irrigation_event* event with *action* of 'zone_turned_on'. 
 ### 5.0.1
 * Implement zone_turned_on event to allow custom triggering of other automations if required
 * Bug fixed  where get_last_state is None
