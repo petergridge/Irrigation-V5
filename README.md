@@ -258,4 +258,5 @@ irrigationprogram.stop_programs:
 * Major redevelopment of the configuration 
 * auto create helper entities that do not require intervention. All input_boolean, input_text, input_number, input_datetime are now created automatically if required.
 * When optional funtionality requires a helper only the friendly name is required to trigger the creation of the object.
+* Requires Irrigration Custom Card V5.0.0
 
