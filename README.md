@@ -160,26 +160,29 @@ A self contained working sample configuration is provided in the packages direct
 ### Example configuration.yaml entry
 ```yaml
 
-      switch:
+switch:
       - platform: irrigationprogram
         switches: 
           afternoon:
-            irrigation_on: Programm aktivieren
-            name: afternoon
-            start_time: Startzeit
-            show_config: Konfiguration anzeigen
+            irrigation_on: Enable irrigation
+            friendly_name: Afternoon Program
+            start_time: Start time
+            show_config: Show configuration
             run_freq: input_select.irrigation_freq
+            inter_zone_delay: Inter zone delay
+            controller_monitor: binary_sensor.controller_active
             zones:
               - zone: switch.zone_1
                 pump: switch.pump
-                name: Lawn
-                water: Wasserzeit
-                wait: Wartezeit
-                repeat: Zählung wiederholen
+                zone_group: Zone group
+                water: Water
+                wait: Wait
+                repeat: Repeat
                 rain_sensor: binary_sensor.raining
-                ignore_rain_sensor: Regensensor ignorieren
-                zone_group: Zonengruppe
-                enable_zone: Zone aktivieren
+                enable_zone: Enable zone
+                water_adjustment: input_number.irrigation_adjust_water
+                flow_sensor: input_number.irrigation_flow_sensor
+                run_freq: input_select.afternoon_zone1_frequency
 ```
 ## MANUALLY CREATED INPUTS
 You will need to created the following entities if you want to use the features.
