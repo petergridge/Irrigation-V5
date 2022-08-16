@@ -43,6 +43,8 @@ DFLT_FLOW_SENSOR        = 'Flow sensor'
 DFLT_WATER_ADJUST       = 'Water adjustment'
 DFLT_ENABLE_ZONE        = 'Enable zone'
 DFLT_ZONE_GROUP         = 'Zone group' #zones that run concurrently
+DFLT_RUN_FREQ           = 'Frequency'
+
 DFLT_WATER_INITIAL_T    = 1
 DFLT_WATER_MAX_T        = 30
 DFLT_WATER_STEP_T       = 1
@@ -54,7 +56,6 @@ DFLT_WATER_MAX_I        = 350
 DFLT_WATER_STEP_I       = 5
 DFLT_WAIT_MAX           = 30
 DFLT_REPEAT_MAX         = 30
-#DFLT_RUN_FREQ           = 'frequency'
 #DFLT_REMAINING          = 'Remaining'
 #DFLT_RUNTIME            = 'Runtime'
 #DFLT_MONITOR_CONTROLLER = 'Controller monitor'

@@ -1,6 +1,6 @@
 from .irrigationzone import irrigationzone
 from .pump import pumpclass
-from .helper import create_input_datetime, create_input_number, create_input_boolean, create_input_text
+from .helper import create_input_select,create_input_datetime, create_input_number, create_input_boolean, create_input_text
 
 import logging
 import asyncio
@@ -72,6 +72,7 @@ from .const import (
     DFLT_WATER_INITIAL_T,
     DFLT_WATER_MAX_T,
     DFLT_WATER_STEP_T,
+    DFLT_RUN_FREQ,
 )
 
 from homeassistant.const import (
@@ -137,7 +138,6 @@ async def _async_create_entities(hass, config):
         unique_id               = device_config.get(CONF_UNIQUE_ID)
         monitor_controller      = device_config.get(ATTR_MONITOR_CONTROLLER)
         inter_zone_delay        = device_config.get(ATTR_DELAY)
-
         switches.append(
             IrrigationProgram(
                 hass,
@@ -215,7 +215,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._last_run           = None
         self._triggered_manually = True
         self._template           = None
-        self._reset_last_ran     = reset
+        self._reset              = reset
         self._irrigationzones    = []
         self._pumps              = []
         self._run_zone           = None
@@ -234,12 +234,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._water_uom    = 'Gal'
         self._wait_max         = DFLT_WAIT_MAX
         self._repeat_max       = DFLT_REPEAT_MAX
-#        if zone.get(ATTR_FLOW_SENSOR) is not None:
-#            self._water_intial = DFLT_WATER_INITIAL_T
-#            self._water_max    = DFLT_WATER_MAX_T
-#            self._water_step   = DFLT_WATER_STEP_T
-#            self._water_uom    = 'min'
-            
 
         ''' Validate and Build a template from the attributes provided '''
         a = 'input_datetime.'+slugify(self._friendly_name + "_" + ATTR_START)
@@ -282,25 +276,30 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         local_name = self._start_time
         a = slugify(self._friendly_name + "_" + ATTR_START)
-        await create_input_datetime(a, local_name, False, True)
+        await create_input_datetime(a, local_name, False, True,reset=self._reset)
         
         local_name = self._show_config
         a = slugify(self._friendly_name + "_" + ATTR_HIDE_CONFIG)
-        await create_input_boolean(a, local_name,icon='mdi:cog-outline')
+        await create_input_boolean(a, local_name,icon='mdi:cog-outline',reset=self._reset)
         
         local_name = self._irrigation_on
         a = slugify(self._friendly_name + "_" + ATTR_IRRIGATION_ON)
-        await create_input_boolean(a, local_name,icon='mdi:power')
+        await create_input_boolean(a, local_name,icon='mdi:power',reset=self._reset)
         self._slug_irrigation_on = a
 
         if self._inter_zone_delay is not None:
             local_name = self._inter_zone_delay
             a = slugify(self._friendly_name + "_" + ATTR_DELAY)
-            await create_input_number(a,local_name,0,30,1,'slider','sec','mdi:timelapse')
+            await create_input_number(a,local_name,0,30,1,'slider','sec','mdi:timelapse',reset=self._reset)
             self._slug_inter_zone_delay = a
 
         if self._run_freq is not None:
             self._ATTRS [ATTR_RUN_FREQ] = self._run_freq
+        else:
+            a = slugify(self._friendly_name + "_" + ATTR_RUN_FREQ)
+            await create_input_select(a,DFLT_RUN_FREQ,["1","2","3","4","5","6","7"],"1",icon='mdi:calendar',reset=self._reset)
+            self._ATTRS [ATTR_RUN_FREQ] = 'input_select.' + a
+
         if self._monitor_controller is not None:
             self._ATTRS [ATTR_MONITOR_CONTROLLER] = self._monitor_controller
 
@@ -348,7 +347,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
             a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WATER))
             local_name = zone.get(ATTR_WATER, DFLT_WATER)
-            await create_input_number(a,local_name,self._water_intial,self._water_max,self._water_step,'slider',self._water_uom,'mdi:water')
+            await create_input_number(a,local_name,self._water_intial,self._water_max,self._water_step,'slider',self._water_uom,'mdi:water',reset=self._reset)
             z_water = ('%s.%s'% ('input_number',a))
 
             z_hist_flow = None
@@ -366,18 +365,18 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if zone.get(ATTR_WAIT) is not None or zone.get(ATTR_REPEAT) is not None:
                 a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WAIT))
                 local_name = zone.get(ATTR_WAIT, DFLT_WAIT)
-                await create_input_number(a,local_name,1,self._wait_max,1,'slider','min','mdi:timer-sand')
+                await create_input_number(a,local_name,1,self._wait_max,1,'slider','min','mdi:timer-sand',reset=self._reset)
                 z_wait = ('%s.%s' % ('input_number',a))
                 a = slugify('%s_%s_%s' % (self._friendly_name, z_name, ATTR_REPEAT))
                 local_name = zone.get(ATTR_REPEAT, DFLT_REPEAT)
-                await create_input_number(a,local_name,1,self._repeat_max,1,'slider','','mdi:repeat')
+                await create_input_number(a,local_name,1,self._repeat_max,1,'slider','','mdi:repeat',reset=self._reset)
                 z_repeat = ('%s.%s' % ('input_number',a))
 
             z_zone_group = None
             if zone.get(ATTR_ZONE_GROUP) is not None:
                 a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_ZONE_GROUP))
                 local_name = zone.get(ATTR_ZONE_GROUP, DFLT_ZONE_GROUP)
-                await create_input_text(a,local_name,1,10, icon='mdi:home-group')
+                await create_input_text(a,local_name,1,10, icon='mdi:home-group',reset=self._reset)
                 z_zone_group = ('%s.%s' % ('input_text',a))
 
             if zone.get(ATTR_WATER_ADJUST) is not None:
@@ -394,12 +393,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 ''' create the ignore feature'''
                 a = slugify('%s_%s_%s' % (self._friendly_name, z_name, ATTR_IGNORE_RAIN_SENSOR))
                 local_name = zone.get(ATTR_IGNORE_RAIN_SENSOR, DFLT_IGNORE_RAIN_SENSOR)
-                await create_input_boolean(a, local_name,icon='mdi:water-alert-outline')
+                await create_input_boolean(a, local_name,icon='mdi:water-alert-outline',reset=self._reset)
                 z_ignore_rain_sensor = ('%s.%s' % ('input_boolean',a))
 
             a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_ENABLE_ZONE))
             local_name = zone.get(ATTR_ENABLE_ZONE, DFLT_ENABLE_ZONE)
-            await create_input_boolean(a, local_name,icon='mdi:power')
+            await create_input_boolean(a, local_name,icon='mdi:power',reset=self._reset)
             z_enable_zone = ('%s.%s' % ('input_boolean',a))
             
 

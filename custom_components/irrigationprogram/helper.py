@@ -8,6 +8,7 @@ from homeassistant.components.input_boolean import async_setup as setup_input_bo
 from homeassistant.components.input_datetime import async_setup as setup_input_datetime
 from homeassistant.components.input_number import async_setup as setup_input_number
 from homeassistant.components.input_text import async_setup as setup_input_text
+from homeassistant.components.input_select import async_setup as setup_input_select
 from homeassistant.components.timer import async_setup as setup_timer
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
@@ -22,6 +23,7 @@ COMPONENT_INPUT_BOOLEAN = 'input_boolean'
 COMPONENT_INPUT_DATETIME = 'input_datetime'
 COMPONENT_INPUT_NUMBER = 'input_number'
 COMPONENT_INPUT_TEXT = 'input_text'
+COMPONENT_INPUT_SELECT = 'input_select'
 COMPONENT_TIMER = 'timer'
 
 CUSTOM_ENTITY_COMPONENTS = {}
@@ -37,6 +39,7 @@ CONFIG_INPUT_BOOLEAN = {}
 CONFIG_INPUT_DATETIME = {}
 CONFIG_INPUT_NUMBER = {}
 CONFIG_INPUT_TEXT = {}
+CONFIG_INPUT_SELECT = {}
 CONFIG_TIMER = {}
 
 # save whether custom inputs were declared, so they can be added to HA
@@ -44,6 +47,7 @@ CUSTOM_INPUT_BOOLEAN = False
 CUSTOM_INPUT_DATETIME = False
 CUSTOM_INPUT_NUMBER = False
 CUSTOM_INPUT_TEXT = False
+CUSTOM_INPUT_SELECT = False
 CUSTOM_TIMER = False
 
 
@@ -72,7 +76,7 @@ async def _get_platform(hass: HomeAssistant, domain: str):
     return CUSTOM_ENTITY_COMPONENTS[domain]
 
 
-async def create_input_boolean(slugname: str, name: str, icon=None) -> str:
+async def create_input_boolean(slugname: str, name: str, icon=None, reset=False) -> str:
     data = {
         'name': name
     }
@@ -81,8 +85,9 @@ async def create_input_boolean(slugname: str, name: str, icon=None) -> str:
         data['icon'] = icon
 
     internal_name = slugname
-
-    CONFIG_INPUT_BOOLEAN[internal_name] = data
+    
+    if not reset:
+        CONFIG_INPUT_BOOLEAN[internal_name] = data
 
     global CUSTOM_INPUT_BOOLEAN
     CUSTOM_INPUT_BOOLEAN = True
@@ -91,7 +96,7 @@ async def create_input_boolean(slugname: str, name: str, icon=None) -> str:
 
 
 async def create_input_datetime(slugname: str, name: str, has_date: bool, has_time: bool, initial=None,
-                                icon=None) -> str:
+                                icon=None, reset=False) -> str:
     data = {
         'name': name,
         'has_date': has_date,
@@ -106,7 +111,8 @@ async def create_input_datetime(slugname: str, name: str, has_date: bool, has_ti
 
     internal_name = slugname
 
-    CONFIG_INPUT_DATETIME[internal_name] = OrderedDict(data)
+    if not reset:
+        CONFIG_INPUT_DATETIME[internal_name] = OrderedDict(data)
 
     global CUSTOM_INPUT_DATETIME
     CUSTOM_INPUT_DATETIME = True
@@ -115,7 +121,7 @@ async def create_input_datetime(slugname: str, name: str, has_date: bool, has_ti
 
 
 async def create_input_number(slugname: str, name: str, _min: int, _max: int, step: int, mode: str,
-                              unit_of_measurement: str, icon=None) -> str:
+                              unit_of_measurement: str, icon=None, reset=False) -> str:
     data = {
         'name': name,
         'min': _min,
@@ -130,7 +136,8 @@ async def create_input_number(slugname: str, name: str, _min: int, _max: int, st
 
     internal_name = slugname
 
-    CONFIG_INPUT_NUMBER[internal_name] = data
+    if not reset:
+        CONFIG_INPUT_NUMBER[internal_name] = data
 
     global CUSTOM_INPUT_NUMBER
     CUSTOM_INPUT_NUMBER = True
@@ -139,7 +146,7 @@ async def create_input_number(slugname: str, name: str, _min: int, _max: int, st
 
 
 async def create_input_text(slugname: str, name: str, _min=0, _max=100, initial=None,
-                            pattern='', mode='text', icon=None) -> str:
+                            pattern='', mode='text', icon=None, reset=False) -> str:
     data = {
         'name': name,
         'min': _min,
@@ -154,15 +161,37 @@ async def create_input_text(slugname: str, name: str, _min=0, _max=100, initial=
 
     internal_name = slugname
 
-    CONFIG_INPUT_TEXT[internal_name] = data
+    if not reset:
+        CONFIG_INPUT_TEXT[internal_name] = data
 
     global CUSTOM_INPUT_TEXT
     CUSTOM_INPUT_TEXT = True
 
     return 'input_text.{}'.format(internal_name)
 
+async def create_input_select(slugname: str, name: str, _options=[], initial=None,
+                              icon=None, reset=False) -> str:
+    data = {
+        'name': name,
+        'options': _options,
+        'initial': initial
+    }
 
-async def create_timer(name: str, duration='00:00:00') -> str:
+    if icon:
+        data['icon'] = icon
+
+    internal_name = slugname
+
+    if not reset:
+        CONFIG_INPUT_SELECT[internal_name] = data
+
+    global CUSTOM_INPUT_SELECT
+    CUSTOM_INPUT_SELECT = True
+
+    return 'input_text.{}'.format(internal_name)
+
+
+async def create_timer(name: str, duration='00:00:00', reset=False) -> str:
     data = {
         'name': name,
         'duration': duration
@@ -170,7 +199,8 @@ async def create_timer(name: str, duration='00:00:00') -> str:
 
     internal_name = slugify(name)
 
-    CONFIG_TIMER[internal_name] = data
+    if not reset:
+        CONFIG_TIMER[internal_name] = data
 
     global CUSTOM_TIMER
     CUSTOM_TIMER = True
@@ -179,6 +209,7 @@ async def create_timer(name: str, duration='00:00:00') -> str:
 
 
 async def create_entities_and_automations(hass: HomeAssistant):
+
     if CUSTOM_INPUT_BOOLEAN:
         for entity_id in list(
                 filter(lambda eid: COMPONENT_INPUT_BOOLEAN == eid.split('.')[0], hass.states.async_entity_ids())):
@@ -204,8 +235,14 @@ async def create_entities_and_automations(hass: HomeAssistant):
         for entity_id in list(
                 filter(lambda eid: COMPONENT_INPUT_TEXT == eid.split('.')[0], hass.states.async_entity_ids())):
             hass.states.async_remove(entity_id)
-
         await setup_input_text(hass, {COMPONENT_INPUT_TEXT: CONFIG_INPUT_TEXT})
+
+    if CUSTOM_INPUT_SELECT:
+        for entity_id in list(
+                filter(lambda eid: COMPONENT_INPUT_SELECT == eid.split('.')[0], hass.states.async_entity_ids())):
+            hass.states.async_remove(entity_id)
+
+        await setup_input_select(hass, {COMPONENT_INPUT_SELECT: CONFIG_INPUT_SELECT})
 
     if CUSTOM_TIMER:
         for entity_id in list(
