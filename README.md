@@ -270,6 +270,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
 |&nbsp;&nbsp;&nbsp;&nbsp;irrigation_on|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Enable irrigation'|
 |&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|string |Optional|Display name for the auto generated helper, for example 'Inter zone Delay' |
+|&nbsp;&nbsp;&nbsp;&nbsp;reset|boolean |Optional|Reset/uninstall the auto-created helpers, last ran attribute reset|
 |&nbsp;&nbsp;&nbsp;&nbsp;zones|list|Required|List of zones to run|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name|string|Optional|This is the name displayed for the zone|
@@ -291,6 +292,9 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+### V5.0.3
+* Create selction list helper for frequency if one is not defined
+* Add config option to reset/uninstall created helpers
 ### 5.0.2
 * Update Event model now *irrigation_event* event with *action* of 'zone_turned_on'. 
 ### 5.0.1
