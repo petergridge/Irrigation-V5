@@ -571,7 +571,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             '''build zone groupings that will run concurrently'''
             if self._irrigationzones[zn-1].zone_group_value() is not None:
                 zone_group = self._irrigationzones[zn-1].zone_group_value()
-                if not zone_group:
+                if not zone_group or zone_group == 'unknown':
                     groupkey = zn
                 else:
                     groupkey = "G" + zone_group
@@ -640,7 +640,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self._ATTRS[zonelastran] = p_last_ran
                     self._irrigationzones[zn-1].set_last_ran(p_last_ran)
                 ''' reset the last ran time to 23 hours ago - for debug'''
-                if self._reset_last_ran:
+                if self._reset:
                     self._ATTRS[zonelastran] = dt_util.now() - timedelta(hours=23)
                 ''' update the historical flow rate '''
                 if self._irrigationzones[zn-1].flow_sensor():
