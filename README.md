@@ -292,6 +292,8 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+### V5.0.4
+* Fix bug introduced with reset/uninstall
 ### V5.0.3
 * Create selction list helper for frequency if one is not defined
 * Add config option to reset/uninstall created helpers
