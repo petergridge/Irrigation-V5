@@ -1,0 +1,160 @@
+    sensor:
+      - platform: time_date
+        display_options:
+          - 'time'
+          - 'date'
+          
+    switch:
+      - platform: irrigationprogram
+        switches: 
+          morning:
+            #reset: true
+            zones:
+              - zone: switch.dummy_1
+
+
+          afternoon:
+            irrigation_on: Enable irrigation
+            friendly_name: Afternoon Program
+            start_time: Start time
+            show_config: Show configuration
+            run_freq: input_select.irrigation_freq
+            inter_zone_delay: Inter zone delay
+            controller_monitor: binary_sensor.dummy_controller_active
+            #reset: true
+            zones:
+              - zone: switch.dummy_1
+                pump: switch.dummy_pump
+                zone_group: Zone group
+                water: Water
+                wait: Wait
+                repeat: Repeat
+                rain_sensor: binary_sensor.raining
+                enable_zone: Enable zone
+                water_adjustment: input_number.irrigation_adjust_water
+                flow_sensor: input_number.irrigation_flow_sensor
+              - zone: switch.dummy_2
+              - zone: switch.dummy_3
+                pump: switch.dummy_pump
+                name: Lawn3
+                zone_group: Zone group
+              - zone: switch.dummy_4
+                pump: switch.dummy_pump
+                name: Lawn4
+                zone_group: Zone group
+                enable_zone: Zone aktivieren
+              - zone: switch.dummy_5
+                pump: switch.dummy_pump
+                name: Lawn5
+
+      - platform: template
+        switches:
+          dummy_1:
+            friendly_name: Lawn
+            value_template: "{{ is_state('input_boolean.dummy_switch_1', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_switch_1
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_switch_1
+          dummy_2:
+            friendly_name: Zone 2
+            value_template: "{{ is_state('input_boolean.dummy_switch_2', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_switch_2
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_switch_2
+          dummy_3:
+            friendly_name: Zone 3
+            value_template: "{{ is_state('input_boolean.dummy_switch_3', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_switch_3
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_switch_3
+          dummy_4:
+            friendly_name: Zone 4
+            value_template: "{{ is_state('input_boolean.dummy_switch_4', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_switch_4
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_switch_4
+          dummy_5:
+            friendly_name: Zone 5
+            value_template: "{{ is_state('input_boolean.dummy_switch_5', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_switch_5
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_switch_5
+          dummy_pump:
+            value_template: "{{ is_state('input_boolean.dummy_pump', 'on') }}"
+            turn_on:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dummy_pump
+            turn_off:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dummy_pump
+
+    input_number:
+      irrigation_flow_sensor:
+        min: 0
+        max: 35
+        step: 1
+      irrigation_adjust_water:
+        min: 0
+        max: 2
+        step: 0.1
+
+    input_boolean:
+      dummy_switch_1:
+      dummy_switch_2:
+      dummy_switch_3:
+      dummy_switch_4:
+      dummy_switch_5:
+      dummy_pump:
+      dummy_rain_sensor:
+      dummy_controller_active:
+
+    template:
+    - sensor:
+        - name: irrigation_flow_sensor
+          state: "{{ states('input_number.irrigation_flow_sensor') }}"
+          unit_of_measurement: 'l/m'
+          icon: mdi:waves-arrow-right
+    - trigger:
+      - platform: time_pattern
+        # This will update every night
+        hours: '0'
+        minutes: '0'
+      sensor:
+      - name: "Daily Rainfall"
+        unit_of_measurement: "mm"
+        state: "{{ state_attr('sensor.rainfactor', 'day_0_rain') }}"
+        state_class: measurement
+
+    binary_sensor:
+      - platform: template
+        sensors:
+          raining:
+            device_class: moisture
+            value_template: "{{ is_state('input_boolean.dummy_rain_sensor', 'on') }}"
+            icon_template: >-
+              {% if is_state("binary_sensor.raining", "on") %}
+                mdi:weather-pouring
+              {% else %}
+                mdi:weather-sunny
+              {% endif %}
+          dummy_controller_active:
+            friendly_name: Controller
+            value_template: "{{ is_state('input_boolean.dummy_controller_active', 'on') }}"
+              
+              
+              
