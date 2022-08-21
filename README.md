@@ -292,6 +292,8 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+### V5.0.5
+* Fix bugs
 ### V5.0.4
 * Fix bug introduced with reset/uninstall
 ### V5.0.3
