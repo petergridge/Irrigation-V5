@@ -311,15 +311,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
             if zone.get(ATTR_PUMP) is not None:
                 waitcount = 0
-                '''Wait for/validate entitie are available as HA starts'''
-                while self.hass.states.get(zone.get(ATTR_PUMP)) is None:
-                    await asyncio.sleep(1)
-                    waitcount += 1
-                    if waitcount > 5:
-                        _LOGGER.error('Zone entity is not found: %s', zone.get('zone'))
-                        break
-                if waitcount > 5:
-                    continue
                 '''create pump - zone list '''
                 if zone.get(ATTR_PUMP) not in pumps:
                     pumps[zone.get(ATTR_PUMP)] = [zone.get(ATTR_ZONE)]
@@ -327,17 +318,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     pumps[zone.get(ATTR_PUMP)].append(zone.get(ATTR_ZONE))
 
             ''' Build Zone Attributes to support the custom card '''
-            waitcount = 0
-            '''Wait for/validate entitie are available as HA starts'''
-            while self.hass.states.get(zone.get(ATTR_ZONE)) is None:
-                await asyncio.sleep(1)
-                waitcount += 1
-                if waitcount > 5:
-                    _LOGGER.error('Zone entity is not found: %s', zone.get('ATTR_ZONE'))
-                    break
-            if waitcount > 5:
-                continue
-            z_name = slugify(zone.get(CONF_NAME,self.hass.states.get(zone.get(ATTR_ZONE)).name))
+            z_name = zone.get(ATTR_ZONE).split(".")[1]
             a = slugify('zone%s_%s' % (zn, CONF_NAME))
             self._ATTRS [a] = z_name
 
