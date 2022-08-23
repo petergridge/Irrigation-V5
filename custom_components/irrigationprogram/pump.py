@@ -16,39 +16,51 @@ class pumpclass:
         self.hass    = hass
         self._pump   = pump
         self._zones  = zones
+        self._stop   = False
+        self._off_delay = 2
+
 
     async def async_monitor(self, **kwargs):
-
-        # loop test if the zones are running
-        # if none are running turn off the pump
-        x = True
-        step = 2
-        count = 0
+        _LOGGER.debug('Pump Class Started monitoring zones %s', self._zones)
+        step = 1
         PUMP = {ATTR_ENTITY_ID: self._pump}
-        ''' endless loop, not sure if this is good practive'''
-        while x == True:
+        
+        def zone_running():
             zone_running = False
-            ''' check if any of the zones are running'''
-
             for zone in self._zones:
                 if self.hass.states.get(zone).state == 'on':
-                    _LOGGER.debug('zone %s is on, pump %s',zone, PUMP)
-                    zone_running = True
-                    count = 0
-                    ''' turn the pump on if requied '''
-                    if self.hass.states.get(self._pump).state == 'off':
-                        _LOGGER.debug('pump id off, turn on pump %s', PUMP)
-                        await self.hass.services.async_call(CONST_SWITCH,
-                                                            SERVICE_TURN_ON,
-                                                            PUMP)
-                        break
+                    return True
+                    self._running_zone = zone
+                    break
+            return False 
 
+        '''Monitor the required zones'''
+        while not self._stop:
+            ''' check if any of the zones are running'''
+            if zone_running():
+                if self.hass.states.get(self._pump).state == 'off':
+                    _LOGGER.debug('pump is off, turn on pump %s',  PUMP)
+                    await self.hass.services.async_call(CONST_SWITCH,
+                                                        SERVICE_TURN_ON,
+                                                        PUMP)            
             await asyncio.sleep(step)
-            if not zone_running:
-                count += 1
-                if count > 2:
-                    count = 0
-                    if self.hass.states.get(self._pump).state == 'on':
-                        await self.hass.services.async_call(CONST_SWITCH,
-                                                            SERVICE_TURN_OFF,
-                                                            PUMP)
+            '''check if the zone is running, delay incase another zone starts'''
+            if not zone_running():
+                await asyncio.sleep(self._off_delay)
+                if self.hass.states.get(self._pump).state == 'on' and not zone_running():
+                    _LOGGER.debug('pump is on,  turn off pump %s', PUMP)
+                    await self.hass.services.async_call(CONST_SWITCH,
+                                                        SERVICE_TURN_OFF,
+                                                        PUMP)            
+                 
+        '''Program has stopped end monitoring'''
+        if self._stop:
+            _LOGGER.debug('Pump Class stopped monitoring')
+            if self.hass.states.get(self._pump).state == 'on':
+                await self.hass.services.async_call(CONST_SWITCH,
+                                                    SERVICE_TURN_OFF,
+                                                    PUMP)
+            self._stop = False
+
+    async def async_stop_monitoring(self, **kwargs):
+        self._stop = True

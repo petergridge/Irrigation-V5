@@ -26,6 +26,9 @@ ATTR_MONITOR_CONTROLLER = 'controller_monitor'
 ATTR_DISABLE_ZONE       = 'disable_zone'
 ATTR_ENABLE_ZONE        = 'enable_zone'
 ATTR_RESET              = 'reset'
+ATTR_WATER_MIN          = 'water_min'
+ATTR_WATER_MAX          = 'water_max'
+ATTR_WATER_STEP         = 'water_step'
 
 
 CONST_ENTITY            = 'entity_id'

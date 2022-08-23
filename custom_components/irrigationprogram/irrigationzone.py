@@ -269,7 +269,7 @@ class irrigationzone:
 
             if self._flow_sensor is not None:
                 ''' estimate the remaining volume and time'''
-                water = z_water
+                water = z_water * float(self.water_adjust_value())
                 while water > 0 and not self._stop:
                     water -= self.flow_sensor_value()/60
                     remaining_cycle = water/self.flow_sensor_value()*60
@@ -281,9 +281,11 @@ class irrigationzone:
                     if not self._stop: await asyncio.sleep(1)
             else:
                 ''' calculate remaining time '''
-                water = z_water * 60
+                water = z_water * int(float(self.water_adjust_value())) * 60
                 for w in range(0,water, 1):
                     self._remaining_time -= 1
+#                    if self._remaining_time < 0:
+#                        break
                     if self._stop:
                         break
                     await asyncio.sleep(1)

@@ -48,6 +48,9 @@ from .const import (
     ATTR_LAST_RAN,
     ATTR_MONITOR_CONTROLLER,
     ATTR_RESET,
+    ATTR_WATER_MIN,
+    ATTR_WATER_MAX,
+    ATTR_WATER_STEP,
 
     DFLT_IRRIGATION_ON,
     DFLT_START,
@@ -73,6 +76,7 @@ from .const import (
     DFLT_WATER_MAX_T,
     DFLT_WATER_STEP_T,
     DFLT_RUN_FREQ,
+
 )
 
 from homeassistant.const import (
@@ -106,6 +110,10 @@ SWITCH_SCHEMA = vol.All(
             vol.Optional(ATTR_RAIN_SENSOR): cv.entity_domain('binary_sensor'),
             vol.Optional(ATTR_ZONE_GROUP): cv.string,
             vol.Optional(ATTR_WATER,default=DFLT_WATER): cv.string,
+            vol.Optional(ATTR_WATER_MIN,default=1): int,
+            vol.Optional(ATTR_WATER_MAX,default=30): int,
+            vol.Optional(ATTR_WATER_STEP,default=1): int,
+            
             vol.Optional(ATTR_WAIT): cv.string,
             vol.Optional(ATTR_REPEAT): cv.string,
             vol.Optional(ATTR_IGNORE_RAIN_SENSOR): cv.string,
@@ -341,9 +349,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._ATTRS [a] = ('%d:%02d:%02d' % (0, 0, 0))
 
             if zone.get(ATTR_FLOW_SENSOR) is None:
-                self._water_intial = DFLT_WATER_INITIAL_T
-                self._water_max    = DFLT_WATER_MAX_T
-                self._water_step   = DFLT_WATER_STEP_T
+                self._water_intial = zone.get(ATTR_WATER_MIN, DFLT_WATER_INITIAL_T)
+                self._water_max    = zone.get(ATTR_WATER_MAX, DFLT_WATER_MAX_T)
+                self._water_step   = zone.get(ATTR_WATER_STEP,DFLT_WATER_STEP_T)
                 self._water_uom    = 'min'
 
             a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WATER))
@@ -427,11 +435,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         ''' create pump class to start/stop pumps '''
         for thispump in pumps:
             self._pumps.append (pumpclass(self.hass, thispump, pumps[thispump]))
-        ''' start pump monitoring '''
-
-        loop = asyncio.get_event_loop()
-        for thispump in self._pumps:
-            loop.create_task(thispump.async_monitor())
 
         ''' house keeping to help ensure solenoids are in a safe state '''
         self.hass.bus.async_listen_once(
@@ -549,6 +552,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         z_zone_found  = False
         self._stop    = False
 
+        ''' start pump monitoring '''
+        loop = asyncio.get_event_loop()
+        for thispump in self._pumps:
+            loop.create_task(thispump.async_monitor())
+
         ''' use this to set the last ran attribute of the zones '''
         p_last_ran = dt_util.now()
 
@@ -656,6 +664,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 result = self.async_schedule_update_ha_state()
 
         setattr(self, '_state_attributes', self._ATTRS)
+
+        ''' stop pump monitoring '''
+#        loop = asyncio.get_event_loop()
+        for thispump in self._pumps:
+            loop.create_task(thispump.async_stop_monitoring())
 
         self._run_zone              = None
         self._state                 = False
