@@ -229,7 +229,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._run_zone           = None
 
         ''' defaults for metric and imperial '''
-#todo: add to the config for user setting
         if self.hass.config.units.name == 'metric':
             self._water_intial = DFLT_WATER_INITIAL_M
             self._water_max    = DFLT_WATER_MAX_M
@@ -666,7 +665,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         setattr(self, '_state_attributes', self._ATTRS)
 
         ''' stop pump monitoring '''
-#        loop = asyncio.get_event_loop()
         for thispump in self._pumps:
             loop.create_task(thispump.async_stop_monitoring())
 

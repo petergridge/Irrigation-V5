@@ -39,6 +39,7 @@ class pumpclass:
 
         '''Monitor the required zones'''
         while not self._stop:
+                
             ''' check if any of the zones are running'''
             if zone_running():
                 try:
@@ -60,14 +61,5 @@ class pumpclass:
                                                         SERVICE_TURN_OFF,
                                                         PUMP)            
                  
-        '''Program has stopped end monitoring'''
-        if self._stop:
-            _LOGGER.debug('Pump Class stopped monitoring')
-            if self.hass.states.get(self._pump).state == 'on':
-                await self.hass.services.async_call(CONST_SWITCH,
-                                                    SERVICE_TURN_OFF,
-                                                    PUMP)
-            self._stop = False
-
     async def async_stop_monitoring(self, **kwargs):
         self._stop = True
