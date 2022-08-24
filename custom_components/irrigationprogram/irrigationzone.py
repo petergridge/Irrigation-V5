@@ -281,11 +281,9 @@ class irrigationzone:
                     if not self._stop: await asyncio.sleep(1)
             else:
                 ''' calculate remaining time '''
-                water = z_water * int(float(self.water_adjust_value())) * 60
-                for w in range(0,water, 1):
+                water = z_water * float(self.water_adjust_value()) * 60
+                for w in range(0,int(water), 1):
                     self._remaining_time -= 1
-#                    if self._remaining_time < 0:
-#                        break
                     if self._stop:
                         break
                     await asyncio.sleep(1)
@@ -335,11 +333,20 @@ class irrigationzone:
         if  self._switch is not None and self.hass.states.async_available(self._switch):
             _LOGGER.error('%s not found',self._switch)
             valid = False
+        if  self._pump is not None and self.hass.states.async_available(self._pump):
+            _LOGGER.error('%s not found',self._pump)
+            valid = False
         if  self._run_freq is not None and self.hass.states.async_available(self._run_freq):
             _LOGGER.error('%s not found',self._run_freq)
             valid = False
         if  self._rain_sensor is not None and self.hass.states.async_available(self._rain_sensor):
             _LOGGER.error('%s not found',self._rain_sensor)
+            valid = False
+        if  self._flow_sensor is not None and self.hass.states.async_available(self._flow_sensor):
+            _LOGGER.error('%s not found',self._flow_sensor)
+            valid = False
+        if  self._water_adjust is not None and self.hass.states.async_available(self._water_adjust):
+            _LOGGER.error('%s not found',self._water_adjust)
             valid = False
 
         return valid

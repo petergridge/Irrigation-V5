@@ -28,21 +28,28 @@ class pumpclass:
         def zone_running():
             zone_running = False
             for zone in self._zones:
-                if self.hass.states.get(zone).state == 'on':
-                    return True
-                    self._running_zone = zone
-                    break
+                try:
+                    if self.hass.states.get(zone).state == 'on':
+                        return True
+                        self._running_zone = zone
+                        break
+                except:
+                    _LOGGER.error('Zone not not found when getting state: %s', zone)
             return False 
 
         '''Monitor the required zones'''
         while not self._stop:
             ''' check if any of the zones are running'''
             if zone_running():
-                if self.hass.states.get(self._pump).state == 'off':
-                    _LOGGER.debug('pump is off, turn on pump %s',  PUMP)
-                    await self.hass.services.async_call(CONST_SWITCH,
-                                                        SERVICE_TURN_ON,
-                                                        PUMP)            
+                try:
+                    if self.hass.states.get(self._pump).state == 'off':
+                        _LOGGER.debug('pump is off, turn on pump %s',  PUMP)
+                        await self.hass.services.async_call(CONST_SWITCH,
+                                                            SERVICE_TURN_ON,
+                                                            PUMP)
+                except:
+                    _LOGGER.error('pump not not found when getting state: %s', PUMP)
+                
             await asyncio.sleep(step)
             '''check if the zone is running, delay incase another zone starts'''
             if not zone_running():
