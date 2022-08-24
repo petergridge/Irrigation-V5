@@ -295,6 +295,9 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+## V5.0.7
+* Still fixing water adjustment defect
+* Improve validation
 ## V5.0.6
 * Fix water adjustment defect
 * Modify zone monitoring for pump activation
