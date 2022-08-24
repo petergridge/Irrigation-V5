@@ -295,8 +295,9 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
-## 5.0.9 - not release yet
+## 5.0.9
 * Optimise pump class
+* Correct watering adjustment and runtime issues
 ## V5.0.7/8
 * Still fixing water adjustment defect
 * Improve validation
