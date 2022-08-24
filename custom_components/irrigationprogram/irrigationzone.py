@@ -260,7 +260,10 @@ class irrigationzone:
         ''' run the watering cycle, water/wait/repeat '''
         SOLENOID = {ATTR_ENTITY_ID: self._switch}
         for i in range(z_repeat, 0, -1):
-
+            '''run time adjusted to 0'''
+            if self._remaining_time == 0:
+                continue
+                
             self._state = 'on'
             if self.hass.states.is_state(self._switch,'off') and not self._stop:
                 await self.hass.services.async_call(CONST_SWITCH,
