@@ -67,7 +67,7 @@ The rain sensor is defined in each zone. You can:
 If you configure this oprion a helper to ignore the rain sensor is automatically created
 
 ### Time or Volume based watering
-You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes.
+You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes. The helper will default the UOM to 'L' for metric and 'Gal' for imperial.
 
 This example is for a zone that has been defined with a flow sensor
 ```yaml
@@ -79,7 +79,7 @@ zones:
 ```
 
 ### Zone Group
-You can optionally group zones to run concurrently or sequentially. Inputs are from an input_text or input_select helper defined for each zone. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
+You can optionally group zones to run concurrently or sequentially. The helper will be created automatically to support this. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
 
 ```
 zones:
@@ -93,7 +93,7 @@ zones:
 If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
 
 ### Watering Adjuster feature
-As an alternative to the rain sensor you can also use the watering adjustment. With this feature the integrator is responsible to provide the value using a input_number component. I imagine that this would be based on weather data or a moisture sensor.
+As an alternative to the rain sensor you can also use the watering adjustment. With this feature the integrator is responsible to provide the value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
 See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
 
@@ -102,8 +102,9 @@ Setting *water_adjustment* attribute allows a factor to be applied to the wateri
 * If the factor is 0 no watering will occur
 * If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
 * A factor of 1.1 could also be used to apply 10% more water if required.
+* The watering time will always be rounded up to the nearest minute when applying the factor.
 
-The following automation is an example of how the input_number.adjust_run_time could be maintained
+The following automation is an example of how a input_number.adjust_run_time could be maintained using template calculation.
 ```yaml
 automation:
 - id: '1553507967550'
@@ -120,9 +121,9 @@ automation:
 ```
 
 ### Run Days and Run Frequency
-Run frequency allows the definition of when the program will run.
+Run frequency allows the definition of when the program will run. If no frequency input_select is provided a default one will be generated.
 
-This can be a specific set of days or the number of days between watering events. This can be defined at the Program or zone level. Application at the zone level allows different zones to execute at the same time but using varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
+This can be a specific set of days or the number of days between watering events and can be defined at the Program or zone level. Application at the zone level allows different zones to execute at the same time but using varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
 
 * *Run Freq* allows the water to occur at a specified frequency, for example, every 3 days or only on Monday, Wednesday and Saturday. 
 
@@ -173,7 +174,7 @@ context:
   parent_id: null
   user_id: null
 ```
-An automation can then use this data to fire the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered.
+An automation can then use this data to fire on the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered. Other triggers can be added if there is a use case for them. Let me know.
 ``` yaml
 alias: pump_keep_alive
 description: "Let the pump device know that HA is still alive so it does not time out and shut down"
