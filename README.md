@@ -7,7 +7,7 @@ Helpers are now automatically created when the display name is defined.
 * Providing the display text will trigger the creation of the helpers. 
 * Where the helpers are mandatory or provide core funtionality they will be created with default display text. 
 
-sees the delivery of a **custom card https://github.com/petergridge/irrigation_card** to render the program options specified in the configuration.
+The **custom card https://github.com/petergridge/irrigation_card** will render the program options specified in the configuration.
 
 The driver for this project is to provide an easy to use interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
 
@@ -21,9 +21,12 @@ The rain sensor is implemented as a binary_sensor, this allows practically any c
 
 Implemented as a switch, you can start a program using the schedule, manually or using an automation. Manually starting a program by turning the switch on will not evaluate the rain sensor rules it will just run the program, as there is an assumption that there is an intent to run the program regardless of sensors.
 
-Only one program can run at a time by default to prevent multiple solenoids being activated. If program start times result in an overlap the running program will be stopped. Zones can be configured to run concurrently or sequentially.
+Only one program can run at a time to prevent multiple solenoids being activated. If program start times result in an overlap the running program will be stopped. Zones can be configured to run concurrently or sequentially using the grouping funtionality.
 
 ## INSTALLATION
+
+### HACS installation
+Will be available on HACS soon but you can add it as a custom repository.
 
 ### To create a working sample
 * Copy the custom_components/irrigationprogram folder to the ‘config/custom components/’ directory
