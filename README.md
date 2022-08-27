@@ -39,6 +39,16 @@ Will be available on HACS soon but you can add it as a custom repository.
 ### Important
 * Make sure that all of the objects you reference i.e. switch etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
 
+### Generated helpers
+* The component now generates helpers for you to limit the configuration required. Simply allocated the friendly name  for a funtion you want to use and it will generate the helper and enable the related funtionality
+* Implementing this way supports presenting the dashboard in your language
+* The naming convention for generated helpers is: 'program_name'_'zone_name'_feature
+
+### *Under Construction* Config Flow
+* Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
+* Modify programs and zones, add new zones, delete zones
+* Unfortunately a restart is still required when adding or modifying the programs.
+
 ### Pre-requisite
 * The time_date integration is required
 ```yaml
@@ -299,6 +309,9 @@ irrigationprogram.stop_programs:
 ```
 
 ## REVISION HISTORY
+## Under Construction 5.1.0
+* Config Flow - configure via UI
+* change generated helper naming from friendly_name to Entity_name to prevent reseting values if friendly_name is updated for the Program. NOTE: if you change the zone name all the helpers will be renamed.
 ## 5.0.9
 * Optimise pump class
 * Correct watering adjustment and runtime issues
