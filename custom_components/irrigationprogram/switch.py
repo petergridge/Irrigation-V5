@@ -28,7 +28,7 @@ from .const import (
     CONST_SWITCH,
 
     ATTR_START,
-    ATTR_HIDE_CONFIG,
+    ATTR_SHOW_CONFIG,
     ATTR_RUN_FREQ,
     ATTR_IRRIGATION_ON,
     ATTR_RAIN_SENSOR,
@@ -55,7 +55,7 @@ from .const import (
     DFLT_IRRIGATION_ON,
     DFLT_START,
     DFLT_IGNORE_RAIN_SENSOR,
-    DFLT_HIDE_CONFIG,
+    DFLT_SHOW_CONFIG,
     DFLT_REPEAT,
     DFLT_WATER,
     DFLT_WAIT,
@@ -97,7 +97,7 @@ SWITCH_SCHEMA = vol.All(
         vol.Optional(ATTR_MONITOR_CONTROLLER): cv.entity_domain(['binary_sensor','input_boolean']),
         vol.Optional(ATTR_START, default=DFLT_START): cv.string,
         vol.Optional(ATTR_IRRIGATION_ON, default=DFLT_IRRIGATION_ON): cv.string,
-        vol.Optional(ATTR_HIDE_CONFIG, default=DFLT_HIDE_CONFIG): cv.string,
+        vol.Optional(ATTR_SHOW_CONFIG, default=DFLT_SHOW_CONFIG): cv.string,
         vol.Optional(ATTR_DELAY): cv.string,
         vol.Optional(ATTR_RESET,default=False): cv.boolean,
         vol.Required(ATTR_ZONES): [{
@@ -135,31 +135,12 @@ async def _async_create_entities(hass, config):
     '''Create the Template switches.'''
     switches = []
 
-    for device, device_config in config[CONF_SWITCHES].items():
-        friendly_name           = device_config.get(CONF_FRIENDLY_NAME)
-        start_time              = device_config.get(ATTR_START)
-        show_config             = device_config.get(ATTR_HIDE_CONFIG)
-        run_freq                = device_config.get(ATTR_RUN_FREQ)
-        irrigation_on           = device_config.get(ATTR_IRRIGATION_ON)
-        reset                   = device_config.get(ATTR_RESET)
-        zones                   = device_config.get(ATTR_ZONES)
-        unique_id               = device_config.get(CONF_UNIQUE_ID)
-        monitor_controller      = device_config.get(ATTR_MONITOR_CONTROLLER)
-        inter_zone_delay        = device_config.get(ATTR_DELAY)
+    for device, config in config[CONF_SWITCHES].items():
         switches.append(
             IrrigationProgram(
                 hass,
+                config,
                 device,
-                friendly_name,
-                start_time,
-                show_config,
-                run_freq,
-                irrigation_on,
-                monitor_controller,
-                inter_zone_delay,
-                reset,
-                zones,
-                unique_id,
             )
         )
 
@@ -186,17 +167,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     def __init__(
         self,
         hass,
-        device_id,
-        friendly_name,
-        start_time,
-        show_config,
-        run_freq,
-        irrigation_on,
-        monitor_controller,
-        inter_zone_delay,
-        reset,
-        zones,
-        unique_id,
+        config,
+        device_id # not available from config flow
     ):
 
         self.entity_id = async_generate_entity_id(
@@ -205,25 +177,25 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         '''Initialize a Irrigation program.'''
         self.hass                = hass
-        self._friendly_name      = friendly_name
-        if self._friendly_name is None:
-            self._friendly_name  = str(device_id).title()        
-        self._start_time         = start_time
-        self._show_config        = show_config
-        self._run_freq           = run_freq
-        self._irrigation_on      = irrigation_on
-        self._monitor_controller = monitor_controller
-        self._inter_zone_delay   = inter_zone_delay
-        self._zones              = zones
+        self._config             = config
+        self._name               = config.get(CONF_NAME,device_id)
+        self._friendly_name      = config.get(CONF_FRIENDLY_NAME,self._name)
+        self._start_time         = config.get(ATTR_START,DFLT_START)
+        self._show_config        = config.get(ATTR_SHOW_CONFIG,DFLT_SHOW_CONFIG)
+        self._run_freq           = config.get(ATTR_RUN_FREQ)
+        self._irrigation_on      = config.get(ATTR_IRRIGATION_ON,DFLT_IRRIGATION_ON)
+        self._monitor_controller = config.get(ATTR_MONITOR_CONTROLLER)
+        self._inter_zone_delay   = config.get(ATTR_DELAY)
+        self._zones              = config.get(ATTR_ZONES)
+        self._reset              = config.get(ATTR_RESET)
+        self._device_id          = self.entity_id
+        self._unique_id          = None #what to do with this attribute
         self._state_attributes   = None
         self._state              = False
-        self._unique_id          = unique_id
         self._stop               = False
-        self._device_id          = device_id
         self._last_run           = None
         self._triggered_manually = True
         self._template           = None
-        self._reset              = reset
         self._irrigationzones    = []
         self._pumps              = []
         self._run_zone           = None
@@ -243,10 +215,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._repeat_max       = DFLT_REPEAT_MAX
 
         ''' Validate and Build a template from the attributes provided '''
-        a = 'input_datetime.'+slugify(self._friendly_name + "_" + ATTR_START)
+        a = 'input_datetime.'+slugify(self._name + "_" + ATTR_START)
         template = "states('sensor.time')" + " + ':00' == states('" + a + "') "
 
-        a = 'input_boolean.'+slugify(self._friendly_name + "_" + ATTR_IRRIGATION_ON)
+        a = 'input_boolean.'+slugify(self._name + "_" + ATTR_IRRIGATION_ON)
         template = template + " and is_state('" + a + "', 'on') "
 
         if self._monitor_controller is not None:
@@ -282,28 +254,28 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._ATTRS [ATTR_LAST_RAN]    = self._last_run
 
         local_name = self._start_time
-        a = slugify(self._friendly_name + "_" + ATTR_START)
+        a = slugify(self._name + "_" + ATTR_START)
         await create_input_datetime(a, local_name, False, True,reset=self._reset)
         
         local_name = self._show_config
-        a = slugify(self._friendly_name + "_" + ATTR_HIDE_CONFIG)
+        a = slugify(self._name + "_" + ATTR_SHOW_CONFIG)
         await create_input_boolean(a, local_name,icon='mdi:cog-outline',reset=self._reset)
         
         local_name = self._irrigation_on
-        a = slugify(self._friendly_name + "_" + ATTR_IRRIGATION_ON)
+        a = slugify(self._name + "_" + ATTR_IRRIGATION_ON)
         await create_input_boolean(a, local_name,icon='mdi:power',reset=self._reset)
         self._slug_irrigation_on = a
 
         if self._inter_zone_delay is not None:
             local_name = self._inter_zone_delay
-            a = slugify(self._friendly_name + "_" + ATTR_DELAY)
+            a = slugify(self._name + "_" + ATTR_DELAY)
             await create_input_number(a,local_name,0,30,1,'slider','sec','mdi:timelapse',reset=self._reset)
             self._slug_inter_zone_delay = a
 
         if self._run_freq is not None:
             self._ATTRS [ATTR_RUN_FREQ] = self._run_freq
         else:
-            a = slugify(self._friendly_name + "_" + ATTR_RUN_FREQ)
+            a = slugify(self._name + "_" + ATTR_RUN_FREQ)
             await create_input_select(a,DFLT_RUN_FREQ,["1","2","3","4","5","6","7"],"1",icon='mdi:calendar',reset=self._reset)
             self._ATTRS [ATTR_RUN_FREQ] = 'input_select.' + a
 
@@ -330,7 +302,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._ATTRS [a] = z_name
 
             ''' set the last ran time '''
-            a =  slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_LAST_RAN))
+            a =  slugify('%s_%s_%s' % (self._name,z_name, ATTR_LAST_RAN))
             z_last_ran = None
             try:
                 z_last_ran = state.attributes.get(a)
@@ -344,7 +316,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 z_last_ran = dt_util.now() - timedelta(days=10)
             self._ATTRS [a] = z_last_ran
 
-            a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_REMAINING))
+            a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_REMAINING))
             self._ATTRS [a] = ('%d:%02d:%02d' % (0, 0, 0))
 
             if zone.get(ATTR_FLOW_SENSOR) is None:
@@ -353,16 +325,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self._water_step   = zone.get(ATTR_WATER_STEP,DFLT_WATER_STEP_T)
                 self._water_uom    = 'min'
 
-            a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WATER))
+            a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_WATER))
             local_name = zone.get(ATTR_WATER, DFLT_WATER)
             await create_input_number(a,local_name,self._water_intial,self._water_max,self._water_step,'slider',self._water_uom,'mdi:water',reset=self._reset)
             z_water = ('%s.%s'% ('input_number',a))
 
             z_hist_flow = None
             if zone.get(ATTR_FLOW_SENSOR) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name ,z_name, ATTR_FLOW_SENSOR))
+                a = slugify('%s_%s_%s' % (self._name ,z_name, ATTR_FLOW_SENSOR))
                 self._ATTRS [a] = zone.get(ATTR_FLOW_SENSOR)
-                a = slugify('%s_%s_%s' % (self._friendly_name ,z_name, 'historical_flow'))
+                a = slugify('%s_%s_%s' % (self._name ,z_name, 'historical_flow'))
                 if state is not None:
                     z_hist_flow = state.attributes.get(a)
                 if z_hist_flow is None:
@@ -371,40 +343,40 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             z_wait = None
             z_repeat = None
             if zone.get(ATTR_WAIT) is not None or zone.get(ATTR_REPEAT) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WAIT))
+                a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_WAIT))
                 local_name = zone.get(ATTR_WAIT, DFLT_WAIT)
                 await create_input_number(a,local_name,1,self._wait_max,1,'slider','min','mdi:timer-sand',reset=self._reset)
                 z_wait = ('%s.%s' % ('input_number',a))
-                a = slugify('%s_%s_%s' % (self._friendly_name, z_name, ATTR_REPEAT))
+                a = slugify('%s_%s_%s' % (self._name, z_name, ATTR_REPEAT))
                 local_name = zone.get(ATTR_REPEAT, DFLT_REPEAT)
                 await create_input_number(a,local_name,1,self._repeat_max,1,'slider','','mdi:repeat',reset=self._reset)
                 z_repeat = ('%s.%s' % ('input_number',a))
 
             z_zone_group = None
             if zone.get(ATTR_ZONE_GROUP) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_ZONE_GROUP))
+                a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_ZONE_GROUP))
                 local_name = zone.get(ATTR_ZONE_GROUP, DFLT_ZONE_GROUP)
                 await create_input_text(a,local_name,1,10, icon='mdi:home-group',reset=self._reset)
                 z_zone_group = ('%s.%s' % ('input_text',a))
 
             if zone.get(ATTR_WATER_ADJUST) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_WATER_ADJUST))
+                a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_WATER_ADJUST))
                 self._ATTRS [a] = zone.get(ATTR_WATER_ADJUST)
             if zone.get(ATTR_RUN_FREQ) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_RUN_FREQ))
+                a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_RUN_FREQ))
                 self._ATTRS [a] = zone.get(ATTR_RUN_FREQ)
 
             z_ignore_rain_sensor = None
             if zone.get(ATTR_RAIN_SENSOR) is not None:
-                a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_RAIN_SENSOR))
+                a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_RAIN_SENSOR))
                 self._ATTRS [a] = zone.get(ATTR_RAIN_SENSOR)
                 ''' create the ignore feature'''
-                a = slugify('%s_%s_%s' % (self._friendly_name, z_name, ATTR_IGNORE_RAIN_SENSOR))
+                a = slugify('%s_%s_%s' % (self._name, z_name, ATTR_IGNORE_RAIN_SENSOR))
                 local_name = zone.get(ATTR_IGNORE_RAIN_SENSOR, DFLT_IGNORE_RAIN_SENSOR)
                 await create_input_boolean(a, local_name,icon='mdi:water-alert-outline',reset=self._reset)
                 z_ignore_rain_sensor = ('%s.%s' % ('input_boolean',a))
 
-            a = slugify('%s_%s_%s' % (self._friendly_name,z_name, ATTR_ENABLE_ZONE))
+            a = slugify('%s_%s_%s' % (self._name,z_name, ATTR_ENABLE_ZONE))
             local_name = zone.get(ATTR_ENABLE_ZONE, DFLT_ENABLE_ZONE)
             await create_input_boolean(a, local_name,icon='mdi:power',reset=self._reset)
             z_enable_zone = ('%s.%s' % ('input_boolean',a))
@@ -483,15 +455,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     @property
     def name(self):
         '''Return the name of the variable.'''
-        return self._friendly_name
+        return self._name
 
     @property
     def friendly_name(self):
         '''Return the name of the variable.'''
-        if self._friendly_name is None:
-            self._friendly_name      = str(self._device_id).title()
-        else:
-            self._friendly_name      = str(self._friendly_name).title()
         return self._friendly_name
 
     @property

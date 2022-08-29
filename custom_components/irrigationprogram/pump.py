@@ -60,6 +60,8 @@ class pumpclass:
                     await self.hass.services.async_call(CONST_SWITCH,
                                                         SERVICE_TURN_OFF,
                                                         PUMP)            
-                 
+        ''' reset for next call'''
+        self._stop = False
+
     async def async_stop_monitoring(self, **kwargs):
         self._stop = True

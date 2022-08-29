@@ -200,7 +200,6 @@ class irrigationzone:
         if self._flow_sensor is None:
             z_water = math.ceil(float(self.water_value()) * float(self.water_adjust_value()))
             self._run_time = (((z_water + self.wait_value()) * self.repeat_value()) - self.wait_value()) * 60
-            _LOGGER.error ( 'zwater: %s, water_value: %s, adjust value: %s',z_water,self.water_value(),self.water_adjust_value())
         else:
             z_water = math.ceil(int(float(self.water_value()) * float(self.water_adjust_value())))
             z_watertime = z_water/float(self.hist_flow_rate())
