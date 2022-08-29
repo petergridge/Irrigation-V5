@@ -314,6 +314,7 @@ irrigationprogram.stop_programs:
 ## 5.0.10
 * Generated helpers based on entity name not friendly name
 * Correct pump issue
+* Requires custom Card 5.0.10
 ## 5.0.9
 * Optimise pump class
 * Correct watering adjustment and runtime issues
