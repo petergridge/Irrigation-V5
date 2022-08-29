@@ -311,7 +311,9 @@ irrigationprogram.stop_programs:
 ## REVISION HISTORY
 ## Under Construction 5.1.0
 * Config Flow - configure via UI
-* change generated helper naming from friendly_name to Entity_name to prevent reseting values if friendly_name is updated for the Program. NOTE: if you change the zone name all the helpers will be renamed.
+## 5.0.10
+* Generated helpers based on entity name not friendly name
+* Correct pump issue
 ## 5.0.9
 * Optimise pump class
 * Correct watering adjustment and runtime issues
