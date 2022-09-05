@@ -1,6 +1,5 @@
 {
 	"config": {
-		"title": "Irrigation Program",
 		"step": {
 			"user": {
 				"title": "Program data",
