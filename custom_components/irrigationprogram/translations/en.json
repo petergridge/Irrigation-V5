@@ -45,7 +45,6 @@
 	},
 
   "options": {
-		"title": "Irrigation Program",
     "step": {
 			"user": {
 				"menu_options": {
