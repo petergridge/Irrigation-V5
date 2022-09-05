@@ -1,2 +1,2 @@
 stop_programs:
-    description: Stop any running programs or zones.
+  description: Stop any running programs or zones.

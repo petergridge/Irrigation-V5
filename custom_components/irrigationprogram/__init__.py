@@ -1,106 +1,86 @@
-import logging
+''' __init__'''
+
+from __future__ import annotations
+
 import asyncio
+import logging
+from homeassistant.util import slugify
 
-#-----------Helpers---------------------------
+# -----------Helpers---------------------------
 from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
-from homeassistant.const import CONF_ENTITY_ID, CONF_STATE, EVENT_HOMEASSISTANT_STARTED
-from homeassistant.core import HomeAssistant, Event
-from homeassistant.helpers.config_validation import string
-from .helper import create_automations, create_entities_and_automations, CONFIG_INPUT_BOOLEAN, COMPONENT_INPUT_BOOLEAN, \
-    CONFIG_INPUT_DATETIME, COMPONENT_INPUT_DATETIME, CONFIG_INPUT_NUMBER, COMPONENT_INPUT_NUMBER, CONFIG_INPUT_TEXT, \
-    COMPONENT_INPUT_TEXT, CONFIG_TIMER, COMPONENT_TIMER, CONFIG_INPUT_SELECT, COMPONENT_INPUT_SELECT
-#--------------------------------------
-
-from .const import (
-    DOMAIN,
-    CONST_SWITCH,
-    SWITCH_ID_FORMAT,
-    ATTR_RESET,
-    )
-
-
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_NAME,
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
-    ATTR_ENTITY_ID,
-    )
+    Platform,
+)
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.config_validation import string
+
+from .const import CONST_SWITCH, DOMAIN, SWITCH_ID_FORMAT
 
 _LOGGER = logging.getLogger(__name__)
 
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up irrigtest from a config entry."""
+    # store an object for your platforms to access
+    hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME:entry.data.get(ATTR_NAME)}
+    hass.config_entries.async_setup_platforms(entry, (Platform.SWITCH,))
+    entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
+    return True
+
+async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Update listener, called when the config entry options are changed."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    #figure out how to remove the generated helpers
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        entry, (Platform.SWITCH,)
+    ):
+        #clean up any related helpers
+        hass.data[DOMAIN].pop(entry.entry_id)
+    return unload_ok
+
 
 async def async_setup(hass, config):
+    '''setup the irrigation'''
+    hass.data.setdefault(DOMAIN, {})
 
-    platforms = config.get(CONST_SWITCH)
+#    platforms = config.get(CONST_SWITCH)
 
-    for x in platforms:
-        if x.get('platform') == DOMAIN:
-            switches = x.get('switches')
-            break
-
-#---------Helpers-----------------------------
-    CONFIG_INPUT_BOOLEAN.update(config.get(COMPONENT_INPUT_BOOLEAN, {}))
-    CONFIG_INPUT_DATETIME.update(config.get(COMPONENT_INPUT_DATETIME, {}))
-    CONFIG_INPUT_NUMBER.update(config.get(COMPONENT_INPUT_NUMBER, {}))
-    CONFIG_INPUT_TEXT.update(config.get(COMPONENT_INPUT_TEXT, {}))
-    CONFIG_INPUT_SELECT.update(config.get(COMPONENT_INPUT_SELECT, {}))
-    CONFIG_TIMER.update(config.get(COMPONENT_TIMER, {}))
-
-    async def handle_home_assistant_started_event(event: Event):
-        await create_entities_and_automations(hass)
-
-    async def handle_automation_reload_event(event: Event):
-        await create_automations(hass)
-
-    hass.bus.async_listen(EVENT_HOMEASSISTANT_STARTED, handle_home_assistant_started_event)
-    hass.bus.async_listen(EVENT_AUTOMATION_RELOADED, handle_automation_reload_event)
-#---------------------------------------
-
+#    for domain in platforms:
+#        if domain.get("platform") == DOMAIN:
+#            switches = domain.get("switches")
+#            break
 
     async def async_stop_programs(call):
-
-        for x in switches:
-            if x == call.data.get('ignore',''):
+        ''' stop all running programs'''
+        for data in hass.data[DOMAIN].values():
+            if data.get(ATTR_NAME) == call.data.get("ignore", ""):
                 continue
-
-            device = SWITCH_ID_FORMAT.format(x)
-            DATA = {ATTR_ENTITY_ID: device}
-            await hass.services.async_call(CONST_SWITCH,
-                                     SERVICE_TURN_OFF,
-                                     DATA)
-    """ END async_stop_switches """
-
+            device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME)))
+            data = {ATTR_ENTITY_ID: device}
+            await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, data)
+    # END async_stop_switches
 
     async def async_run_zone(call):
-
-        DATA = {}
-        await hass.services.async_call(DOMAIN,
-                                 'stop_programs',
-                                 DATA)
-
+        ''' run a zone'''
+    #    data = {}
+    #    await hass.services.async_call(DOMAIN, "stop_programs", data)
+    #    await asyncio.sleep(1)
+        program = call.data.get("entity_id")
+        zone = call.data.get("zone")
+        data = {ATTR_ENTITY_ID: program, "zone": zone}
+        await hass.services.async_call(DOMAIN, "set_run_zone", data)
         await asyncio.sleep(1)
-
-        program = call.data.get('entity_id')
-        zone = call.data.get('zone')
-        DATA = {ATTR_ENTITY_ID: program, 'zone':zone}
-        await hass.services.async_call(DOMAIN,
-                                 'set_run_zone',
-                                 DATA)
-
-        await asyncio.sleep(1)
-
-        DATA = {ATTR_ENTITY_ID: program}
-        await hass.services.async_call(CONST_SWITCH,
-                                 SERVICE_TURN_ON,
-                                 DATA)
-
-    """ register services """
-    hass.services.async_register(DOMAIN,
-                                 'stop_programs',
-                                 async_stop_programs)
-    """ register services """
-    hass.services.async_register(DOMAIN,
-                                 'run_zone',
-                                 async_run_zone)
-
-
+        data = {ATTR_ENTITY_ID: program}
+        await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_ON, data)
+    # register services
+    hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
+    hass.services.async_register(DOMAIN, "run_zone", async_run_zone)
     return True
