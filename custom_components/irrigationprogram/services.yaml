@@ -1,2 +1,20 @@
 stop_programs:
   description: Stop any running programs or zones.
+
+run_zone:
+  description: run a specific zone.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+    zone:
+      name: Zone
+      description: Zone to run
+      required: true
+      selector:
+          text:
+            type: text

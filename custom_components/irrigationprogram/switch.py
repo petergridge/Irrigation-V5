@@ -113,17 +113,18 @@ async def async_setup_entry(
     else:
         async_add_entities([IrrigationProgram(hass, unique_id, config_entry.data, name)])
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    """Set up the irrigation switches."""
-#    async_add_entities(await _async_create_entities(hass, config))
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
-        "set_run_zone",
+        "run_zone",
         {
             vol.Required(ATTR_ZONE): cv.string,
         },
         "entity_run_zone",
     )
+
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Set up the irrigation switches from yaml required until YAML deprecated"""
+
 
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
@@ -315,10 +316,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         await super().async_added_to_hass()
 
-    def entity_run_zone(self, zone: str) -> None:
-        '''indicate that a specific zone is to run'''
+    async def entity_run_zone(self, zone: str) -> None:
+        '''Run a specific zone is to run'''
+        for zonecount in range(len(self._zones)):
+            await self._irrigationzones[zonecount].async_turn_off()
+        await asyncio.sleep(1)
         self._run_zone = zone
         self._triggered_manually = True
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.async_turn_on())
 
     @property
     def name(self):
@@ -357,6 +363,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         ''' Turn on the switch'''
+        await asyncio.sleep(1)
         self._state = True
         self.async_write_ha_state()
         #stop all running programs except the calling program

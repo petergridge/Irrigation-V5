@@ -2,25 +2,24 @@
 
 from __future__ import annotations
 
-import asyncio
 from ctypes.wintypes import BOOL
 import logging
 from homeassistant.util import slugify
 
 # -----------Helpers---------------------------
-from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
+#from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_NAME,
     SERVICE_TURN_OFF,
-    SERVICE_TURN_ON,
+#    SERVICE_TURN_ON,
     CONF_NAME,
     Platform,
 )
 from homeassistant.core import HomeAssistant,callback
 from homeassistant.helpers.config_validation import string
-from homeassistant.helpers.typing import ConfigType
+#from homeassistant.helpers.typing import ConfigType
 from homeassistant import config_entries
 
 from .const import (
@@ -67,21 +66,8 @@ async def async_setup(hass, config):
             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, data)
     # END async_stop_switches
 
-    async def async_run_zone(call):
-        ''' run a zone'''
-    #    data = {}
-    #    await hass.services.async_call(DOMAIN, "stop_programs", data)
-    #    await asyncio.sleep(1)
-        program = call.data.get("entity_id")
-        zone = call.data.get("zone")
-        data = {ATTR_ENTITY_ID: program, "zone": zone}
-        await hass.services.async_call(DOMAIN, "set_run_zone", data)
-        await asyncio.sleep(1)
-        data = {ATTR_ENTITY_ID: program}
-        await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_ON, data)
     # register services
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
-    hass.services.async_register(DOMAIN, "run_zone", async_run_zone)
 
     #import YAML to config entries
     irrig_config = {}
