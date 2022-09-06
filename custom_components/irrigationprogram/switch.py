@@ -187,11 +187,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._attrs[ATTR_RUN_FREQ] = self._run_freq
         if self._monitor_controller is not None:
             self._attrs[ATTR_MONITOR_CONTROLLER] = self._monitor_controller
-        if self._monitor_controller is not None:
+        if self._irrigation_on is not None:
             self._attrs[ATTR_IRRIGATION_ON] = self._irrigation_on
-        if self._monitor_controller is not None:
+        if self._show_config is not None:
             self._attrs[ATTR_SHOW_CONFIG] = self._show_config
-        if self._monitor_controller is not None:
+        if self._inter_zone_delay is not None:
             self._attrs[ATTR_DELAY] = self._inter_zone_delay
 
         # zone loop to set the attributes

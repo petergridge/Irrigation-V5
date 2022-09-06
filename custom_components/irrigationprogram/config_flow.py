@@ -2,29 +2,16 @@
 
 from __future__ import annotations
 
-# from collections import OrderedDict
 import logging
-#from select import select
 from typing import Any, Optional #, cast
 import uuid
-#from collections.abc import Mapping
-
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import (
-#    CONF_ENTITY_ID,
-#    CONF_FRIENDLY_NAME,
     CONF_NAME
 )
 from homeassistant.core import callback
-# from homeassistant import data_entry_flow
 from homeassistant.helpers import config_validation as cv, selector as sel
-#from homeassistant.helpers.schema_config_entry_flow import (
-#    SchemaConfigFlowHandler,
-#    SchemaFlowFormStep,
-#    SchemaFlowMenuStep,
-#)
 
 from .const import (
     ATTR_DELAY,
@@ -221,7 +208,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # build the program schema with original data
         for attr in PROGRAM_ATTR:
-            default = self.config_entry.data.get(attr[1])
+            default = self.config_entry.options.get(attr[1],self.config_entry.data.get(attr[1]))
             if default is not None:
                 if attr[0] is True:
                     data_schema[
