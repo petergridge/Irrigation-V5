@@ -286,14 +286,11 @@ class IrrigationZone:
             else:
                 response = True
         return response
-
     # end should_run
 
     async def async_turn_on(self, **kwargs):
-        """Watering time or volume to water
-        water wait repeat cycle using either volume of time
-        remaining is volume or time
-        """
+        """start the watering cycle """
+
         self._stop = False
         self._state = 'off'
         self._remaining_time = self.run_time()
@@ -328,7 +325,6 @@ class IrrigationZone:
             else:
                 #calculate remaining time
                 water = self.water_value() * float(self.water_adjust_value()) * 60
-                #reduce time remaining in the water cycle
                 for countdown in range(0, int(water), 1):
                     self._remaining_time -= 1
                     if self._stop:

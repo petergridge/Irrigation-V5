@@ -99,7 +99,7 @@ ZONE_ATTR = [
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
     [False, ATTR_RAIN_SENSOR, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_ZONE_GROUP, sel.EntitySelector({"domain": "input_text"})],
-    [False, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
+    [True, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
@@ -126,6 +126,13 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         self.data = {}
 
     #        self._name = self.config_entry.data.get(CONF_NAME)
+    async def async_step_import(self, user_input: dict[str, Any]):
+        """Handle import."""
+
+        return self.async_create_entry(
+            title=user_input.get(CONF_NAME), data=user_input
+        )
+#        return await self.async_step_user(user_input)
 
     async def async_step_user(
         self, user_input: Optional[dict[str, Any]] = None
@@ -379,4 +386,3 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_zone", data_schema=ZONE_SCHEMA, errors=errors
         )
-

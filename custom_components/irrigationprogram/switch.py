@@ -61,16 +61,14 @@ from .pump import PumpClass
 SWITCH_SCHEMA = vol.All(
     vol.Schema(
         {
-#            vol.Optional(CONF_FRIENDLY_NAME): cv.string,
             vol.Optional(ATTR_RUN_FREQ): cv.entity_domain("input_select"),
             vol.Optional(ATTR_MONITOR_CONTROLLER): cv.entity_domain(
                 ["binary_sensor", "input_boolean"]
             ),
-            vol.Optional(ATTR_START): cv.string,
+            vol.Required(ATTR_START): cv.string,
             vol.Optional(ATTR_IRRIGATION_ON): cv.string,
             vol.Optional(ATTR_SHOW_CONFIG): cv.string,
             vol.Optional(ATTR_DELAY): cv.string,
-#            vol.Optional(ATTR_RESET, default=False): cv.boolean,
             vol.Required(ATTR_ZONES): [
                 {
                     vol.Required(ATTR_ZONE): cv.entity_domain(CONST_SWITCH),
@@ -85,7 +83,7 @@ SWITCH_SCHEMA = vol.All(
                     vol.Optional(ATTR_RUN_FREQ): cv.entity_domain("input_select"),
                     vol.Optional(ATTR_RAIN_SENSOR): cv.entity_domain("binary_sensor"),
                     vol.Optional(ATTR_ZONE_GROUP): cv.string,
-                    vol.Optional(ATTR_WATER): cv.entity_domain("input_number"),
+                    vol.Required(ATTR_WATER): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_WAIT): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_REPEAT): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_IGNORE_RAIN_SENSOR): cv.entity_domain("input_boolean"),
@@ -102,7 +100,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -116,25 +113,9 @@ async def async_setup_entry(
     else:
         async_add_entities([IrrigationProgram(hass, unique_id, config_entry.data, name)])
 
-async def _async_create_entities(hass, config):
-    """Create the Template switches fronm YAML"""
-    switches = []
-
-    for device, config in config[CONF_SWITCHES].items():
-        switches.append(
-            IrrigationProgram(
-                hass,
-                None,
-                config,
-                device,
-            )
-        )
-
-    return switches
-
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the irrigation switches."""
-    async_add_entities(await _async_create_entities(hass, config))
+#    async_add_entities(await _async_create_entities(hass, config))
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
         "set_run_zone",
@@ -170,7 +151,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unique_id = unique_id
         self._state_attributes = None
         self._state = False
-#        self._stop = False
         self._last_run = None
         self._triggered_manually = True
         self._template = None
@@ -178,7 +158,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._pumps = []
         self._run_zone = None
         self._attrs = {}
-        self._icon = 'mdi:power'
         # Validate and Build a template from the attributes provided
         template = "states('sensor.time')" + " + ':00' == states('" + self._start_time + "') "
         if self._irrigation_on is not None:
@@ -200,12 +179,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         state = await self.async_get_last_state()
         self._last_run = None
-#        if state is not None:
-#            self._last_run = state.attributes.get(ATTR_LAST_RAN)
-#        else:
-#            self._last_run = dt_util.now() - timedelta(days=10)
         self._attrs = {}
-#        self._attrs[ATTR_LAST_RAN] = self._last_run
         if self._start_time is not None:
             self._attrs[ATTR_START] = self._start_time
         if self._run_freq is not None:
@@ -318,24 +292,20 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 _LOGGER.error(
                     "Sensor.time not defined check your configuration"
                 )
-
             if self._monitor_controller is not None:
                 if self.hass.states.async_available(self._monitor_controller):
                     _LOGGER.warning(
                         "%s not found, check your configuration",
                         self._monitor_controller,
                     )
-
             if self._run_freq is not None:
                 if self.hass.states.async_available(self._run_freq):
                     _LOGGER.warning(
                         "%s not found, check your configuration", self._run_freq
                     )
-
             # run validation over the zones - required for yaml config
             for zonenumber in range(len(self._zones)):
                 self._irrigationzones[zonenumber].validate()
-
             #Update template on startup
             async_track_state_change(self.hass, "sensor.time", template_check)
 
@@ -355,20 +325,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Return the name of the variable."""
         return self._name
 
-#    @property
-#    def friendly_name(self) -> str:
-#        """Return the name of the variable."""
-#        return self._friendly_name
-
     @property
     def unique_id(self):
         """Return the unique id of this switch."""
         return self._unique_id
-
-    @property
-    def icon(self):
-        """Return the unique id of this switch."""
-        return self._icon
 
     @property
     def is_on(self):
@@ -393,7 +353,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self._triggered_manually = False
                 loop = asyncio.get_event_loop()
                 loop.create_task(self.async_turn_on())
-
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs):
@@ -422,9 +381,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     break
             return delay_required
 
-        # Initialise for stop programs service call
-        #self._state = False
-
         # start pump monitoring
         loop = asyncio.get_event_loop()
         for thispump in self._pumps:
@@ -434,9 +390,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         p_last_ran = dt_util.now()
 
         groups = {}
-#        _LOGGER.error('number of zones %s',len(self._zones))
         for zonecount in range(len(self._zones)):
-#            _LOGGER.error('zone number %s',zonecount)
             z_name = self._irrigationzones[zonecount].name()
             # determine if the zone has been manually run
             if self._run_zone:
@@ -506,11 +460,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self.hass.bus.async_fire("irrigation_event", event_data)
                     await asyncio.sleep(1)
             #wait for the zones to complete
-            base_icon = self.icon
             zns_running = True
             while zns_running:
                 zns_running = False
-                eco = False
                 for zonenumber in group:
                     attr = slugify(
                         "{}_{}".format(
@@ -524,13 +476,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     #continue running until all zones have completed
                     if self._irrigationzones[zonenumber-1].remaining_time() != 0:
                         zns_running = True
-                    if self._irrigationzones[zonenumber-1].state() == 'eco':
-                        eco = True
-                #modify the icon while a zone is waiting
-                if eco is True:
-                    self._icon = 'mdi:timer-sand'
-                else:
-                    self._icon = base_icon
                 setattr(self, "_state_attributes", self._attrs)
                 self.async_write_ha_state()
                 await asyncio.sleep(1)
@@ -546,9 +491,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 if not self._triggered_manually and self._state is True:
                     self._attrs[zonelastran] = p_last_ran
                     self._irrigationzones[zonenumber-1].set_last_ran(p_last_ran)
-                # reset the last ran time to 23 hours ago - for debug
-                if self._reset:
-                    self._attrs[zonelastran] = dt_util.now() - timedelta(hours=23)
                 # update the historical flow rate
                 if self._irrigationzones[zonenumber-1].flow_sensor():
                     attr = slugify(
@@ -577,7 +519,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._run_zone = None
         self._state = False
-        self._icon = base_icon
         self._triggered_manually = True
         self.async_write_ha_state()
 
