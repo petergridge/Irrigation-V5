@@ -89,6 +89,8 @@ ZONE_ATTR = [
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
 ]
 
+_LOGGER = logging.getLogger(__name__)
+
 @config_entries.HANDLERS.register(DOMAIN)
 
 class IrrigationFlowHandler(config_entries.ConfigFlow):
@@ -97,10 +99,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
     VERSION = 1
 
-    @property
-    def logger(self) -> logging.Logger:
-        """return logger"""
-        return logging.getLogger(__name__)
+#    @property
+#    def logger(self) -> logging.Logger:
+#        """return logger"""
+#        return logging.getLogger(__name__)
 
     def __init__(self):
         self._errors = {}
@@ -170,17 +172,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
     def __init__(self, config_entry):
         self.config_entry = config_entry
-        self.data = {}
+#        self.data = {}
         self._data = {}
         self._data["unique_id"] = config_entry.options.get("unique_id")
         self._name = self.config_entry.data.get(CONF_NAME)
         self.zoneselect = None
+        if self.config_entry.options == {}:
+            self.data = self.config_entry.data
+        else:
+            self.data = self.config_entry.options
 
     async def async_step_init(self, user_input=None):
         '''initial step'''
-        self._name = self.config_entry.data.get(CONF_NAME)
+        if self.config_entry.options == {}:
+            data = self.config_entry.data
+        else:
+            data = self.config_entry.options
 
-        if len(self.config_entry.data.get(ATTR_ZONES)) > 1:
+        if len(data.get(ATTR_ZONES)) > 1:
             return self.async_show_menu(
                 step_id="user",
                 menu_options=[
@@ -190,7 +199,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "add_zone",
                 ],
             )
-        # only one zone so don't show delte zone option
+        # only one zone so don't show delete zone option
         return self.async_show_menu(
             step_id="user",
             menu_options=["update_program", "update_zone", "add_zone"],
@@ -199,27 +208,21 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_update_program(self, user_input=None):
         """Invoked when a user initiates a flow via the user interface."""
         errors = {}
+        newdata = {}
         data_schema = {}
-        self._data = {}
-
         if user_input is not None:
             if not errors:
                 # build the new set of data, note conf_name is not in the update schema
                 # and zones are updated in another menu item
-                self._data.update({CONF_NAME: self.config_entry.data.get(CONF_NAME)})
-                self._data.update(user_input)
-                self._data.update({ATTR_ZONES: self.config_entry.data.get(ATTR_ZONES)})
+                newdata.update({CONF_NAME: self.data.get(CONF_NAME)})
+                newdata.update(user_input)
+                newdata.update({ATTR_ZONES: self.data.get(ATTR_ZONES)})
                 # Return the form of the next step.
-                return self.async_create_entry(title=self._name, data=self._data)
+                return self.async_create_entry(title=self._name, data=newdata)
 
         # build the program schema with original data
         for attr in PROGRAM_ATTR:
-            default = None
-            if self.config_entry.options == {}:
-                default = self.config_entry.data.get(attr[1])
-            else:
-                default = self.config_entry.options.get(attr[1])
-
+            default = self.data.get(attr[1])
             if default is not None:
                 if attr[0] is True:
                     data_schema[
@@ -247,28 +250,36 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_delete_zone(self, user_input=None):
         '''delete a zone'''
         errors = {}
-        self._data = self.config_entry.data
-        # build list of zones
         zones = []
-        for zone in self.config_entry.data.get(ATTR_ZONES):
-            zones.append(zone.get(ATTR_ZONE))
-        # define the display schema
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
 
         if user_input is not None:
-            if not errors:
-                # Input is valid, set data.
-                self.data = user_input
+            if user_input != {}:
                 # find the position of the zone in the zones.
-                zones = self._data[ATTR_ZONES]
+                zones = self.data[ATTR_ZONES]
                 zonenumber = 0
                 for zone in zones:
-                    if zone.get("zone") == user_input.get(ATTR_ZONE):
-                        break
                     zonenumber += 1
-                # delete the zone from the list of zones
-                self._data[ATTR_ZONES].pop(zonenumber)
-                return self.async_create_entry(title=self._name, data=self._data)
+                    if ('zone ' +  str(zonenumber) + ' ' +zone.get(ATTR_ZONE)) == user_input.get(ATTR_ZONE):
+                        # delete the zone from the list of zones
+                        self.data[ATTR_ZONES].pop(zonenumber-1)
+                        break
+                newdata = {}
+                newdata.update(self.data)
+                # a dodgy way to force the update
+                if newdata.get('xx') == 'x':
+                    newdata.update({'xx': 'y'})
+                else:
+                    newdata.update({'xx': 'x'})
+                return self.async_create_entry(title=self._name, data=newdata)
+
+        # build list of zones
+        zonenumber = 0
+        for zone in self.data.get(ATTR_ZONES):
+            zonenumber += 1
+            text = ('zone ' +  str(zonenumber) + ' ' +zone.get(ATTR_ZONE))
+            zones.append(text)
+        # define the display schema
+        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
 
         return self.async_show_form(
             step_id="delete_zone", data_schema=list_schema, errors=errors
@@ -277,19 +288,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_update_zone(self, user_input=None):
         '''update zone'''
         errors = {}
-        self.data = {}
         zones = []
-        for zone in self.config_entry.data.get(ATTR_ZONES):
-            zones.append(zone.get(ATTR_ZONE))
 
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
+        if self.config_entry.options == {}:
+            data = self.config_entry.data
+        else:
+            data = self.config_entry.options
 
         if user_input is not None:
-            if not errors:
+            if user_input != {}:
                 # Input is valid, set data.
                 self.zoneselect = user_input
                 # Return the form of the next step.
                 return await self.async_step_update_zone_data()
+
+        for zone in data.get(ATTR_ZONES):
+            zones.append(zone.get(ATTR_ZONE))
+
+        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
 
         return self.async_show_form(
             step_id="update_zone", data_schema=list_schema, errors=errors
@@ -298,17 +314,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_update_zone_data(self, user_input=None):
         '''update zone'''
         errors = {}
-        self._data = self.config_entry.data
         data_schema = {}
 
         # get the zone position
-        zones = self._data.get(ATTR_ZONES)
+        zones = self.data.get(ATTR_ZONES)
         zone_pos = 0
         for zone in zones:
             if zone.get("zone") == self.zoneselect.get(ATTR_ZONE):
                 this_zone = zone
                 break
             zone_pos += 1
+
+        if user_input is not None:
+            if not errors:
+                # Input is valid, set data.
+                zone_data = {}
+                for attr in user_input:
+                    zone_data[attr] = user_input[attr]
+                # update with the new data into the list of zones
+                self.data.get(ATTR_ZONES)[zone_pos] = zone_data
+                # a dodgy way to force the update
+                newdata = {}
+                newdata.update(self.data)
+                if newdata.get('xx') == 'x':
+                    newdata.update({'xx': 'y'})
+                else:
+                    newdata.update({'xx': 'x'})
+                # User is done, create the config entry.
+                return self.async_create_entry(title=self._name, data=newdata)
 
         # build a dict including original values
         for attr in ZONE_ATTR:
@@ -331,17 +364,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 data_schema[vol.Optional(attr[1])] = attr[2]
 
-        if user_input is not None:
-            if not errors:
-                # Input is valid, set data.
-                zone_data = {}
-                for attr in user_input:
-                    zone_data[attr] = user_input[attr]
-                # update with the new data into the list of zones
-                zones[zone_pos] = zone_data
-                # User is done, create the config entry.
-                return self.async_create_entry(title=self._name, data=self._data)
-
         return self.async_show_form(
             step_id="update_zone_data",
             data_schema=vol.Schema(data_schema),
@@ -351,25 +373,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_add_zone(self, user_input=None):
         '''add zone'''
         errors = {}
-        self._data = self._data = self.config_entry.data
         if user_input is not None:
-
             if not errors:
                 # Input is valid, set data.
                 zone_data = {}
                 for attr in user_input:
                     if attr != "add_another":
                         zone_data[attr] = user_input[attr]
-
-                self._data[ATTR_ZONES].append(zone_data)
-
+                self.data[ATTR_ZONES].append(zone_data)
                 # If user ticked the box show this form again
                 # to add an additional zone.
                 if user_input.get("add_another", False):
                     return await self.async_step_add_zone()
-
                 # User is done adding, create the config entry.
-                return self.async_create_entry(title=self._name, data=self._data)
+                newdata = {}
+                newdata.update(self.data)
+                # a dodgy way to force the update
+                if newdata.get('xx') == 'x':
+                    newdata.update({'xx': 'y'})
+                else:
+                    newdata.update({'xx': 'x'})
+                return self.async_create_entry(title=self._name, data=newdata)
+                #return await self.async_step_update_program(newdata)
 
         return self.async_show_form(
             step_id="add_zone", data_schema=ZONE_SCHEMA, errors=errors

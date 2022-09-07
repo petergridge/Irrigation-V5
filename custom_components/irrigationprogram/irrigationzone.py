@@ -274,7 +274,8 @@ class IrrigationZone:
             try:
                 numeric_freq = float(int(self.run_freq_value()))
             except ValueError:
-                string_freq = self.run_freq_value()   # check if this day matches frequency
+                string_freq = self.run_freq_value()
+            # check if this day matches frequency
         if numeric_freq is not None:
             if numeric_freq <= calc_freq:
                 response = True
