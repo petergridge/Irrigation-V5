@@ -125,7 +125,6 @@ async def async_setup_entry(
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the irrigation switches from yaml required until YAML deprecated"""
 
-
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
     _attr_has_entity_name = True
@@ -135,7 +134,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, device_id, hass=hass
         )
-
         """Initialize a Irrigation program."""
         self.hass = hass
         self._config = config
@@ -171,13 +169,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         template = cv.template(template)
         template.hass = hass
         self._template = template
-
         @callback
         def _update_state(self, result):
             super()._update_state(result)
 
     async def async_added_to_hass(self):
-
         state = await self.async_get_last_state()
         self._last_run = None
         self._attrs = {}
@@ -193,7 +189,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._attrs[ATTR_SHOW_CONFIG] = self._show_config
         if self._inter_zone_delay is not None:
             self._attrs[ATTR_DELAY] = self._inter_zone_delay
-
         # zone loop to set the attributes
         zonecount = 0
         pumps = {}

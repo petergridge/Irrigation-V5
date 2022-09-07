@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # store an object for your platforms to access
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME:entry.data.get(ATTR_NAME)}
     hass.config_entries.async_setup_platforms(entry, (Platform.SWITCH,))
+
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
     return True
 

@@ -7,12 +7,9 @@ from typing import Any, Optional #, cast
 import uuid
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import (
-    CONF_NAME
-)
+from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv, selector as sel
-
 from .const import (
     ATTR_DELAY,
     ATTR_ENABLE_ZONE,
@@ -68,10 +65,9 @@ ZONE_SCHEMA = vol.Schema(
 )
 
 PROGRAM_ATTR = [
-#    [False, CONF_FRIENDLY_NAME, str],
+    [True, ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
     [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "sensor"})],
-    [False, ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_SHOW_CONFIG, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_DELAY, sel.EntitySelector({"domain": "input_number"})],
@@ -80,15 +76,15 @@ PROGRAM_ATTR = [
 # Required,attribute,type
 ZONE_ATTR = [
     [True, ATTR_ZONE, sel.EntitySelector({"domain": "switch"})],
+    [True, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
+    [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
+    [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_PUMP, sel.EntitySelector({"domain": "switch"})],
     [False, ATTR_FLOW_SENSOR, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_WATER_ADJUST, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
     [False, ATTR_RAIN_SENSOR, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_ZONE_GROUP, sel.EntitySelector({"domain": "input_text"})],
-    [True, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
-    [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
-    [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
 ]
@@ -174,11 +170,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
     def __init__(self, config_entry):
         self.config_entry = config_entry
+        self.data = {}
         self._data = {}
         self._data["unique_id"] = config_entry.options.get("unique_id")
         self._name = self.config_entry.data.get(CONF_NAME)
         self.zoneselect = None
-        self.data ={}
 
     async def async_step_init(self, user_input=None):
         '''initial step'''
@@ -206,27 +202,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         data_schema = {}
         self._data = {}
 
-        # build the program schema with original data
-        for attr in PROGRAM_ATTR:
-            default = self.config_entry.options.get(attr[1],self.config_entry.data.get(attr[1]))
-            if default is not None:
-                if attr[0] is True:
-                    data_schema[
-                        vol.Required(
-                            attr[1],
-                            default=default,
-                        )
-                    ] = attr[2]
-                else:
-                    data_schema[
-                        vol.Optional(
-                            attr[1],
-                            default=default,
-                        )
-                    ] = attr[2]
-            else:
-                data_schema[vol.Optional(attr[1])] = attr[2]
-
         if user_input is not None:
             if not errors:
                 # build the new set of data, note conf_name is not in the update schema
@@ -236,6 +211,32 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 self._data.update({ATTR_ZONES: self.config_entry.data.get(ATTR_ZONES)})
                 # Return the form of the next step.
                 return self.async_create_entry(title=self._name, data=self._data)
+
+        # build the program schema with original data
+        for attr in PROGRAM_ATTR:
+            default = None
+            if self.config_entry.options == {}:
+                default = self.config_entry.data.get(attr[1])
+            else:
+                default = self.config_entry.options.get(attr[1])
+
+            if default is not None:
+                if attr[0] is True:
+                    data_schema[
+                        vol.Required(
+                            attr[1],
+                            description={"suggested_value": default}
+                        )
+                    ] = attr[2]
+                else:
+                    data_schema[
+                        vol.Optional(
+                            attr[1],
+                            description={"suggested_value": default}
+                        )
+                    ] = attr[2]
+            else:
+                data_schema[vol.Optional(attr[1])] = attr[2]
 
         return self.async_show_form(
             step_id="update_program",
@@ -317,14 +318,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     data_schema[
                         vol.Required(
                             attr[1],
-                            default=default,
+                            description={"suggested_value": default}
                         )
                     ] = attr[2]
                 else:
                     data_schema[
                         vol.Optional(
                             attr[1],
-                            default=default,
+                            description={"suggested_value": default}
                         )
                     ] = attr[2]
             else:
