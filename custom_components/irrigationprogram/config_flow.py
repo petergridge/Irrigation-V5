@@ -105,14 +105,32 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         self._data["unique_id"] = str(uuid.uuid4())
         self.data = {}
 
-    #        self._name = self.config_entry.data.get(CONF_NAME)
     async def async_step_import(self, user_input: dict[str, Any]):
         """Handle import."""
+
+        #validate the imported data
+        #loop through the user_input and validate that each object
+        for item, value in user_input.items():
+            error = False
+            if item != 'name':
+                #is it a valid object?
+                if item == 'zones':
+                    for zattr in value:
+                        for zitem, zvalue in zattr:
+                            if self.hass.states.async_available(zvalue):
+                                _LOGGER.error('Config item %s:%s is not a valid entry',zitem,zvalue)
+                                error = True
+                else:
+                    if self.hass.states.async_available(value):
+                        _LOGGER.error('Config item %s:%s is not a valid entry',item,value)
+                        error = True
+        if error is True:
+            _LOGGER.error('Only irrigation V4 configuration can be imported')
+            return self.async_abort(reason="import_error")
 
         return self.async_create_entry(
             title=user_input.get(CONF_NAME), data=user_input
         )
-#        return await self.async_step_user(user_input)
 
     async def async_step_user(
         self, user_input: Optional[dict[str, Any]] = None

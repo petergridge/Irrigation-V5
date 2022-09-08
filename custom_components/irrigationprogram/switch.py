@@ -65,10 +65,10 @@ SWITCH_SCHEMA = vol.All(
             vol.Optional(ATTR_MONITOR_CONTROLLER): cv.entity_domain(
                 ["binary_sensor", "input_boolean"]
             ),
-            vol.Required(ATTR_START): cv.string,
-            vol.Optional(ATTR_IRRIGATION_ON): cv.string,
-            vol.Optional(ATTR_SHOW_CONFIG): cv.string,
-            vol.Optional(ATTR_DELAY): cv.string,
+            vol.Required(ATTR_START): cv.entity_domain("input_datetime"),
+            vol.Optional(ATTR_IRRIGATION_ON): cv.entity_domain("input_boolean"),
+            vol.Optional(ATTR_SHOW_CONFIG): cv.entity_domain("input_boolean"),
+            vol.Optional(ATTR_DELAY): cv.entity_domain("input_number"),
             vol.Required(ATTR_ZONES): [
                 {
                     vol.Required(ATTR_ZONE): cv.entity_domain(CONST_SWITCH),
@@ -82,7 +82,7 @@ SWITCH_SCHEMA = vol.All(
                     ),
                     vol.Optional(ATTR_RUN_FREQ): cv.entity_domain("input_select"),
                     vol.Optional(ATTR_RAIN_SENSOR): cv.entity_domain("binary_sensor"),
-                    vol.Optional(ATTR_ZONE_GROUP): cv.string,
+                    vol.Optional(ATTR_ZONE_GROUP): cv.entity_domain("input_text"),
                     vol.Required(ATTR_WATER): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_WAIT): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_REPEAT): cv.entity_domain("input_number"),

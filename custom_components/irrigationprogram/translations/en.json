@@ -40,7 +40,7 @@
       "default": "Restart Home Assistant for this entity to be applied"
     },
 		"error": {
-				"some_error": "some error message"
+				"import_error": "Error importing YAML"
 		}
 	},
 
