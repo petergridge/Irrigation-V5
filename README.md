@@ -29,6 +29,9 @@ Will be available on HACS soon but you can add it as a custom repository.
 ### Config Flow
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
 * Modify programs and zones, add new zones, delete zones
+* V4 yaml configuration will be imported, run check configuration first and correct any changes implemented to support this release first
+* Imports will occur only once, if you delete the config from the UI it will not reimport
+* YAML support will be removed in a future release
 
 ### Pre-requisite
 * The time_date integration is required
