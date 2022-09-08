@@ -37,7 +37,7 @@
 			}
 		},
     "create_entry": {
-      "default": "Restart Home Assistant for this entity to be applied"
+      "default": ""
     },
 		"error": {
 				"import_error": "Error importing YAML"

@@ -73,24 +73,25 @@ async def async_setup(hass, config):
     hass.data.setdefault(DOMAIN, {})
     platforms = config.get(CONST_SWITCH)
     # build list of yaml definitions
-    for domain in platforms:
-        if domain.get("platform") == DOMAIN:
-            irrig_config = domain.get("switches")
-            break
-    # process each yaml irrigation program
-    for item in irrig_config.items():
-        irrig_input = {}
-        irrig_input[CONF_NAME]=item[0]
-        irrig_input.update(item[1])
-        #check if this config has already been imported
-        if _async_find_matching_config_entry(hass,irrig_input[CONF_NAME]) is False:
-            hass.async_create_task(
-                hass.config_entries.flow.async_init(
-                    DOMAIN,
-                    context={"source": config_entries.SOURCE_IMPORT},
-                    data=irrig_input,
+    if platforms:
+        for domain in platforms:
+            if domain.get("platform") == DOMAIN:
+                irrig_config = domain.get("switches")
+                break
+        # process each yaml irrigation program
+        for item in irrig_config.items():
+            irrig_input = {}
+            irrig_input[CONF_NAME]=item[0]
+            irrig_input.update(item[1])
+            #check if this config has already been imported
+            if _async_find_matching_config_entry(hass,irrig_input[CONF_NAME]) is False:
+                hass.async_create_task(
+                    hass.config_entries.flow.async_init(
+                        DOMAIN,
+                        context={"source": config_entries.SOURCE_IMPORT},
+                        data=irrig_input,
+                    )
                 )
-            )
     return True
 
 @callback
