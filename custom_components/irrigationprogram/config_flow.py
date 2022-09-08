@@ -99,11 +99,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
     VERSION = 1
 
-#    @property
-#    def logger(self) -> logging.Logger:
-#        """return logger"""
-#        return logging.getLogger(__name__)
-
     def __init__(self):
         self._errors = {}
         self._data = {}
@@ -172,7 +167,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
     def __init__(self, config_entry):
         self.config_entry = config_entry
-#        self.data = {}
         self._data = {}
         self._data["unique_id"] = config_entry.options.get("unique_id")
         self._name = self.config_entry.data.get(CONF_NAME)
@@ -259,7 +253,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 zonenumber = 0
                 for zone in zones:
                     zonenumber += 1
-                    if ('zone ' +  str(zonenumber) + ' ' +zone.get(ATTR_ZONE)) == user_input.get(ATTR_ZONE):
+                    friendlyname = self.hass.states.get(zone.get(ATTR_ZONE)).attributes.get('friendly_name')
+                    if ('zone ' +  str(zonenumber) + ':' +friendlyname) == user_input.get(ATTR_ZONE):
                         # delete the zone from the list of zones
                         self.data[ATTR_ZONES].pop(zonenumber-1)
                         break
@@ -275,8 +270,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # build list of zones
         zonenumber = 0
         for zone in self.data.get(ATTR_ZONES):
+            friendlyname = self.hass.states.get(zone.get(ATTR_ZONE)).attributes.get('friendly_name')
             zonenumber += 1
-            text = ('zone ' +  str(zonenumber) + ' ' +zone.get(ATTR_ZONE))
+            text = ('zone ' +  str(zonenumber) + ':' +friendlyname)
             zones.append(text)
         # define the display schema
         list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
@@ -290,11 +286,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         zones = []
 
-        if self.config_entry.options == {}:
-            data = self.config_entry.data
-        else:
-            data = self.config_entry.options
-
         if user_input is not None:
             if user_input != {}:
                 # Input is valid, set data.
@@ -302,8 +293,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 # Return the form of the next step.
                 return await self.async_step_update_zone_data()
 
-        for zone in data.get(ATTR_ZONES):
-            zones.append(zone.get(ATTR_ZONE))
+        zonenumber = 0
+        for zone in self.data.get(ATTR_ZONES):
+            friendlyname = self.hass.states.get(zone.get(ATTR_ZONE)).attributes.get('friendly_name')
+            zonenumber += 1
+            text = ('zone ' +  str(zonenumber) + ':' +friendlyname)
+            zones.append(text)
 
         list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
 
@@ -320,7 +315,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         zones = self.data.get(ATTR_ZONES)
         zone_pos = 0
         for zone in zones:
-            if zone.get("zone") == self.zoneselect.get(ATTR_ZONE):
+            friendlyname = self.hass.states.get(zone.get(ATTR_ZONE)).attributes.get('friendly_name')
+            if friendlyname == self.zoneselect.get(ATTR_ZONE).split(':',1)[1]:
                 this_zone = zone
                 break
             zone_pos += 1
