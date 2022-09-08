@@ -58,27 +58,10 @@ The rain sensor is defined in each zone. You can:
 If you configure this oprion a helper to ignore the rain sensor is automatically created
 
 ### Time or Volume based watering
-You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes. The helper will default the UOM to 'L' for metric and 'Gal' for imperial.
-
-This example is for a zone that has been defined with a flow sensor
-```yaml
-zones:
-  - zone: switch.zone_1
-    name: Lawn
-    water: Water
-    flow_sensor: sensor.irrigation_flow_sensor
-```
+You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. The helper will be created automatically to support this. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
-
-```
-zones:
-  - zone: switch.zone_1
-    name: Lawn
-    water: Water
-    zone_group: Zone Group
-```
 
 ### Monitor Controller feature
 If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
