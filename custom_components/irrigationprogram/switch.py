@@ -69,6 +69,8 @@ SWITCH_SCHEMA = vol.All(
             vol.Optional(ATTR_IRRIGATION_ON): cv.entity_domain("input_boolean"),
             vol.Optional(ATTR_SHOW_CONFIG): cv.entity_domain("input_boolean"),
             vol.Optional(ATTR_DELAY): cv.entity_domain("input_number"),
+            vol.Optional('icon'): cv.icon,
+            vol.Optional('name'): cv.string,
             vol.Required(ATTR_ZONES): [
                 {
                     vol.Required(ATTR_ZONE): cv.entity_domain(CONST_SWITCH),
@@ -88,6 +90,7 @@ SWITCH_SCHEMA = vol.All(
                     vol.Optional(ATTR_REPEAT): cv.entity_domain("input_number"),
                     vol.Optional(ATTR_IGNORE_RAIN_SENSOR): cv.entity_domain("input_boolean"),
                     vol.Optional(ATTR_ENABLE_ZONE): cv.entity_domain("input_boolean"),
+                    vol.Optional('icon'): cv.icon,
                 }
             ],
         }
@@ -281,7 +284,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         @callback
         def template_sensor_startup(event):
-            #Triggered when HASS has fully started
+            '''Triggered when HASS has fully started'''
 
             # Validate the referenced objects now that HASS has started
             if self.hass.states.async_available("sensor.time"):
