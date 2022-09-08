@@ -1,13 +1,8 @@
-# Irrigation Component V5 <img src="https://github.com/petergridge/irrigation_component_v4/blob/main/icon.png" alt="drawing" width="75"/>
+# Irrigation Component V5.1 <img src="https://github.com/petergridge/irrigation_component_v4/blob/main/icon.png" alt="drawing" width="75"/>
 
-This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration load is greatly reduced. 
+This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration is now available through the settings Devices & Services. 
 
-Helpers are now automatically created when the display name is defined. 
-* Input_text, input_number and input_boolean helpers are automatically created. 
-* Providing the display text will trigger the creation of the helpers. 
-* Where the helpers are mandatory or provide core funtionality they will be created with default display text. 
-
-The **custom card https://github.com/petergridge/irrigation_card** will render the program options specified in the configuration.
+The **custom card https://github.com/petergridge/irrigation_card** V5.1 will render the program options specified in the configuration.
 
 The driver for this project is to provide an easy to use interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
 
@@ -28,26 +23,12 @@ Only one program can run at a time to prevent multiple solenoids being activated
 ### HACS installation
 Will be available on HACS soon but you can add it as a custom repository.
 
-### To create a working sample
-* Copy the custom_components/irrigationprogram folder to the ‘config/custom components/’ directory
-* Restart Home Assistant
-* Copy the 'irrigationtest.yaml' file to the packages directory or into configuration.yaml
-* Restart Home Assistant
-* Install irrigation_custom_card from this repository **https://github.com/petergridge/irrigation_card**
-* Follow the custom card instructions to add a card for each of: switch.morning, switch.afternoon and switch.night
-
 ### Important
 * Make sure that all of the objects you reference i.e. switch etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
 
-### Generated helpers
-* The component now generates helpers for you to limit the configuration required. Simply allocated the friendly name  for a funtion you want to use and it will generate the helper and enable the related funtionality
-* Implementing this way supports presenting the dashboard in your language
-* The naming convention for generated helpers is: 'program_name'_'zone_name'_feature
-
-### *Under Construction* Config Flow
+### Config Flow
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
 * Modify programs and zones, add new zones, delete zones
-* Unfortunately a restart is still required when adding or modifying the programs.
 
 ### Pre-requisite
 * The time_date integration is required
@@ -200,117 +181,38 @@ mode: single
 
 ## CONFIGURATION
 
-A self contained working sample configuration is provided in the packages directory of this repository.
-
-### Example configuration.yaml entry
-This is a complete set of configuration to anable all features.
-```yaml
-switch:
-      - platform: irrigationprogram
-        switches: 
-          afternoon:
-            irrigation_on: Enable irrigation
-            friendly_name: Afternoon Program
-            start_time: Start time
-            show_config: Show configuration
-            run_freq: input_select.irrigation_freq
-            inter_zone_delay: Inter zone delay
-            controller_monitor: binary_sensor.controller_active
-            zones:
-              - zone: switch.zone_1
-                pump: switch.pump
-                zone_group: Zone group
-                water: Water
-                wait: Wait
-                repeat: Repeat
-                rain_sensor: binary_sensor.raining
-                enable_zone: Enable zone
-                water_adjustment: sensor.irrigation_adjust_water
-                flow_sensor: sensor.irrigation_flow_sensor
-                run_freq: input_select.afternoon_zone1_frequency
-```
-This is the minimal configuration to create a fuctional program that runs every day.
-```
-      - platform: irrigationprogram
-        switches: 
-          morning:
-            zones:
-              - zone: switch.zone_1
-```
-## MANUALLY CREATED INPUTS
-You will need to created the following entities if you want to use the features.
-|Attribute       |Valid types   |Description|
-|:---            |:---   |:---       |
-|zone|switch|This is the switch that represents the solenoid to be triggered. This is the only mandatory manually created element|
-|[run_freq](#run-days-and-run-frequency)|input_select|Indicate how often to run. If not provided will run every day|
-|[controller_monitor](#monitor-controller-feature)|binary_sensor|If your controller can provide a sensor to detect if the irrigation controller is online. Schedule will not execute if offline|
-|[water_adjustment](#water-adjustment-feature)|sensor, input_number|Provide this if you want to affect the amount of watering without changing the base timing based on external information. A multiplication factor applied to decrease or increase the watering time|
-|[flow_sensor](#time-or-volume-based-watering)|sensor|Provide this sensoe if you have a flow meter and want to water based on volume not time|
-|[rain_sensor](#rain-sensor-feature)|binary_sensor|True or On will prevent the irrigation starting|
-
-## AUTOMATICALLY CREATED INPUTS
-These inputs will be created for every instance. If no friendly name is provided a default value will be used.
-The naming convention for inputs is:
-* program_entity for program level inputs. e.g. afternoon_start_time
-* program_zone_entity for zone level inputs e.g. afternoon_lawn_enable_zone
-
-|Attribute       |Description|
-|:---            |:---       |
-|start_time|If the friendly name is not defined the defaul value will be 'Start time'|
-|show_config|If the friendly name is not defined the defaul value will be 'Show configuration'|
-|irrigation_on|If the friendly name is not defined the defaul value will be 'Enable irrigation' |
-|water|If the friendly name is not defined the defaul value will be 'Water'|
-|enable_zone|If the friendly name is not defined the defaul value will be 'Enable zone'|
-|ignore_rain_sensor|This item will created if rain sensor is defined. If the friendly name is not defined the defaul value will be 'Ignore rain sensor'|
-
-## INPUTS CREATED ONLY WHEN FUNCTIONALITY IS NEEDED
-These inputs will be created only if a friendly name is defined. Create these if you need to implent the funtionality they provide.
-|Attribute       |Description|
-|:---            |:---       |
-|inter_zone_delay|Display name for the auto generated helper, for example 'Inter zone Delay' |
-|name|This is the name displayed for the zone, if not provided the friendly name from the associated switch will be used|
-|[wait](#eco-feature)|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
-|[repeat](#eco-feature)|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
-|[zone_group](#zone-group)|Display name for the auto generated helper, default is Zone Group|
-
 ## CONFIGURATION VARIABLES
 The definition of the YAML configuration:
 |Attribute       |Type   |Mandatory|Description|
 |:---            |:---   |:---     |:---       |
-|&nbsp;&nbsp;&nbsp;&nbsp;friendly_name|string|Optional|Display name for the irrigationprogram switch|
-|&nbsp;&nbsp;&nbsp;&nbsp;start_time|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Start time'|
-|&nbsp;&nbsp;&nbsp;&nbsp;show_config|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Show configuration' |
+|&nbsp;&nbsp;&nbsp;&nbsp;start_time|input_datetime |Required| entity to set the start time of the program|
+|&nbsp;&nbsp;&nbsp;&nbsp;show_config|input_boolean |Optional| 'Show configuration' used to show/hide the configuration in the companion card |
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
-|&nbsp;&nbsp;&nbsp;&nbsp;irrigation_on|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Enable irrigation'|
-|&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|string |Optional|Display name for the auto generated helper, for example 'Inter zone Delay' |
-|&nbsp;&nbsp;&nbsp;&nbsp;reset|boolean |Optional|Reset/uninstall the auto-created helpers, last ran attribute reset|
-|&nbsp;&nbsp;&nbsp;&nbsp;zones|list|Required|List of zones to run|
+|&nbsp;&nbsp;&nbsp;&nbsp;irrigation_on|input_boolean |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Enable irrigation'|
+|&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|input_number |Optional|Display name for the auto generated helper, for example 'Inter zone Delay' |
+|&nbsp;&nbsp;&nbsp;&nbsp;zones|||data for setting up a zone|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name|string|Optional|This is the name displayed for the zone|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Water' |
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water_min|integer|Optional|min value of the water input_number slider default is 1|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water_max|integer|Optional|max value of the water input_number slider default is 30|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water_step|integer|Optional|step value of the water input_number slider default is 1|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water|input_number |Required|The time to run or volume to supply for this zone |
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#water-adjustment-feature)|sensor, input_number|Optional|A factor,applied to the watering time to decrease or increase the watering time|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|string |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|string |Optional|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor  |Optional|True or On will prevent the irrigation starting|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|string |Optional|Display name for the auto generated helper, this item will created if rain sensor is defined with a display value of 'Ignore rain sensor'|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|string |Optional|Display name for the auto generated helper, default is Zone Group|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the Program level value|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|string |Optional|Display name for the auto generated helper, this item will created if not defined with a display value of 'Enable zone'. Disableing a zone, prevents it from running in either manual or scheduled executions|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions|
 
 ## SERVICES
 ```yaml
 irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
-
 ## REVISION HISTORY
-## Under Construction 5.1.0
+## 5.1.0
 * Config Flow - configure via UI
+* REMOVED - generated helpers as they are incomatible with config flow
 ## 5.0.10
 * Generated helpers based on entity name not friendly name
 * Correct pump issue
