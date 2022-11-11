@@ -67,7 +67,7 @@ ZONE_SCHEMA = vol.Schema(
 PROGRAM_ATTR = [
     [True, ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
-    [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "sensor"})],
+    [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "binary_sensor"})],
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_SHOW_CONFIG, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_DELAY, sel.EntitySelector({"domain": "input_number"})],
