@@ -16,5 +16,19 @@ run_zone:
       description: Zone to run
       required: true
       selector:
-          text:
-            type: text
+          entity:
+            domain: switch
+#      selector:
+#          text:
+#            type: text
+
+reset_runtime:
+  description: reset the runtime back to none for the program supports testing.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram

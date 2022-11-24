@@ -125,6 +125,14 @@ async def async_setup_entry(
         "entity_run_zone",
     )
 
+    platform.async_register_entity_service(
+        "reset_runtime",
+        {
+
+        },
+        "entity_reset_runtime",
+    )
+
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the irrigation switches from yaml required until YAML deprecated"""
 
@@ -209,9 +217,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._attrs[attr] = z_name
             # set the last ran time
             attr = slugify("{}_{}".format(z_name, ATTR_LAST_RAN))
-            if state is None:
-                z_last_ran = dt_util.now() - timedelta(days=10)
-            else:
+            z_last_ran = None
+            if state is not None:
                 z_last_ran = state.attributes.get(attr,dt_util.now() - timedelta(days=10))
             self._attrs[attr] = z_last_ran
             attr = slugify("{}_{}".format(z_name, ATTR_REMAINING))
@@ -323,6 +330,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._triggered_manually = True
         loop = asyncio.get_event_loop()
         loop.create_task(self.async_turn_on())
+
+    async def entity_reset_runtime(self) -> None:
+        '''Run a specific zone is to run'''
+        for zonecount in range(len(self._zones)):
+            self._irrigationzones[zonecount].set_last_ran(None)
+        await asyncio.sleep(1)
+
 
     @property
     def name(self):
@@ -484,8 +498,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 setattr(self, "_state_attributes", self._attrs)
                 self.async_write_ha_state()
                 await asyncio.sleep(1)
-            #set last run datetime for each zone
-            for zonenumber in group:
                 #Update the zones last ran time
                 zonelastran = slugify(
                     "{}_{}".format(

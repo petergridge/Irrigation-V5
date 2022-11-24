@@ -1,7 +1,7 @@
 '''Irrigation zone class'''
 
 import asyncio
-from datetime import timedelta
+#from datetime import timedelta
 import logging
 import math
 from homeassistant.const import (
@@ -53,11 +53,7 @@ class IrrigationZone:
         self._repeat = repeat
         self._zone_group = zone_group
 
-        if last_ran is None:
-            #default to 10 days ago for new zones
-            self._last_ran = dt_util.now() - timedelta(days=10)
-        else:
-            self._last_ran = last_ran
+        self._last_ran = last_ran
 
         self._run_time = 0
         self._default_run_time = 0
@@ -161,7 +157,7 @@ class IrrigationZone:
 
     def water_value(self):
         '''water attibute value'''
-        return int(float(self.hass.states.get(self._water).state))
+        return int(float(self.hass.states.get(self.water()).state))
 
     def wait(self):
         '''waith entity attribute'''
@@ -210,7 +206,7 @@ class IrrigationZone:
     def enable_zone_value(self):
         '''enable zone entity value'''
         zone_value = 'on'
-        if self._zone_group is not None:
+        if self._enable_zone is not None:
             zone_value = self.hass.states.is_state(self._enable_zone, "on")
         return zone_value
 
@@ -257,16 +253,20 @@ class IrrigationZone:
     def should_run(self):
         '''determine if the zone should run'''
         #adjust by 10 minutes to allow for any variances
-        calc_freq = float(
-            (
+        if self._last_ran is None:
+            calc_freq = 10
+        else:
+            calc_freq = float(
                 (
-                    dt_util.as_timestamp(dt_util.now())
-                    - dt_util.as_timestamp(self._last_ran)
+                    (
+                        dt_util.as_timestamp(dt_util.now())
+                        - dt_util.as_timestamp(self._last_ran)
+                    )
+                    + 600
                 )
-                + 600
+                / 86400
             )
-            / 86400
-        )
+
         numeric_freq = None
         string_freq = None
         response = True
@@ -371,40 +371,40 @@ class IrrigationZone:
 
     def set_last_ran(self, last_ran):
         '''update the last ran attribute'''
-        if last_ran is None:
-            #default to 10 days ago for new zones
-            self._last_ran = dt_util.now() - timedelta(days=10)
-        else:
-            self._last_ran = last_ran
+#        if last_ran is None:
+#            #default to 10 days ago for new zones
+#            self._last_ran = dt_util.now() - timedelta(days=10)
+#        else:
+        self._last_ran = last_ran
 
     def validate(self, **kwargs):
         '''validate inputs'''
         valid = True
         if self._switch is not None and self.hass.states.async_available(self._switch):
-            _LOGGER.error("%s not found", self._switch)
+            _LOGGER.error("%s not found switch", self._switch)
             valid = False
         if self._pump is not None and self.hass.states.async_available(self._pump):
-            _LOGGER.error("%s not found", self._pump)
+            _LOGGER.error("%s not found pump", self._pump)
             valid = False
         if self._run_freq is not None and self.hass.states.async_available(
             self._run_freq
         ):
-            _LOGGER.error("%s not found", self._run_freq)
+            _LOGGER.error("%s not found run freq" , self._run_freq)
             valid = False
         if self._rain_sensor is not None and self.hass.states.async_available(
             self._rain_sensor
         ):
-            _LOGGER.error("%s not found", self._rain_sensor)
+            _LOGGER.error("%s not found rain sensor", self._rain_sensor)
             valid = False
         if self._flow_sensor is not None and self.hass.states.async_available(
             self._flow_sensor
         ):
-            _LOGGER.error("%s not found", self._flow_sensor)
+            _LOGGER.error("%s not found flow sensor", self._flow_sensor)
             valid = False
         if self._water_adjust is not None and self.hass.states.async_available(
             self._water_adjust
         ):
-            _LOGGER.error("%s not found", self._water_adjust)
+            _LOGGER.error("%s not found water adjust", self._water_adjust)
             valid = False
 
         return valid
