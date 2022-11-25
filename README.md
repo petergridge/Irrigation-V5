@@ -110,6 +110,7 @@ input_select:
   irrigation_freq:
     name: Zone1 Frequency
     options:
+      - "Off"
       - "1"
       - "2"
       - "3"
@@ -188,7 +189,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the Program level value|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result|
 
 ## SERVICES
 ```yaml
@@ -196,6 +197,11 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
+## 5.1.13
+* correct config flow handling on a new install
+* correct initialisation of las run time on new install
+* correct recording of run time against disabled zones
+* confirm non numeric/day values in the frequency helper will diable the zone, e.g. 'Off'
 ## 5.1.0
 * Config Flow - configure via UI
 * REMOVED - generated helpers as they are incomatible with config flow
