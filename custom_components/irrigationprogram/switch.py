@@ -498,6 +498,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 setattr(self, "_state_attributes", self._attrs)
                 self.async_write_ha_state()
                 await asyncio.sleep(1)
+            #set last run datetime for each zone
+            for zonenumber in group:
                 #Update the zones last ran time
                 zonelastran = slugify(
                     "{}_{}".format(
