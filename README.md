@@ -199,7 +199,7 @@ irrigationprogram.stop_programs:
 ## REVISION HISTORY
 ## 5.1.13
 * correct config flow handling on a new install
-* correct initialisation of las run time on new install
+* correct initialisation of last run time on new install
 * correct recording of run time against disabled zones
 * confirm non numeric/day values in the frequency helper will diable the zone, e.g. 'Off'
 ## 5.1.0
