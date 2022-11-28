@@ -275,13 +275,16 @@ class IrrigationZone:
                 numeric_freq = float(int(self.run_freq_value()))
             except ValueError:
                 string_freq = self.run_freq_value()
-            # check if this day matches frequency
+        # check if this day matches frequency
         if numeric_freq is not None:
             if numeric_freq <= calc_freq:
                 response = True
             else:
                 response = False
-        if string_freq is not None:
+        if string_freq is not None: #Mon - Sun
+            if not isinstance(string_freq,list):
+                string_freq = string_freq.replace(" ","").split(",")
+            string_freq = [x.capitalize() for x in string_freq]
             if dt_util.now().strftime("%a") not in string_freq:
                 response = False
             else:
@@ -371,10 +374,6 @@ class IrrigationZone:
 
     def set_last_ran(self, last_ran):
         '''update the last ran attribute'''
-#        if last_ran is None:
-#            #default to 10 days ago for new zones
-#            self._last_ran = dt_util.now() - timedelta(days=10)
-#        else:
         self._last_ran = last_ran
 
     def validate(self, **kwargs):

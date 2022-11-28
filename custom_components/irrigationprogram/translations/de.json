@@ -105,7 +105,7 @@
  					"wait": "Entity für Verzögerung zwischen zwei Zonen",
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
-					"enable_zone": "Zonenschalter"
+					"enable_zone": "Zonenschalter",
 				}
 			},
 			"delete_zone": {
