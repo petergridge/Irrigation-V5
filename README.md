@@ -190,8 +190,8 @@ irrigationprogram.stop_programs:
 * correct config flow handling on a new install
 * correct initialisation of last run time on new install
 * correct recording of run time against disabled zones
-* confirm non numeric/day values in the frequency helper will diable the zone, e.g. 'Off'
-* allow comma seperated text for weekday list, not case sensitive
+* confirm non numeric/day values in the frequency helper will disable the zone, e.g. 'Off'
+* allow comma separated text for weekday list, not case sensitive
 ## 5.1.0
 * Config Flow - configure via UI
 * REMOVED - generated helpers as they are incomatible with config flow
