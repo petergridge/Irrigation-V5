@@ -102,31 +102,20 @@ Run frequency allows the definition of when the program will run. If no frequenc
 
 This can be a specific set of days or the number of days between watering events and can be defined at the Program or zone level. Application at the zone level allows different zones to execute at the same time but using varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
 
-* *Run Freq* allows the water to occur at a specified frequency, for example, every 3 days or only on Monday, Wednesday and Saturday. 
+* *Run Freq* allows the water to occur at a specified frequency.
+For example, every 3 days or only on Monday, Wednesday and Saturday. 
+Include an option for Off this can be any text in any language.
 
-Defining a selection list to use with the run_freq attribute, remove the options you don't want to use.
+Defining a Dropdown helper to use with the run_freq attribute, .
 ```yaml
-input_select:
-  irrigation_freq:
-    name: Zone1 Frequency
     options:
-      - "Off"
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "6"
-      - "7"
-      - "['Wed','Sat']"
-      - "['Sun','Thu']"
-      - "['Mon','Fri']"
-      - "['Tue','Sat']"
-      - "['Sun','Wed']"
-      - "['Mon','Thu']"
-      - "['Tue','Fri']"
-      - "['Mon','Wed','Fri']"
-      - "['Mon','Tue','Wed','Thu','Fri','Sat','Sun']"
+      - Off
+      - 1
+      - 2
+      - 3
+      - Wed, Sat
+      - Mon, Wed, Fri
+      - Mon, Tue, Wed, Thu, Fri, Sat, Sun
 ```
 
 ### ECO feature
@@ -197,11 +186,12 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
-## 5.1.13
+## 5.1.15
 * correct config flow handling on a new install
 * correct initialisation of last run time on new install
 * correct recording of run time against disabled zones
 * confirm non numeric/day values in the frequency helper will diable the zone, e.g. 'Off'
+* allow comma seperated text for weekday list, not case sensitive
 ## 5.1.0
 * Config Flow - configure via UI
 * REMOVED - generated helpers as they are incomatible with config flow
