@@ -1,4 +1,4 @@
-# Irrigation Component V5.1 <img src="https://github.com/petergridgeIrrigation-V5/blob/main/icon.png" alt="drawing" width="75"/>
+# Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="75"/>
 
 This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration is now available through the settings Devices & Services. 
 
