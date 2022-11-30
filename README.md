@@ -21,10 +21,10 @@ Only one program can run at a time to prevent multiple solenoids being activated
 ## INSTALLATION
 
 ### HACS installation
-Will be available on HACS soon but you can add it as a custom repository.
+* Adding the repository using HACS is the simplest approach
 
 ### Important
-* Make sure that all of the objects you reference i.e. switch etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
+* Make sure that all of the objects you reference i.e. switches, sensors etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
 
 ### Config Flow
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
@@ -187,6 +187,7 @@ irrigationprogram.stop_programs:
 ```
 ## REVISION HISTORY
 ## 5.1.15
+* Initial HACS release
 * correct config flow handling on a new install
 * correct initialisation of last run time on new install
 * correct recording of run time against disabled zones
