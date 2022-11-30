@@ -1,8 +1,8 @@
-# Irrigation Component V5.1 <img src="https://github.com/petergridge/irrigation_component_v4/blob/main/icon.png" alt="drawing" width="75"/>
+# Irrigation Component V5.1 <img src="https://github.com/petergridgeIrrigation-V5/blob/main/icon.png" alt="drawing" width="75"/>
 
 This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration is now available through the settings Devices & Services. 
 
-The **custom card https://github.com/petergridge/irrigation_card** V5.1 will render the program options specified in the configuration.
+The **custom card https://github.com/petergridge/Irrigation-Card** V5.1 will render the program options specified in the configuration.
 
 The driver for this project is to provide an easy to use interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
 
@@ -193,6 +193,7 @@ irrigationprogram.stop_programs:
 * correct recording of run time against disabled zones
 * confirm non numeric/day values in the frequency helper will disable the zone, e.g. 'Off'
 * allow comma separated text for weekday list, not case sensitive
+* add German translation for config flow
 ## 5.1.0
 * Config Flow - configure via UI
 * REMOVED - generated helpers as they are incomatible with config flow
