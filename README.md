@@ -106,7 +106,7 @@ This can be a specific set of days or the number of days between watering events
 For example, every 3 days or only on Monday, Wednesday and Saturday. 
 Include an option for Off this can be any text in any language.
 
-Defining a Dropdown helper to use with the run_freq attribute, .
+Defining a Dropdown helper to use with the run_freq attribute, for example:
 ```yaml
     options:
       - Off
@@ -186,6 +186,8 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
+## 5.1.16
+* Correct weekday list to work with legacy model
 ## 5.1.15
 * Initial HACS release
 * correct config flow handling on a new install
