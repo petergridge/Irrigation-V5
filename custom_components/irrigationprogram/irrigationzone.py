@@ -282,8 +282,8 @@ class IrrigationZone:
             else:
                 response = False
         if string_freq is not None: #Mon - Sun
-            if not isinstance(string_freq,list):
-                string_freq = string_freq.replace(" ","").split(",")
+            #clean up string and captialise
+            string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
             string_freq = [x.capitalize() for x in string_freq]
             if dt_util.now().strftime("%a") not in string_freq:
                 response = False

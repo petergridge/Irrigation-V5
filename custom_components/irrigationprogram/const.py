@@ -1,3 +1,5 @@
+'''Constants'''
+
 DOMAIN = "irrigationprogram"
 SWITCH_ID_FORMAT = "switch" + ".{}"
 
@@ -26,40 +28,5 @@ ATTR_MONITOR_CONTROLLER = "controller_monitor"
 ATTR_DISABLE_ZONE = "disable_zone"
 ATTR_ENABLE_ZONE = "enable_zone"
 ATTR_RESET = "reset"
-ATTR_WATER_MIN = "water_min"
-ATTR_WATER_MAX = "water_max"
-ATTR_WATER_STEP = "water_step"
-
-
 CONST_ENTITY = "entity_id"
 CONST_SWITCH = "switch"
-
-DFLT_IRRIGATION_ON = "Enable irrigation"
-DFLT_START = "Start time"
-DFLT_IGNORE_RAIN_SENSOR = "Ignore rain sensor"
-DFLT_SHOW_CONFIG = "Show configuration"
-DFLT_REPEAT = "Repeat"
-DFLT_WATER = "Water"
-DFLT_WAIT = "Wait"
-DFLT_DELAY = "Inter zone delay"
-DFLT_FLOW_SENSOR = "Flow sensor"
-DFLT_WATER_ADJUST = "Water adjustment"
-DFLT_ENABLE_ZONE = "Enable zone"
-DFLT_ZONE_GROUP = "Zone group"  # zones that run concurrently
-DFLT_RUN_FREQ = "Frequency"
-
-DFLT_WATER_INITIAL_T = 1
-DFLT_WATER_MAX_T = 30
-DFLT_WATER_STEP_T = 1
-DFLT_WATER_INITIAL_M = 10
-DFLT_WATER_MAX_M = 1200
-DFLT_WATER_STEP_M = 10
-DFLT_WATER_INITIAL_I = 5
-DFLT_WATER_MAX_I = 350
-DFLT_WATER_STEP_I = 5
-DFLT_WAIT_MAX = 30
-DFLT_REPEAT_MAX = 30
-# DFLT_REMAINING          = 'Remaining'
-# DFLT_RUNTIME            = 'Runtime'
-# DFLT_MONITOR_CONTROLLER = 'Controller monitor'
-# DFLT_DISABLE_ZONE       = 'disable_zone'
