@@ -8,11 +8,11 @@ This release is a significant change in the configuration from Version 4. While 
 
 The **custom card https://github.com/petergridge/Irrigation-Card** V5.1 will render the program options specified in the configuration.
 
-The driver for this project is to provide an easy to use interface for the gardener of the house. The goal is that once the inital configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
+The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
 
 This program is essentially a scheduling tool, one user has also used this to schedule the running of his lawn mower, so the use is far broader than I anticipated.
 
-The information provided by the configuraton is evaluated to trigger the irrigation action according to the inputs provided.
+The information provided by the configuration is evaluated to trigger the irrigation action according to the inputs provided.
 
 Watering can occur in an ECO mode where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
 
@@ -20,7 +20,7 @@ The rain sensor is implemented as a binary_sensor, this allows practically any c
 
 Implemented as a switch, you can start a program using the schedule, manually or using an automation. Manually starting a program by turning the switch on will not evaluate the rain sensor rules it will just run the program, as there is an assumption that there is an intent to run the program regardless of sensors.
 
-Only one program can run at a time to prevent multiple solenoids being activated. If program start times result in an overlap the running program will be stopped. Zones can be configured to run concurrently or sequentially using the grouping funtionality.
+Only one program can run at a time to prevent multiple solenoids being activated. If program start times result in an overlap the running program will be stopped. Zones can be configured to run concurrently or sequentially using the grouping functionality.
 
 ## INSTALLATION
 
@@ -55,20 +55,19 @@ logger:
         custom_components.irrigationprogram: debug
 ```
 ### Rain Sensor feature
-If a rain sensor is  defined the zone will be ignored when the value of the sensor is True.
+If a rain sensor is defined the zone will be ignored when the value of the sensor is True.
 
 If the irrigation program is run manually the rain sensor value is ignored and all zones will run.
 
 The rain sensor is defined in each zone. You can:
 * Define the same sensor for each zone 
 * Have a different sensor for different areas
-If you configure this oprion a helper to ignore the rain sensor is automatically created
 
 ### Time or Volume based watering
 You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Zone Group
-You can optionally group zones to run concurrently or sequentially. The helper will be created automatically to support this. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
+You can optionally group zones to run concurrently or sequentially. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
 
 ### Monitor Controller feature
 If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
@@ -174,7 +173,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;zones|||data for setting up a zone|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;water|input_number |Required|The time to run or volume to supply for this zone |
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#water-adjustment-feature)|sensor, input_number|Optional|A factor,applied to the watering time to decrease or increase the watering time|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#water-adjustment-feature)|sensor, input_number|Optional|A factor, applied to the watering time to decrease or increase the watering time|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
@@ -202,7 +201,7 @@ irrigationprogram.stop_programs:
 * add German translation for config flow
 ## 5.1.0
 * Config Flow - configure via UI
-* REMOVED - generated helpers as they are incomatible with config flow
+* REMOVED - generated helpers as they are incompatible with config flow
 ## 5.0.10
 * Generated helpers based on entity name not friendly name
 * Correct pump issue
@@ -222,17 +221,17 @@ irrigationprogram.stop_programs:
 ### V5.0.4
 * Fix bug introduced with reset/uninstall
 ### V5.0.3
-* Create selction list helper for frequency if one is not defined
+* Create selection list helper for frequency if one is not defined
 * Add config option to reset/uninstall created helpers
 ### 5.0.2
 * Update Event model now *irrigation_event* event with *action* of 'zone_turned_on'. 
 ### 5.0.1
 * Implement zone_turned_on event to allow custom triggering of other automations if required
-* Bug fixed  where get_last_state is None
+* Bug fixed where get_last_state is None
 ### 5.0.0
 * Essentially the same functionality as version 4
 * Major redevelopment of the configuration 
-* auto create helper entities that do not require intervention. All input_boolean, input_text, input_number, input_datetime are now created automatically if required.
-* When optional funtionality requires a helper only the friendly name is required to trigger the creation of the object.
-* Requires Irrigration Custom Card V5.0.0
+* Auto create helper entities that do not require intervention. All input_boolean, input_text, input_number, input_datetime are now created automatically if required.
+* When optional functionality requires a helper only the friendly name is required to trigger the creation of the object.
+* Requires Irrigation Custom Card V5.0.0
 
