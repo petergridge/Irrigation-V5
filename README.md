@@ -189,6 +189,8 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
+## 5.1.18
+* Modify HACS deployment to provide download count from GITHUB
 ## 5.1.16
 * Correct weekday list to work with legacy model
 ## 5.1.15
