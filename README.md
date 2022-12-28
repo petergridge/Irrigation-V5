@@ -1,10 +1,8 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total?style=for-the-badge)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?style=for-the-badge)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370)
 
-[![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?style=for-the-badge)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total)
 
-![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)
-
-# Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="75"/>
+# Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration is now available through the settings Devices & Services. 
 
