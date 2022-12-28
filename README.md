@@ -64,7 +64,7 @@ The rain sensor is defined in each zone. You can:
 * Have a different sensor for different areas
 
 ### Time or Volume based watering
-You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defied the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
+You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defined the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
