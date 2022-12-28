@@ -2,5 +2,6 @@
   "name": "IrrigationProgram Custom Component",
   "content_in_root": false,
   "render_readme": true,
-  "zip_release": true
+  "zip_release": true,
+  "filename": "irrigationprogram.zip"
 }
