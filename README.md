@@ -190,6 +190,11 @@ irrigationprogram.stop_programs:
 ```
 ## REVISION HISTORY
 ## 5.1.18
+* Fix issue with reloading after a config flow change
+* Add program remaining time attribute
+* Optimise start and stop logic
+* Optimise polling logic
+## 5.1.18
 * Modify HACS deployment to provide download count from GITHUB
 ## 5.1.16
 * Correct weekday list to work with legacy model
