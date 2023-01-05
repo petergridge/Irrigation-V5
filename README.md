@@ -189,7 +189,7 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
-## 5.1.18
+## 5.1.19
 * Fix issue with reloading after a config flow change
 * Add program remaining time attribute
 * Optimise start and stop logic
