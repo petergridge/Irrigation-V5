@@ -533,7 +533,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         ATTR_REMAINING,
                     )
                 self._attrs[attr] = "%d:%02d:%02d" % (0, 0, 0)
-            self._attrs["remaining_runtime"] = "%d:%02d:%02d" % (0, 0, 0)
+            self._attrs["remaining"] = "%d:%02d:%02d" % (0, 0, 0)
 
         #stop pump monitoring
         for pump in self._pumps:
