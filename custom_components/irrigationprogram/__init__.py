@@ -1,25 +1,20 @@
 ''' __init__'''
 
 from __future__ import annotations
-
 from ctypes.wintypes import BOOL
 import logging
 from homeassistant.util import slugify
 
-# -----------Helpers---------------------------
-#from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_NAME,
     SERVICE_TURN_OFF,
-#    SERVICE_TURN_ON,
     CONF_NAME,
     Platform,
 )
 from homeassistant.core import HomeAssistant,callback
 from homeassistant.helpers.config_validation import string
-#from homeassistant.helpers.typing import ConfigType
 from homeassistant import config_entries
 
 from .const import (
@@ -44,13 +39,11 @@ async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    #figure out how to remove the generated helpers
+    #clean up any related helpers
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, (Platform.SWITCH,)
     ):
-        #clean up any related helpers
-        hass.data[DOMAIN].pop(entry.entry_id)
-    return unload_ok
+        return unload_ok
 
 async def async_setup(hass, config):
     '''setup the irrigation'''

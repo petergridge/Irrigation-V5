@@ -24,12 +24,9 @@ class PumpClass:
         pump = {ATTR_ENTITY_ID: self._pump}
 
         def zone_running():
-#            zone_running = False
             for zone in self._zones:
                 if self.hass.states.get(zone).state == "on":
                     return True
-#                    self._running_zone = zone
-#                    break
             return False
 
         #Monitor the required zones

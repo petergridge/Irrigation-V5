@@ -1,7 +1,6 @@
 '''Irrigation zone class'''
 
 import asyncio
-#from datetime import timedelta
 import logging
 import math
 from homeassistant.const import (
@@ -11,6 +10,17 @@ from homeassistant.const import (
 )
 import homeassistant.util.dt as dt_util
 from .const import (
+    ATTR_ENABLE_ZONE,
+    ATTR_FLOW_SENSOR,
+    ATTR_IGNORE_RAIN_SENSOR,
+    ATTR_PUMP,
+    ATTR_RAIN_SENSOR,
+    ATTR_REPEAT,
+    ATTR_WAIT,
+    ATTR_WATER,
+    ATTR_WATER_ADJUST,
+    ATTR_ZONE,
+    ATTR_ZONE_GROUP,
     CONST_SWITCH,
 )
 
@@ -21,40 +31,27 @@ class IrrigationZone:
     def __init__(
         self,
         hass,
-        name,
-        switch,
-        pump,
+        zone,
         run_freq,
-        rain_sensor,
-        ignore_rain_sensor,
-        enable_zone,
-        flow_sensor,
         hist_flow_rate,
-        water,
-        water_adjust,
-        wait,
-        repeat,
         last_ran,
-        zone_group,
     ):
         self.hass = hass
-        self._name = name
-        self._switch = switch
-        self._pump = pump
+        self._name = zone.get(ATTR_ZONE).split(".")[1]
+        self._switch = zone.get(ATTR_ZONE)
+        self._pump = zone.get(ATTR_PUMP)
         self._run_freq = run_freq
-        self._rain_sensor = rain_sensor
-        self._ignore_rain_sensor = ignore_rain_sensor
-        self._enable_zone = enable_zone
-        self._flow_sensor = flow_sensor
+        self._rain_sensor = zone.get(ATTR_RAIN_SENSOR)
+        self._ignore_rain_sensor = zone.get(ATTR_IGNORE_RAIN_SENSOR)
+        self._enable_zone = zone.get(ATTR_ENABLE_ZONE)
+        self._flow_sensor = zone.get(ATTR_FLOW_SENSOR)
         self._hist_flow_rate = hist_flow_rate
-        self._water = water
-        self._water_adjust = water_adjust
-        self._wait = wait
-        self._repeat = repeat
-        self._zone_group = zone_group
-
+        self._water = zone.get(ATTR_WATER)
+        self._water_adjust = zone.get(ATTR_WATER_ADJUST)
+        self._wait = zone.get(ATTR_WAIT)
+        self._repeat = zone.get(ATTR_REPEAT)
+        self._zone_group = zone.get(ATTR_ZONE_GROUP)
         self._last_ran = last_ran
-
         self._run_time = 0
         self._default_run_time = 0
         self._remaining_time = 0
@@ -192,6 +189,7 @@ class IrrigationZone:
     def zone_group(self):
         '''zone group entity attribute'''
         return self._zone_group
+
     def zone_group_value(self):
         '''zone group entity value'''
         zone_group_value = None
@@ -252,16 +250,25 @@ class IrrigationZone:
 
     def should_run(self):
         '''determine if the zone should run'''
-        #adjust by 10 minutes to allow for any variances
+        if (dt_util.as_timestamp(dt_util.now())
+            - dt_util.as_timestamp(self._last_ran)
+            ) < 120:
+            return False
+
+        if self.is_raining():
+            return False
         if self._last_ran is None:
+            #default to 10 days ago when a zone has never run previously
             calc_freq = 10
         else:
+            #calculate how many days since last run
             calc_freq = float(
                 (
                     (
                         dt_util.as_timestamp(dt_util.now())
                         - dt_util.as_timestamp(self._last_ran)
                     )
+                    #adjust by 10 minutes to allow for any variances
                     + 600
                 )
                 / 86400
@@ -273,18 +280,19 @@ class IrrigationZone:
         if self.run_freq_value() is not None:
             try:
                 numeric_freq = float(int(self.run_freq_value()))
+                # check if this day matches frequency
+                if numeric_freq <= calc_freq:
+                    response = True
+                else:
+                    response = False
             except ValueError:
                 string_freq = self.run_freq_value()
-        # check if this day matches frequency
-        if numeric_freq is not None:
-            if numeric_freq <= calc_freq:
-                response = True
-            else:
-                response = False
+
         if string_freq is not None: #Mon - Sun
             #clean up string and captialise
             string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
             string_freq = [x.capitalize() for x in string_freq]
+            #if the day is found in the frequency
             if dt_util.now().strftime("%a") not in string_freq:
                 response = False
             else:
@@ -301,7 +309,7 @@ class IrrigationZone:
         # run the watering cycle, water/wait/repeat
         for i in range(self.repeat_value(), 0, -1):
             #run time adjusted to 0 skip this zone
-            if self._remaining_time == 0:
+            if self._remaining_time <= 0:
                 continue
             self._state = "on"
             if self.hass.states.is_state(self._switch, "off") and not self._stop:
@@ -351,16 +359,17 @@ class IrrigationZone:
             # turn the switch entity off
             if i <= 1 or self._stop:
                 #last/only cycle
-                self._remaining_time = 0
 
                 if self.hass.states.is_state(self._switch, "on"):
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
                     )
+
                 if self._stop:
                     break
         # End of repeat loop
         self._state = "off"
+        self._remaining_time = 0
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
