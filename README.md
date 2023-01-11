@@ -67,7 +67,7 @@ The rain sensor is defined in each zone. You can:
 You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defined the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Pump or master solenoid
-You can optionally define a pump/master soleniod to turn on concurrently with the zone. There pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
 
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
