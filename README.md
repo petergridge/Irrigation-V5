@@ -66,6 +66,9 @@ The rain sensor is defined in each zone. You can:
 ### Time or Volume based watering
 You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defined the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
 
+### Pump or master solenoid
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. There pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
+
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
 
@@ -176,6 +179,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#water-adjustment-feature)|sensor, input_number|Optional|A factor, applied to the watering time to decrease or increase the watering time|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[pump](#pump-or-master-solenoid)|switch|Optional|Define the switch that will turn on the pump or master soleniod|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
