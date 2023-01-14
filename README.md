@@ -64,53 +64,21 @@ The rain sensor is defined in each zone. You can:
 * Have a different sensor for different areas
 
 ### Time or Volume based watering
-You can define a 'flow sensor' that provides a volume/minute rate. eg litres per minute. Once defined the 'water' attribute will be read as volume eg 15 litres not 15 minutes. 
+Watering is by default time based, that is, will run for the minutes set in the *water* entity.
 
-### Pump or master solenoid
-You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
-
-### Zone Group
-You can optionally group zones to run concurrently or sequentially. Blank groups or where a zone_group is not defined will be sequential zones. Zones are grouped by having the same text value, for example each zone with a value of 'A' will run concurrently.
-
-### Monitor Controller feature
-If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
-
-### Watering Adjuster feature
-As an alternative to the rain sensor you can also use the watering adjustment. With this feature the integrator is responsible to provide the value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
-
-See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
-
-Setting *water_adjustment* attribute allows a factor to be applied to the watering time.
-
-* If the factor is 0 no watering will occur
-* If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
-* A factor of 1.1 could also be used to apply 10% more water if required.
-* The watering time will always be rounded up to the nearest minute when applying the factor.
-
-The following automation is an example of how a input_number.adjust_run_time could be maintained using template calculation.
-```yaml
-automation:
-- id: '1553507967550'
-  alias: rain adjuster
-  mode: restart
-  trigger:
-  - platform: time_pattern
-    minutes: "/1"
-  action:
-    - service: input_number.set_value
-      entity_id: input_number.rain_adjuster
-      data:
-        value: "{{ value template calculation }}"
-```
+You can define a *flow sensor* on a zone that provides a volume/minute rate. eg litres per minute. Once defined the *water* attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Run Days and Run Frequency
-Run frequency allows the definition of when the program will run. If no frequency input_select is provided a default one will be generated.
+Run frequency allows the definition of when the program will run.
 
-This can be a specific set of days or the number of days between watering events and can be defined at the Program or zone level. Application at the zone level allows different zones to execute at the same time but using varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
+Frequency can be set on the zone or program. If both are set the zone level frequency is used. If no frequency is provided the program will run every day at the specified start time.  Application at the zone level allows different zones to execute at the same time of day but use varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
 
-* *Run Freq* allows the water to occur at a specified frequency.
-For example, every 3 days or only on Monday, Wednesday and Saturday. 
-Include an option for Off this can be any text in any language.
+The values provided can be:
+* numeric, representing how often to run every 2 days for example.
+* days of the week; Mon, Tue etc. These currently only support english abreviations.
+* Off or any unsupported text to stop the zone being run
+
+For Australians you can select to water on specific days of the week to support water restriction rules.
 
 Defining a Dropdown helper to use with the run_freq attribute, for example:
 ```yaml
@@ -125,10 +93,60 @@ Defining a Dropdown helper to use with the run_freq attribute, for example:
 ```
 
 ### ECO feature
-The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. 
+The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. Perfect for pots and can reduce water used by 50%, try it.
 
 * *wait* sets the length of time to wait between watering cycles
 * *repeat* defines the number of watering cycles to run
+
+### Pump or master solenoid
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
+
+### Zone Group
+You can optionally group zones to run concurrently or sequentially. 
+
+**New V5.1.20** Zone groups can be setup in the config flow.
+Once a program is created, choose *configure* again to add groups
+
+This provides for greater validation, for example:
+* a group must have at least two zones, 
+* if a zone is deleted the related group will also be deleted, also 
+* if the switch associated to a zone is changed the related group will be deleted. 
+
+**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently. This model will be phased out in a future release.
+
+### Monitor Controller feature
+If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
+
+### Watering Adjuster feature
+As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
+
+See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
+
+Setting *water_adjustment* attribute allows a factor to be applied to the watering time.
+
+* If the factor is 0 no watering will occur
+* If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
+* A factor of 1.1 could also be used to apply 10% more water if required.
+* The watering time will always be rounded up to the nearest minute when applying the factor.
+
+The following automation is an example of how an entity could be maintained using template calculation.
+```yaml
+automation:
+- id: '1553507967550'
+  alias: rain adjuster
+  mode: restart
+  trigger:
+  - platform: time_pattern
+    minutes: "/1"
+  action:
+    - service: input_number.set_value
+      entity_id: input_number.rain_adjuster
+      data:
+        value: "{{ value template calculation }}"
+```
+### Interlock
+Turning off running programs when a new program is started, this is the default.
+Remember to change this on all program configurations to get consistent behaviour. 
 
 ### Events
 
@@ -184,8 +202,9 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release**|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the Program level value|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result **will be depricated in a future release**|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interlock|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
 
 ## SERVICES
 ```yaml
@@ -193,6 +212,10 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
+## 5.1.20 - under development
+* Groups in config flow
+* Interlock zones
+* Add runtime to event data
 ## 5.1.19
 * Fix issue with reloading after a config flow change
 * Add program remaining time attribute
