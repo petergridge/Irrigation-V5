@@ -2,15 +2,17 @@
 
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total)
 
+# Deprication notice:
+* yaml configuration support will be depricated from version 5.1.22 - February 2023
+* legacy group features will be depricated from version 5.1.23 - March 2023
+
 # Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
-This release is a significant change in the configuration from Version 4. While the functionality remains the same the configuration is now available through the settings Devices & Services. 
+The **custom card https://github.com/petergridge/Irrigation-Card** V5.1 will render the program options specified in the configuration and is also available in HACS.
 
-The **custom card https://github.com/petergridge/Irrigation-Card** V5.1 will render the program options specified in the configuration.
+The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
-The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card. With this upgrade the component is also simple to configure.
-
-This program is essentially a scheduling tool, one user has also used this to schedule the running of his lawn mower, so the use is far broader than I anticipated.
+This program is essentially a scheduling tool, one user has used this to schedule the running of his lawn mower, so the use is far broader than I anticipated.
 
 The information provided by the configuration is evaluated to trigger the irrigation action according to the inputs provided.
 
@@ -18,9 +20,7 @@ Watering can occur in an ECO mode where a water/wait/repeat cycle is run to mini
 
 The rain sensor is implemented as a binary_sensor, this allows practically any combination of sensors to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
 
-Implemented as a switch, you can start a program using the schedule, manually or using an automation. Manually starting a program by turning the switch on will not evaluate the rain sensor rules it will just run the program, as there is an assumption that there is an intent to run the program regardless of sensors.
-
-Only one program can run at a time to prevent multiple solenoids being activated. If program start times result in an overlap the running program will be stopped. Zones can be configured to run concurrently or sequentially using the grouping functionality.
+Implemented as a switch, you can start a program using the schedule, manually or using an automation.
 
 ## INSTALLATION
 
@@ -32,10 +32,10 @@ Only one program can run at a time to prevent multiple solenoids being activated
 
 ### Config Flow
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
+* To define groups first complete the setup of the program and then go back into configuration to add zone groups. (V5.1.20)
 * Modify programs and zones, add new zones, delete zones
 * V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
-* Imports will occur only once, if you delete the config from the UI it will not reimport
-* YAML support will be removed in a future release
+* YAML support will be removed in a future release (V5.1.21)
 
 ### Pre-requisite
 * The time_date integration is required
