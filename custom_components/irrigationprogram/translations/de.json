@@ -1,5 +1,8 @@
 {
 	"config": {
+		"error": {
+			"zone_defined": "Selected zone switch is already defined in this irrigation program"
+		},
 		"step": {
 			"user": {
 				"title": "Programmdaten",
@@ -12,7 +15,8 @@
 					"start_time": "Startzeit entity",
 					"irrigation_on": "Entity um Programm zu aktivieren",
 					"show_config": "Entity um Einstellungen anzuzeigen",
-					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen"
+					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen",
+					"interlock": "Prevent programs running concurrently"
 				}
 			},
 			"zones": {
@@ -34,39 +38,59 @@
 					"enable_zone": "Zonenschalter",
 					"add_another": "weitere Zone hinzufügen"
 				}
+			},
+			"more_menu": {
+				"description": "",
+				"menu_options": {
+					"add_group": "Add a zone group",
+					"zones": "Add another zone",
+					"finalise": "Apply the configuration"
+				}
+			},
+			"add_group": {
+				"title": "Group configuration",
+				"description": "Add group",
+				"data": {
+					"name": "Group name",
+					"zones": "Select zones",
+					"add_another": "Add another group"
+				}
 			}
-		},
-    "create_entry": {
-      "default": ""
-    },
-		"error": {
-				"import_error": "Fehler beim importieren der YAML"
 		}
 	},
 
-  "options": {
-    "step": {
+    "options": {
+		"error": {
+			"zone_defined": "Selected zone switch is already defined in this irrigation program",
+			"group_define": "Selected group name has already been used",
+			"two_zones_required": "At least two zones required to create a group"
+		},
+		"step": {
 			"user": {
+				"description": "If a zone is deleted or zone switch is changed, any related group will be deleted",
 				"menu_options": {
 					"update_program": "Programm Optionen aktualisieren",
 					"update_zone": "Zonen Optionen aktualisieren",
 					"delete_zone": "Zone löschen",
 					"add_zone": "Zone hinzufügen",
-					"apply_changes": "Änderungen ausführen"
+					"add_group": "Add a group",
+					"delete_group": "Delete a group",
+					"finalise": "Änderungen ausführen"
 				}
 			},
 			"update_program": {
 				"title": "Programm Daten",
 				"description": "Programmdaten aktualisierten",
 				"data": {
-						"name": "Name",
-						"friendly_name": "Friendly name",
-					    "run_freq": "Entity für Ausführungs-Häufigkeit",
-					    "controller_monitor": "Monitor controller entity",
-					    "start_time": "Startzeit entity",
-					    "irrigation_on": "Entity um Bewässerung zu aktivieren",
-					    "show_config": "Entity um Einstellungen anzuzeigen",
-					    "inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen"
+					"name": "Name",
+					"friendly_name": "Friendly name",
+					"run_freq": "Entity für Ausführungs-Häufigkeit",
+					"controller_monitor": "Monitor controller entity",
+					"start_time": "Startzeit entity",
+					"irrigation_on": "Entity um Bewässerung zu aktivieren",
+					"show_config": "Entity um Einstellungen anzuzeigen",
+					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen",
+					"interlock": "Prevent programs running concurrently"
 				}
 			},
 			"add_zone": {
@@ -120,6 +144,22 @@
 				"description": "Zonen Einstellungen",
 				"data": {
 					"zone": "Zone auswählen"
+				}
+			},
+		"add_group": {
+			"title": "Group configuration",
+			"description": "Add group",
+			"data": {
+				"name": "Group name",
+				"zones": "Select zones",
+				"add_another": "Add another group"
+				}
+			},
+		"delete_group": {
+			"title": "Group configuration",
+			"description": "Delete Group",
+			"data": {
+				"group": "Select group"
 				}
 			}
 		}

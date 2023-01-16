@@ -55,6 +55,9 @@ from .const import (
     ATTR_ZONE_GROUP,
     ATTR_ZONES,
     CONST_SWITCH,
+    ATTR_GROUPS,
+    ATTR_HISTORICAL_FLOW,
+    ATTR_INTERLOCK,
     )
 
 from .irrigationzone import IrrigationZone
@@ -156,6 +159,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._monitor_controller = config.get(ATTR_MONITOR_CONTROLLER)
         self._inter_zone_delay = config.get(ATTR_DELAY)
         self._zones = config.get(ATTR_ZONES)
+        self._interlock = config.get(ATTR_INTERLOCK)
+
+#---- new group feature Config version 2
+        self._groups = config.get(ATTR_GROUPS)
+#----
 
         self._device_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, device_id, hass=hass
@@ -193,9 +201,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_track_change()
         await self.async_turn_off()
 
-    def format_attr(self, a, b):
+    def format_attr(self, part_a, part_b):
         """Helper to format attribute names"""
-        return slugify("{}_{}".format(a, b))
+        return slugify("{}_{}".format(part_a, part_b))
 
     async def async_added_to_hass(self):
         state = await self.async_get_last_state()
@@ -213,7 +221,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._attrs[ATTR_SHOW_CONFIG] = self._show_config
         if self._inter_zone_delay is not None:
             self._attrs[ATTR_DELAY] = self._inter_zone_delay
-        # zone loop to set the attributes
+
+        # zone loop to initialise the attributes
         zonecount = 0
         pumps = {}
         for zone in self._zones:
@@ -234,16 +243,18 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if state is not None:
                 z_last_ran = state.attributes.get(attr,dt_util.now() - timedelta(days=10))
             self._attrs[attr] = z_last_ran
+            #initialise remaining time
             attr = self.format_attr(z_name, ATTR_REMAINING)
             self._attrs[attr] = "%d:%02d:%02d" % (0, 0, 0)
+            #initialise historical flow
             z_hist_flow = None
             if zone.get(ATTR_FLOW_SENSOR) is not None:
-                attr = self.format_attr(z_name, "historical_flow")
+                attr = self.format_attr(z_name, ATTR_HISTORICAL_FLOW)
                 if state is not None:
                     z_hist_flow = state.attributes.get(attr)
                 if z_hist_flow is None:
                     z_hist_flow = 1
-            # setup attributes to populate the Custom card
+            # setup zone attributes to populate the Custom card
             if zone.get(ATTR_ZONE) is not None:
                 self._attrs[self.format_attr(z_name,ATTR_ZONE)] = zone.get(ATTR_ZONE)
             if zone.get(ATTR_WATER) is not None:
@@ -282,12 +293,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         # create pump class to start/stop pumps
         for pump, zones in pumps.items():
-            self._pumps.append(PumpClass(self.hass, pump, zones))
+            #pass pump_switch, list of zones, off_delay
+            self._pumps.append(PumpClass(self.hass, pump, zones, 2))
 
         @callback
         async def template_check(entity, old_state, new_state):
             self.async_schedule_update_ha_state(True)
-        #Upcheck the date template
+        #subscribe the template checking
         self._unsub_track_change = async_track_state_change(self.hass, "sensor.time", template_check)
 
         @callback
@@ -330,13 +342,17 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             for zone in self._irrigationzones:
                 await zone.async_turn_off()
             await asyncio.sleep(1)
-
         #setup the callback
         self.hass.bus.async_listen_once(
             EVENT_HOMEASSISTANT_STOP, hass_shutdown
         )
 
         await super().async_added_to_hass()
+
+#    async def entity_test_zone(self, zone: str) -> None:
+#        '''execute zone level tests'''
+#        for testzone in self._irrigationzones:
+#            await testzone.async_test()
 
     async def entity_run_zone(self, zone: str) -> None:
         '''Run a specific zone is to run'''
@@ -348,9 +364,23 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         loop.create_task(self.async_turn_on())
 
     async def entity_reset_runtime(self) -> None:
-        '''Run a specific zone is to run'''
+        '''reset last runtime to support testing'''
         for zone in self._irrigationzones:
             zone.set_last_ran(None)
+
+    def inter_zone_delay(self):
+        """ return interzone delay value"""
+        if isinstance(self._inter_zone_delay,str):
+            #supports config version 1
+            return  int(
+                float(
+                    self.hass.states.get(
+                        self._inter_zone_delay
+                    ).state
+                )
+            )
+        #supports proposed config version 2
+        #return  int(self._inter_zone_delay)
 
     @property
     def name(self):
@@ -375,6 +405,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_update(self):
         '''monitor to turn on the irrigation based on the input parameters'''
+        # fired by self.async_schedule_update_ha_state()
         if self._state is False:
             if self._template.async_render():
                 self._run_zone = None
@@ -384,28 +415,21 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         ''' Turn on the switch'''
+        if self._state is True:
+            #program is still running
+            return
 
         self._state = True
+
         #stop all running programs except the calling program
-        data = {'ignore':self.name}
-        await self.hass.services.async_call(DOMAIN, "stop_programs", data)
+        if self._interlock:
+            data = {'ignore':self.name}
+            await self.hass.services.async_call(DOMAIN, "stop_programs", data)
 
         def format_run_time(runtime):
             hourmin = divmod(runtime, 3600)
             minsec = divmod(hourmin[1], 60)
             return "%d:%02d:%02d" % (hourmin[0], minsec[0], minsec[1])
-
-        def delay_required(groups, runninggroup):
-            delay_required = False
-            findnext = False
-            for group in groups:
-                if group == runninggroup:
-                    findnext = True
-                    continue
-                if findnext is True:
-                    delay_required = True
-                    break
-            return delay_required
 
         # start pump monitoring
         loop = asyncio.get_event_loop()
@@ -415,56 +439,66 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # use this to set the last ran attribute of the zones
         p_last_ran = dt_util.now()
 
+        def check_group_config(pzone):
+        # has the zone been configured in a group
+            if self._groups is not None:
+                for count, group in enumerate(self._groups):
+                    if pzone in group[ATTR_ZONES]:
+                        return count
+
+        #build run list for this execution
         groups = {}
         for zonecount, zone in enumerate(self._irrigationzones):
-            # determine if the zone has been manually run
             if self._run_zone:
+            # Zone has been manually run from service call
                 if zone.switch() != self._run_zone:
                     continue
-            #should the zone run? rain, frequency ...
-            if zone.enable_zone_value() is False:
-                continue
-            if not self._run_zone:
-                if zone.is_raining():
+            else:
+                if not zone.should_run():
                     continue
-                if zone.should_run() is False:
-                    continue
+
+                # set the runtime attributes for zones that will run
+                zoneremaining = self.format_attr(zone.name(), ATTR_REMAINING)
+                self._attrs[zoneremaining] = format_run_time(
+                    zone.run_time()
+                )
+
             #build zone groupings that will run concurrently
+            #--- new config flow version 2 group functionality
             groupkey = zonecount
-            if zone.zone_group_value() is not None:
-                zone_group = zone.zone_group_value()
-                if zone_group:
-                    groupkey = "G" + zone_group
+            zgroup = check_group_config(zone.switch())
+            if zgroup is not None:
+                groupkey = "G" + str(zgroup)
             if groupkey in groups:
                 groups[groupkey].append(zone)
             else:
                 groups[groupkey] = [zone]
-
-            zoneremaining = self.format_attr(zone.name(), ATTR_REMAINING)
-            self._attrs[zoneremaining] = format_run_time(
-                zone.run_time()
-            )
+            #---- end new zone group
+        # Config Version 1 will run in parallel until depricated
+            if not groups:
+                #No config version 2 groups build on version 1 rules
+                groupkey = zonecount
+                if zone.zone_group_value() is not None:
+                    zone_group = zone.zone_group_value()
+                    if zone_group:
+                        groupkey = "G" + zone_group
+                if groupkey in groups:
+                    groups[groupkey].append(zone)
+                else:
+                    groups[groupkey] = [zone]
+        #--- end to be depricated
 
         self.async_schedule_update_ha_state()
 
         #loop through zone_groups
-        first_group = True
-        for group in groups.values():
-            #if this is the second set trigger interzone delay if defined
-            if self._state is True:
-                if not first_group and self._inter_zone_delay is not None:
-                    izd = int(
-                        float(
-                            self.hass.states.get(
-                                self._inter_zone_delay
-                            ).state
-                        )
-                    )
-                    #check if there is a next zone
-                    if delay_required(groups, group):
-                        if izd > 0:
-                            await asyncio.sleep(izd)
-            first_group = False
+        for count, group in enumerate(groups.values()):
+            #if this is the second group and interzone delay if defined
+            if count > 0:
+                #check if there is a next zone
+                if count < len(groups.values()):
+                    if self.inter_zone_delay() is not None:
+                        await asyncio.sleep(self.inter_zone_delay())
+
             #start all zones in a group
             if self._state is True:
                 loop = asyncio.get_event_loop()
@@ -480,9 +514,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 await asyncio.sleep(1)
 
             #wait for the zones to complete
-            zns_running = True
-            while zns_running and self._state is True:
-                zns_running = False
+            zones_running = True
+            while zones_running and self._state is True:
+                zones_running = False
                 for gzone in group:
                     attr = self.format_attr(
                             gzone.name(),
@@ -493,20 +527,20 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     )
                     #continue running until all zones have completed
                     if gzone.state() == "on":
-                        zns_running = True
+                        zones_running = True
 
                 #calculate the remaining time for the program
                 self._program_remaining = 0
-                for tgroup in groups.values():
+                for thisgroup in groups.values():
                     group_runtime = 0
                     attr_runtime = 0
-                    for tzone in tgroup:
-                        attr_value = self._attrs["{}{}".format(tzone.name(),"_remaining")]
+                    for thiszone in thisgroup:
+                        attr_value = self._attrs["{}{}".format(thiszone.name(),"_remaining")]
                         group_runtime = sum(x * int(t) for x, t in zip([3600, 60, 1], attr_value.split(":")))
                         if attr_runtime > group_runtime:
                             group_runtime = attr_runtime
                     self._program_remaining += group_runtime
-                self._attrs["remaining"] = format_run_time(self._program_remaining)
+                self._attrs[ATTR_REMAINING] = format_run_time(self._program_remaining)
                 self.async_schedule_update_ha_state()
                 await asyncio.sleep(1)
 
@@ -518,13 +552,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         ATTR_LAST_RAN,
                     )
                 if not self._run_zone and self._state is True:
+                    #not manual run or aborted
                     self._attrs[zonelastran] = p_last_ran
                     gzone.set_last_ran(p_last_ran)
                 # update the historical flow rate
                 if gzone.flow_sensor():
+                    #record the flow rate from this run
                     attr = self.format_attr(
                             gzone.name(),
-                            "historical_flow",
+                            ATTR_HISTORICAL_FLOW,
                         )
                     self._attrs[attr] = gzone.hist_flow_rate()
                 #reset the time remaining to 0
@@ -533,9 +569,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         ATTR_REMAINING,
                     )
                 self._attrs[attr] = "%d:%02d:%02d" % (0, 0, 0)
-            self._attrs["remaining"] = "%d:%02d:%02d" % (0, 0, 0)
+            self._attrs[ATTR_REMAINING] = "%d:%02d:%02d" % (0, 0, 0)
 
-        #stop pump monitoring
+        #run is complete stop pump monitoring
         for pump in self._pumps:
             loop.create_task(pump.async_stop_monitoring())
 
@@ -543,8 +579,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self.async_schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs):
-        '''stop the switch'''
-
+        '''stop the switch/program'''
         for zone in self._irrigationzones:
             await zone.async_turn_off()
         self._state = False

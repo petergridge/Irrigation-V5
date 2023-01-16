@@ -10,12 +10,12 @@ _LOGGER = logging.getLogger(__name__)
 
 class PumpClass:
     ''' pump class'''
-    def __init__(self, hass, pump, zones):
+    def __init__(self, hass, pump, zones, delay):
         self.hass = hass
         self._pump = pump
         self._zones = zones
         self._stop = False
-        self._off_delay = 2
+        self._off_delay = delay
 
     async def async_monitor(self, **kwargs):
         '''monitor running zones to determine if pump is required'''

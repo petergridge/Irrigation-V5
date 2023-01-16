@@ -250,11 +250,8 @@ class IrrigationZone:
 
     def should_run(self):
         '''determine if the zone should run'''
-        if (dt_util.as_timestamp(dt_util.now())
-            - dt_util.as_timestamp(self._last_ran)
-            ) < 120:
+        if not self.enable_zone_value():
             return False
-
         if self.is_raining():
             return False
         if self._last_ran is None:
@@ -337,6 +334,7 @@ class IrrigationZone:
             else:
                 #calculate remaining time
                 water = self.water_value() * float(self.water_adjust_value()) * 60
+                # pylint: disable=unused-variable
                 for countdown in range(0, int(water), 1):
                     self._remaining_time -= 1
                     if self._stop:
@@ -416,3 +414,14 @@ class IrrigationZone:
             valid = False
 
         return valid
+
+    async def async_test_zone(self):
+        '''run tests'''
+        _LOGGER.error("Zone tests")
+        _LOGGER.error("Should run %s", self.should_run())
+        _LOGGER.error("Run time %s", self.run_time())
+        _LOGGER.error("Repeat Value %s",self.repeat_value())
+        _LOGGER.error("Rain sensor value %s",self.rain_sensor_value())
+        _LOGGER.error("Ignore rain sensor Value %s",self.ignore_rain_sensor_value())
+        _LOGGER.error("Run frequency Value %s",self.run_freq_value())
+        _LOGGER.error("Repeat Value %s",self.repeat_value())

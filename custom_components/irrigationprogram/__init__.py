@@ -14,13 +14,17 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import HomeAssistant,callback
-from homeassistant.helpers.config_validation import string
+#from homeassistant.helpers.config_validation import string
 from homeassistant import config_entries
 
 from .const import (
     DOMAIN,
     SWITCH_ID_FORMAT,
     CONST_SWITCH,
+    ATTR_DELAY,
+    ATTR_ZONES,
+    ATTR_ZONE_GROUP,
+    ATTR_GROUPS,
     )
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,7 +61,6 @@ async def async_setup(hass, config):
             data = {ATTR_ENTITY_ID: device}
             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, data)
     # END async_stop_switches
-
     # register services
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
 
@@ -96,3 +99,38 @@ def _async_find_matching_config_entry(
         if entry.data.get(CONF_NAME) == name:
             return True
     return False
+
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+#---- REVERT to UI based impementation ----#
+
+#    if config_entry.version == 1:
+#        if config_entry.options == {}:
+#            new = config_entry.data
+#        else:
+#            new = config_entry.options
+
+#        new[ATTR_ZONES].pop(ATTR_DELAY)
+#        config_entry.version = 2
+#        hass.config_entries.async_update_entry(config_entry, data=new)
+#        _LOGGER.info("Migration to version %s successful", config_entry.version)
+
+# uncomment this when removing old group method and inputs
+#    if config_entry.version == 1:
+#        if config_entry.options == {}:
+#            new = config_entry.data
+#        else:
+#            new = config_entry.options
+#        if ATTR_GROUPS in new:
+#            #new grouping model implemented
+#            for zonecount, zone in enumerate(new[ATTR_ZONES]):
+#                if ATTR_ZONE_GROUP in zone:
+#                    #delete old grouping method
+#                    new[ATTR_ZONES][zonecount].pop(ATTR_ZONE_GROUP)
+#            config_entry.version = 2
+#        hass.config_entries.async_update_entry(config_entry, data=new)
+#        _LOGGER.info("Migration to version %s successful", config_entry.version)
+
+    return True

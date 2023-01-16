@@ -2,7 +2,7 @@
 	"config": {
 		"error": {
 			"zone_defined": "Selected zone switch is already defined in this irrigation program"
-		},
+ 		},
 		"step": {
 			"user": {
 				"title": "Program data",
@@ -59,9 +59,9 @@
 		}
 	},
 
- 	"options": {
+    "options": {
 		"error": {
-			"zone_defined": "Zone switch is already defined in this irrigation program",
+			"zone_defined": "Selected zone switch is already defined in this irrigation program",
 			"group_define": "Selected group name has already been used",
 			"two_zones_required": "At least two zones required to create a group"
 		},
@@ -73,9 +73,9 @@
 					"update_zone": "Update zone options",
 					"delete_zone": "Delete a zone",
 					"add_zone": "Add another zone",
-					"add_group": "Add a group",
+					"add_group": "Add a zone group",
 					"delete_group": "Delete a group",
-					"finalise": "Apply changes"
+					"finalise": "Update changes"
 				}
 			},
 			"update_program": {
@@ -90,7 +90,7 @@
 						"irrigation_on": "Enable irrigation entity",
 						"show_config": "Show configuration entity",
 						"inter_zone_delay": "Inter zone delay entity",
-						"interlock": "Prevent programs running concurrently"
+						"interlock": "prevent programs running concurrently"
 				}
 			},
 			"add_zone": {
