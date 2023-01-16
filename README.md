@@ -4,7 +4,7 @@
 
 # Deprecation notice:
 * yaml configuration support will be depricated from version 5.1.22 - March 2023
-* legacy group features will be depricated from version 5.1.23 - April 2023
+* diable zone option replaced by frequency value of Off or similar from version 5.1.22 - March 2023
 
 # Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
@@ -218,8 +218,8 @@ irrigationprogram.stop_programs:
 * Remove yaml configuration support
 ## 5.1.20 - under development - Planned February
 * Groups in config flow
-* Interlock zones
-* Add runtime to event data
+* Vary Interlock behaviour of programs
+* Expand event data provided
 ## 5.1.19
 * Fix issue with reloading after a config flow change
 * Add program remaining time attribute
