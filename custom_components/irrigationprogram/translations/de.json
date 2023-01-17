@@ -1,7 +1,7 @@
 {
 	"config": {
 		"error": {
-			"zone_defined": "Selected zone switch is already defined in this irrigation program"
+			"zone_defined": "Die ausgewählte Zone ist bereits in diesem Programm vorhanden"
 		},
 		"step": {
 			"user": {
@@ -35,25 +35,25 @@
 					"wait": "Entity für Wartezeit zwischen Wiederholungen",
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
-					"enable_zone": "Zonenschalter",
+					"enable_zone": "Schalter um Zone zu de-/aktivieren",
 					"add_another": "weitere Zone hinzufügen"
 				}
 			},
 			"more_menu": {
 				"description": "",
 				"menu_options": {
-					"add_group": "Add a zone group",
-					"zones": "Add another zone",
-					"finalise": "Apply the configuration"
+					"add_group": "Zonengruppe hinzufügen",
+					"zones": "Weitere Zone Hinzufügen",
+					"finalise": "Konfiguration anwenden"
 				}
 			},
 			"add_group": {
-				"title": "Group configuration",
-				"description": "Add group",
+				"title": "Zonengruppen konfigurieren",
+				"description": "Gruppe hinzufügen",
 				"data": {
-					"name": "Group name",
-					"zones": "Select zones",
-					"add_another": "Add another group"
+					"name": "Gruppenname",
+					"zones": "Zonen auswählen",
+					"add_another": "weitere Gruppe hinzufügen"
 				}
 			}
 		}
@@ -61,9 +61,9 @@
 
     "options": {
 		"error": {
-			"zone_defined": "Selected zone switch is already defined in this irrigation program",
-			"group_define": "Selected group name has already been used",
-			"two_zones_required": "At least two zones required to create a group"
+			"zone_defined": "Ausgewählter Zonenschalter wird in diesem Programm bereits genutzt",
+			"group_define": "Ausgewählter Gruppenname wird bereits benutzt",
+			"two_zones_required": "Eine Gruppe muss aus mindestens zwei Zonen bestehen"
 		},
 		"step": {
 			"user": {
@@ -73,8 +73,8 @@
 					"update_zone": "Zonen Optionen aktualisieren",
 					"delete_zone": "Zone löschen",
 					"add_zone": "Zone hinzufügen",
-					"add_group": "Add a group",
-					"delete_group": "Delete a group",
+					"add_group": "Gruppe hinzufügen",
+					"delete_group": "Gruppe löschen",
 					"finalise": "Änderungen ausführen"
 				}
 			},
@@ -147,19 +147,19 @@
 				}
 			},
 		"add_group": {
-			"title": "Group configuration",
-			"description": "Add group",
+			"title": "Gruppen Konfiguration",
+			"description": "Gruppe hinzufügen",
 			"data": {
-				"name": "Group name",
-				"zones": "Select zones",
-				"add_another": "Add another group"
+				"name": "Gruppenname",
+				"zones": "Zonen auswählen",
+				"add_another": "Weitere Gruppe hinzufügen"
 				}
 			},
 		"delete_group": {
-			"title": "Group configuration",
-			"description": "Delete Group",
+			"title": "Gruppen Konfiguration",
+			"description": "Gruppe löschen",
 			"data": {
-				"group": "Select group"
+				"group": "Gruppe auswählen"
 				}
 			}
 		}
