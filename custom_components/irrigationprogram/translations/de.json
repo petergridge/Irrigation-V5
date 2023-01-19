@@ -1,7 +1,9 @@
 {
 	"config": {
 		"error": {
-			"zone_defined": "Die ausgewählte Zone ist bereits in diesem Programm vorhanden"
+			"zone_defined": "Die ausgewählte Zone ist bereits in diesem Programm vorhanden",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
 		},
 		"step": {
 			"user": {
@@ -9,7 +11,6 @@
 				"description": "Daten eingeben, um das Programm zu definieren",
 				"data": {
 					"name": "Name",
-					"friendly_name": "Anzeige Name",
 					"run_freq": "Entity für Ausführungs-Häufigkeit",
 					"controller_monitor": "Monitor controller entity",
 					"start_time": "Startzeit entity",
@@ -24,7 +25,6 @@
 				"description": "Zonen Einstellungen",
 				"data": {
 					"zone": "Zonenschalter",
-					"friendly_name": "Anzeige Name",
 					"pump": "Pumpen-Schalter",
 					"flow_sensor": "Durchfluss-Sensor",
 					"water_adjustment": "Entity für Laufzeit-Anpassung",
@@ -35,11 +35,10 @@
 					"wait": "Entity für Wartezeit zwischen Wiederholungen",
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
-					"enable_zone": "Schalter um Zone zu de-/aktivieren",
-					"add_another": "weitere Zone hinzufügen"
+					"enable_zone": "Schalter um Zone zu de-/aktivieren"
 				}
 			},
-			"more_menu": {
+			"menu": {
 				"description": "",
 				"menu_options": {
 					"add_group": "Zonengruppe hinzufügen",
@@ -51,9 +50,7 @@
 				"title": "Zonengruppen konfigurieren",
 				"description": "Gruppe hinzufügen",
 				"data": {
-					"name": "Gruppenname",
-					"zones": "Zonen auswählen",
-					"add_another": "weitere Gruppe hinzufügen"
+					"zones": "Zonen auswählen"
 				}
 			}
 		}
@@ -63,7 +60,9 @@
 		"error": {
 			"zone_defined": "Ausgewählter Zonenschalter wird in diesem Programm bereits genutzt",
 			"group_define": "Ausgewählter Gruppenname wird bereits benutzt",
-			"two_zones_required": "Eine Gruppe muss aus mindestens zwei Zonen bestehen"
+			"two_zones_required": "Eine Gruppe muss aus mindestens zwei Zonen bestehen",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
 		},
 		"step": {
 			"user": {
@@ -82,8 +81,6 @@
 				"title": "Programm Daten",
 				"description": "Programmdaten aktualisierten",
 				"data": {
-					"name": "Name",
-					"friendly_name": "Friendly name",
 					"run_freq": "Entity für Ausführungs-Häufigkeit",
 					"controller_monitor": "Monitor controller entity",
 					"start_time": "Startzeit entity",
@@ -98,7 +95,6 @@
 				"description": "Zonen Einstellungen",
 				"data": {
 					"zone": "Zonenschalter",
-					"friendly_name": "Anzeige Name",
 					"pump": "Pumpenschalter",
 					"flow_sensor": "Durchfluss Sensor",
 					"water_adjustment": "Entity für Laufzeitanpassungen",
@@ -109,8 +105,7 @@
 					"wait": "Entity für Wartezeit zwischen Wiederholungen",
 					"repeat": "Entity für Wiederholungsanzahl",
 					"ignore_rain_sensor": "Entity um Regensensor zu ignorieren",
-					"enable_zone": "Entity um Zone zu aktivieren",
-					"add_another": "Weitere Zone hinzufügen"
+					"enable_zone": "Entity um Zone zu aktivieren"
 				}
 			},
 			"update_zone_data": {
@@ -118,7 +113,6 @@
 				"description": "Zonen Einstellungen",
 				"data": {
 					"zone": "Zonenschalter",
-					"friendly_name": "Anzeige Name",
 					"pump": "Pumpen-Schalter",
 					"flow_sensor": "Durchfluss-Sensor",
 					"water_adjustment": "Entity für Laufzeit-Anpassung",
@@ -150,9 +144,7 @@
 			"title": "Gruppen Konfiguration",
 			"description": "Gruppe hinzufügen",
 			"data": {
-				"name": "Gruppenname",
-				"zones": "Zonen auswählen",
-				"add_another": "Weitere Gruppe hinzufügen"
+				"zones": "Zonen auswählen"
 				}
 			},
 		"delete_group": {

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 import uuid
 import voluptuous as vol
 from homeassistant import config_entries
@@ -81,8 +81,8 @@ PROGRAM_ATTR = [
 
 # Required,attribute,type
 ZONE_ATTR = [
-    [True, ATTR_ZONE, sel.EntitySelector({"domain": "switch"})],
-    [True, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
+    [False, ATTR_ZONE, sel.EntitySelector({"domain": "switch"})],
+    [False, ATTR_WATER, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_PUMP, sel.EntitySelector({"domain": "switch"})],
@@ -141,6 +141,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         """Invoked when a user initiates a flow via the user interface."""
         errors: dict[str, str] = {}
         if user_input is not None:
+
             if not errors:
                 # Input is valid, set data.
                 self._data = user_input
@@ -152,14 +153,29 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_zones(self, user_input=None):
-        """Second step in config flow to add a repo to watch."""
+        """Add a zone step."""
         errors = {}
         data_schema = {}
         if user_input is not None:
-            for zone in self._data[ATTR_ZONES]:
-                if user_input[ATTR_ZONE] == zone[ATTR_ZONE]:
-                    errors[ATTR_ZONE] = "zone_defined"
-                    break
+            if user_input == {}:
+                #must have at least one zone defined
+                if self._data.get(ATTR_ZONES) != []:
+                #not data input return to the menu
+                    return await self.async_step_menu()
+                #at least on zone is required
+                errors["base"] = "zone_required"
+
+            if user_input.get(ATTR_ZONE) is None:
+                errors[ATTR_ZONE] = "mandatory"
+            else:
+                for zone in self._data.get(ATTR_ZONES):
+                    if user_input.get(ATTR_ZONE) == zone.get(ATTR_ZONE):
+                        errors[ATTR_ZONE] = "zone_defined"
+                        break
+
+            if user_input.get(ATTR_WATER) is None:
+                errors[ATTR_WATER] = "mandatory"
+
             if not errors:
                 # Input is valid, set data.
                 zone_data = {}
@@ -167,7 +183,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     zone_data[attr] = user_input[attr]
 
                 self._data[ATTR_ZONES].append(zone_data)
-                return await self.async_step_more_menu()
+                return await self.async_step_menu()
 
         # build a dict including entered values on error
         if user_input is None:
@@ -184,7 +200,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             errors=errors,
         )
 
-    async def async_step_more_menu(self, user_input=None):
+    async def async_step_menu(self, user_input=None):
         '''Add a group or finalise the flow'''
         xmenu_options = ["zones"]
         groupedzones = 0
@@ -198,8 +214,8 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         xmenu_options.extend(["finalise"])
 
         return self.async_show_menu(
-            step_id="more_menu",
-            menu_options=xmenu_options,
+            step_id="menu",
+            menu_options=xmenu_options
         )
 
     async def async_step_finalise(self, user_input=None):
@@ -227,7 +243,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 if len(user_input[ATTR_ZONES]) < 2:
                     errors[ATTR_ZONES] = "two_zones_required"
             else:
-                errors[ATTR_ZONES] = "two_zones_required"
+                return await self.async_step_menu()
 
             if not errors:
                 # Input is valid, set data.
@@ -242,7 +258,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 newdata[ATTR_GROUPS] = groups
 
                 self._data = newdata
-                return await self.async_step_more_menu()
+                return await self.async_step_menu()
 
         # build a dict including original values
         if user_input is None:
@@ -383,7 +399,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             errors=errors,
         )
 
-    async def async_step_add_group(self, user_input: Optional[dict[str, Any]] = None):
+    async def async_step_add_group(self, user_input=None):
         """ add a group"""
         errors = {}
         newdata = {}
@@ -401,7 +417,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if len(user_input[ATTR_ZONES]) < 2:
                     errors[ATTR_ZONES] = "two_zones_required"
             else:
-                errors[ATTR_ZONES] = "two_zones_required"
+                return await self.async_step_init()
 
             if not errors:
                 # Input is valid, set data.
@@ -490,27 +506,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
 
         if user_input is not None:
-            if user_input != {}:
-                # find the position of the zone in the zones.
-                zones = newdata[ATTR_ZONES]
-                #zonenumber = 0
-                for zonenumber, zone in enumerate(zones):
-                    #zonenumber += 1
-                    friendlyname = zone.get(ATTR_ZONE).split(".")[1]
-                    if (friendlyname) == user_input.get(ATTR_ZONE):
-                        # delete the zone from the list of zones
-                        newdata[ATTR_ZONES].pop(zonenumber)
-                        delzone = zone[ATTR_ZONE]
-                        break
-                #delete any group including this zone
-                if ATTR_GROUPS in newdata:
-                    for groupnumber, group in enumerate(newdata[ATTR_GROUPS]):
-                        if delzone in group[ATTR_ZONES]:
-                            newdata[ATTR_GROUPS].pop(groupnumber)
-                            break
-
-                self._data = newdata
+            if user_input == {}:
+                #no data provided return to the menu
                 return await self.async_step_init()
+
+            # find the position of the zone in the zones.
+            zones = newdata[ATTR_ZONES]
+            for zonenumber, zone in enumerate(zones):
+                friendlyname = zone.get(ATTR_ZONE).split(".")[1]
+                if (friendlyname) == user_input.get(ATTR_ZONE):
+                    # delete the zone from the list of zones
+                    newdata[ATTR_ZONES].pop(zonenumber)
+                    delzone = zone[ATTR_ZONE]
+                    break
+            #delete any group including this zone
+            if ATTR_GROUPS in newdata:
+                for groupnumber, group in enumerate(newdata[ATTR_GROUPS]):
+                    if delzone in group[ATTR_ZONES]:
+                        newdata[ATTR_GROUPS].pop(groupnumber)
+                        break
+
+            self._data = newdata
+            return await self.async_step_init()
 
         # build list of zones
         for zone in self._data.get(ATTR_ZONES):
@@ -528,11 +545,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         zones = []
 
         if user_input is not None:
-            if user_input != {}:
-                # Input is valid, set data.
-                self.zoneselect = user_input
-                # Return the form of the next step.
-                return await self.async_step_update_zone_data()
+            if user_input == {}:
+                #no data provided return to the menu
+                return await self.async_step_init()
+
+            # Input is valid, set data.
+            self.zoneselect = user_input
+            # Return the form of the next step.
+            return await self.async_step_update_zone_data()
 
         zonenumber = 0
         for zone in self._data.get(ATTR_ZONES):
@@ -561,9 +581,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 break
 
         if user_input is not None:
-            for zone in newdata[ATTR_ZONES]:
-                if user_input[ATTR_ZONE] == zone[ATTR_ZONE] and user_input[ATTR_ZONE] != this_zone[ATTR_ZONE]:
-                    errors[ATTR_ZONE] = "zone_defined"
+
+            if user_input == {}:
+                if len(self._data.get(ATTR_ZONES)) == 1:
+                    #at least on zone is required
+                    errors["base"] = "zone_required"
+                if self._data.get(ATTR_ZONES) != [] and len(self._data.get(ATTR_ZONES)) == 0:
+                    #no data, input return to the menu
+                    return await self.async_step_init()
+
+            if user_input.get(ATTR_ZONE) is None:
+                errors[ATTR_ZONE] = "mandatory"
+            else:
+                this_zone_str = self.zoneselect.get(ATTR_ZONE).split(':',1)[1].strip()
+                if user_input.get(ATTR_ZONE) != this_zone_str:
+                    for zone in self._data.get(ATTR_ZONES):
+                        if user_input.get(ATTR_ZONE) == zone.get(ATTR_ZONE):
+                            errors[ATTR_ZONE] = "zone_defined"
+                            break
+
+            if user_input.get(ATTR_WATER) is None:
+                errors[ATTR_WATER] = "mandatory"
+
             if not errors:
                 # Input is valid, set data.
                 zone_data = {}
@@ -606,10 +645,25 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata = {}
         newdata.update(self._data)
         if user_input is not None:
-            for zone in self._data[ATTR_ZONES]:
-                if user_input[ATTR_ZONE] == zone[ATTR_ZONE]:
-                    errors[ATTR_ZONE] = "zone_defined"
+            if user_input == {}:
+                #not data input return to the menu
+                return await self.async_step_init()
+
+            if user_input.get(ATTR_ZONE) is None:
+                errors[ATTR_ZONE] = "mandatory"
+            else:
+                for zone in self._data.get(ATTR_ZONES):
+                    if user_input.get(ATTR_ZONE) == zone.get(ATTR_ZONE):
+                        errors[ATTR_ZONE] = "zone_defined"
+                        break
+
+            if user_input.get(ATTR_WATER) is None:
+                errors[ATTR_WATER] = "mandatory"
+
             if not errors:
+                if user_input == {}:
+                    #not data input return to the menu
+                    return await self.async_step_init()
                 # Input is valid, set data.
                 zone_data = {}
                 for attr in user_input:

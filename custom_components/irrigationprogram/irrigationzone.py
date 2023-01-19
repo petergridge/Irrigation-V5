@@ -137,15 +137,18 @@ class IrrigationZone:
 
     def flow_sensor_value(self):
         '''flow sensor attributes value'''
-        flow_sensor_value = None
+        flow_value = None
         if self._flow_sensor is not None:
-            flow_sensor_value = int(
+            flow_value = int(
                 float(self.hass.states.get(self._flow_sensor).state)
             )
-        return flow_sensor_value
+        return flow_value
 
     def hist_flow_rate(self):
         '''history flow attribute'''
+        if self.flow_sensor_value() > 0:
+            return self.flow_sensor_value()
+        #else use the historical value
         return self._hist_flow_rate
 
     def water(self):
@@ -416,12 +419,16 @@ class IrrigationZone:
         return valid
 
     async def async_test_zone(self):
-        '''run tests'''
-        _LOGGER.error("Zone tests")
-        _LOGGER.error("Should run %s", self.should_run())
-        _LOGGER.error("Run time %s", self.run_time())
-        _LOGGER.error("Repeat Value %s",self.repeat_value())
-        _LOGGER.error("Rain sensor value %s",self.rain_sensor_value())
-        _LOGGER.error("Ignore rain sensor Value %s",self.ignore_rain_sensor_value())
-        _LOGGER.error("Run frequency Value %s",self.run_freq_value())
-        _LOGGER.error("Repeat Value %s",self.repeat_value())
+        '''Show simulation results'''
+        _LOGGER.error("Zone:               %s",self._name)
+        _LOGGER.error("Should run:         %s", self.should_run())
+        _LOGGER.error("Run time:           %s", self.run_time())
+        _LOGGER.error("Water Value:              %s",self.water_value())
+        _LOGGER.error("Wait Value:               %s",self.wait_value())
+        _LOGGER.error("Repeat Value:             %s",self.repeat_value())
+        _LOGGER.error("Rain sensor value:        %s",self.rain_sensor_value())
+        _LOGGER.error("Ignore rain sensor Value: %s",self.ignore_rain_sensor_value())
+        _LOGGER.error("Run frequency Value:      %s",self.run_freq_value())
+        _LOGGER.error("Flow Sensor Value:        %s",self.flow_sensor_value())
+        _LOGGER.error("Adjuster Value:           %s", self.water_adjust_value())
+

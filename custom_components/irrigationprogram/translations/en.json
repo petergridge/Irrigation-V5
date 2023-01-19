@@ -1,7 +1,9 @@
 {
 	"config": {
 		"error": {
-			"zone_defined": "Selected zone switch is already defined in this irrigation program"
+			"zone_defined": "Selected zone switch is already defined in this irrigation program",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
 		},
 		"step": {
 			"user": {
@@ -9,7 +11,6 @@
 				"description": "Defines the watering program",
 				"data": {
 					"name": "Name",
-					"friendly_name": "Friendly name",
 					"run_freq": "Frequency entity",
 					"controller_monitor": "Monitor controller entity",
 					"start_time": "Start time entity",
@@ -24,7 +25,6 @@
 				"description": "Zone configuration",
 				"data": {
 					"zone": "Zone switch entity",
-					"friendly_name": "Display name",
 					"pump": "Pump switch entity",
 					"flow_sensor": "Flow sensor entity",
 					"water_adjustment": "Water adjustment entity",
@@ -35,25 +35,22 @@
 					"wait": "Wait time entity",
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
-					"enable_zone": "Enable zone entity",
-					"add_another": "Add another zone"
+					"enable_zone": "Enable zone entity"
 				}
 			},
-			"more_menu": {
+			"menu": {
 				"description": "",
 				"menu_options": {
-					"add_group": "Add a zone group",
-					"zones": "Add another zone",
-					"finalise": "Apply changes"
+					"add_group": "Add zone group",
+					"zones": "Add zone",
+					"finalise": "Apply"
 				}
 			},
 			"add_group": {
 				"title": "Group configuration",
 				"description": "Add group",
 				"data": {
-					"name": "Group name",
-					"zones": "Select zones",
-					"add_another": "Add another group"
+					"zones": "Select zones"
 				}
 			}
 		}
@@ -63,27 +60,27 @@
 		"error": {
 			"zone_defined": "Zone switch is already defined in this irrigation program",
 			"group_define": "Selected group name has already been used",
-			"two_zones_required": "At least two zones required to create a group"
+			"two_zones_required": "At least two zones required to create a group",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
 		},
 		"step": {
 			"user": {
 				"description": "If a zone is deleted or zone switch is changed, any related group will be deleted",
 				"menu_options": {
-					"update_program": "Update program options",
-					"update_zone": "Update zone options",
-					"delete_zone": "Delete a zone",
-					"add_zone": "Add another zone",
-					"add_group": "Add a group",
-					"delete_group": "Delete a group",
-					"finalise": "Apply changes"
+					"update_program": "Update program",
+					"update_zone": "Update zone",
+					"delete_zone": "Delete zone",
+					"add_zone": "Add zone",
+					"add_group": "Add zone group",
+					"delete_group": "Delete group",
+					"finalise": "Apply"
 				}
 			},
 			"update_program": {
 				"title": "Program data",
 				"description": "Update watering program",
 				"data": {
-						"name": "Name",
-						"friendly_name": "Friendly name",
 						"run_freq": "Run frequency entity",
 						"controller_monitor": "Monitor controller entity",
 						"start_time": "Start time entity",
@@ -98,7 +95,6 @@
 				"description": "Define zone",
 				"data": {
 					"zone": "Zone switch entity",
-					"friendly_name": "Display name",
 					"pump": "Pump switch entity",
 					"flow_sensor": "Flow sensor entity",
 					"water_adjustment": "Water adjustment entity",
@@ -109,8 +105,7 @@
 					"wait": "Wait time entity",
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
-					"enable_zone": "Enable zone entity",
-					"add_another": "Add another zone"
+					"enable_zone": "Enable zone entity"
 				}
 			},
 			"update_zone_data": {
@@ -118,7 +113,6 @@
 				"description": "Update zone",
 				"data": {
 					"zone": "Zone switch entity",
-					"friendly_name": "Display name",
 					"pump": "Pump switch entity",
 					"flow_sensor": "Flow sensor entity",
 					"water_adjustment": "Water adjustment entity",
@@ -150,9 +144,7 @@
 				"title": "Group configuration",
 				"description": "Add group",
 				"data": {
-					"name": "Group name",
-					"zones": "Select zones",
-					"add_another": "Add another group"
+					"zones": "Select zones"
 				}
 			},
 			"delete_group": {
