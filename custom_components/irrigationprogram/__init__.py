@@ -4,6 +4,7 @@ from __future__ import annotations
 from ctypes.wintypes import BOOL
 import logging
 from homeassistant.util import slugify
+import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -21,6 +22,8 @@ from .const import (
     DOMAIN,
     SWITCH_ID_FORMAT,
     CONST_SWITCH,
+    ATTR_START,
+    ATTR_INTERLOCK,
     ATTR_DELAY,
     ATTR_ZONES,
     ATTR_ZONE_GROUP,
@@ -54,12 +57,22 @@ async def async_setup(hass, config):
 
     async def async_stop_programs(call):
         ''' stop all running programs'''
+
         for data in hass.data[DOMAIN].values():
             if data.get(ATTR_NAME) == call.data.get("ignore", ""):
+                await asyncio.sleep(1)
                 continue
             device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME)))
-            data = {ATTR_ENTITY_ID: device}
-            await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, data)
+            servicedata = {ATTR_ENTITY_ID: device}
+
+            #warn if the program is terminated by a service call
+            if hass.states.get(device).state == "on":
+                if call.data.get("ignore", ""):
+                    _LOGGER.warning("Irrigation Program '%s' terminated by '%s'", data.get(ATTR_NAME), call.data.get("ignore", "") )
+                else:
+                    _LOGGER.warning("Irrigation Program '%s' terminated ", data.get(ATTR_NAME))
+                await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
+
     # END async_stop_switches
     # register services
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
@@ -105,17 +118,6 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
 #---- REVERT to UI based impementation ----#
-
-#    if config_entry.version == 1:
-#        if config_entry.options == {}:
-#            new = config_entry.data
-#        else:
-#            new = config_entry.options
-
-#        new[ATTR_ZONES].pop(ATTR_DELAY)
-#        config_entry.version = 2
-#        hass.config_entries.async_update_entry(config_entry, data=new)
-#        _LOGGER.info("Migration to version %s successful", config_entry.version)
 
 # uncomment this when removing old group method and inputs
 #    if config_entry.version == 1:

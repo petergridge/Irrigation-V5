@@ -27,7 +27,7 @@ from .const import (
     ATTR_WATER,
     ATTR_WATER_ADJUST,
     ATTR_ZONE,
-    ATTR_ZONE_GROUP,
+#    ATTR_ZONE_GROUP,
     ATTR_ZONES,
     DOMAIN,
     ATTR_GROUPS,
@@ -46,13 +46,6 @@ PROGRAM_SCHEMA = vol.Schema(
         vol.Optional(ATTR_IRRIGATION_ON): sel.EntitySelector({"domain": "input_boolean"}),
         vol.Optional(ATTR_SHOW_CONFIG): sel.EntitySelector({"domain": "input_boolean"}),
         vol.Optional(ATTR_DELAY): sel.EntitySelector({"domain": "input_number"}),
-#        vol.Optional (ATTR_DELAY): sel.selector({
-#                                        "number": {
-#                                            "min": 0,
-#                                            "max": 30,
-#                                            "unit_of_measurement": "sec",
-#                                            }
-#                                        }),
         vol.Optional(ATTR_INTERLOCK, default=True): cv.boolean,
     }
 )
@@ -68,14 +61,6 @@ PROGRAM_ATTR = [
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_SHOW_CONFIG, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_DELAY, sel.EntitySelector({"domain": "input_number"})],
-#    [False, ATTR_DELAY, sel.selector({
-#                                "number": {
-#                                    "min": 0,
-#                                    "max": 30,
-#                                    "unit_of_measurement": "sec",
-#                                    }
-#                                })
-#    ],
     [False,ATTR_INTERLOCK,cv.boolean]
 ]
 
@@ -90,7 +75,7 @@ ZONE_ATTR = [
     [False, ATTR_WATER_ADJUST, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
     [False, ATTR_RAIN_SENSOR, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
-    [False, ATTR_ZONE_GROUP, sel.EntitySelector({"domain": "input_text"})],
+#    [False, ATTR_ZONE_GROUP, sel.EntitySelector({"domain": "input_text"})],
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
 ]
@@ -253,6 +238,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 groupname = ""
                 for name in user_input[ATTR_ZONES]:
                     groupname = groupname + " " + name.split(".")[1]
+                groupname = groupname.strip()
                 group_data[CONF_NAME] = groupname
                 groups.append(group_data)
                 newdata[ATTR_GROUPS] = groups
@@ -304,6 +290,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
+    VERSION = 2
     def __init__(self, config_entry):
         self.config_entry = config_entry
         self._name = self.config_entry.data.get(CONF_NAME)
@@ -383,6 +370,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         data_schema = {}
         if user_input is not None:
             if not errors:
+                if newdata.get(ATTR_RUN_FREQ):
+                    newdata.pop(ATTR_RUN_FREQ)
+                if newdata.get(ATTR_MONITOR_CONTROLLER):
+                    newdata.pop(ATTR_MONITOR_CONTROLLER)
+                if newdata.get(ATTR_SHOW_CONFIG):
+                    newdata.pop(ATTR_SHOW_CONFIG)
+                if newdata.get(ATTR_IRRIGATION_ON):
+                    newdata.pop(ATTR_IRRIGATION_ON)
+                if newdata.get(ATTR_INTERLOCK):
+                    newdata.pop(ATTR_INTERLOCK)
+                if newdata.get(ATTR_DELAY):
+                    newdata.pop(ATTR_DELAY)
                 newdata.update(user_input)
                 # Return the form of the next step.
                 self._data = newdata
@@ -427,6 +426,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 groupname = ""
                 for name in user_input[ATTR_ZONES]:
                     groupname = groupname + " " + name.split(".")[1]
+                groupname = groupname.strip()
                 group_data[CONF_NAME] = groupname
                 groups.append(group_data)
                 newdata[ATTR_GROUPS] = groups
@@ -479,11 +479,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if user_input != {}:
                 # find the position of the zone in the zones.
                 groups = newdata[ATTR_GROUPS]
-                for groupnumber, group in enumerate(groups):
-                    if group.get(CONF_NAME) == user_input.get('group').split(":")[0]:
-                        # delete the zone from the list of zones
-                        newdata[ATTR_GROUPS].pop(groupnumber)
-                        break
+                if groups:
+                    for groupnumber, group in enumerate(groups):
+                        if group.get(CONF_NAME) == user_input.get('group').split(":")[0]:
+                            # delete the zone from the list of zones
+                            newdata[ATTR_GROUPS].pop(groupnumber)
+                            break
 
                 self._data = newdata
                 return await self.async_step_init()

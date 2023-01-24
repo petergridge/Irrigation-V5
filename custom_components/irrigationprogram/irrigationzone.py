@@ -43,7 +43,7 @@ class IrrigationZone:
         self._run_freq = run_freq
         self._rain_sensor = zone.get(ATTR_RAIN_SENSOR)
         self._ignore_rain_sensor = zone.get(ATTR_IGNORE_RAIN_SENSOR)
-        self._enable_zone = zone.get(ATTR_ENABLE_ZONE)
+        self._enable_zone = zone.get(ATTR_ENABLE_ZONE) #deprecate
         self._flow_sensor = zone.get(ATTR_FLOW_SENSOR)
         self._hist_flow_rate = hist_flow_rate
         self._water = zone.get(ATTR_WATER)
@@ -52,11 +52,8 @@ class IrrigationZone:
         self._repeat = zone.get(ATTR_REPEAT)
         self._zone_group = zone.get(ATTR_ZONE_GROUP)
         self._last_ran = last_ran
-        self._run_time = 0
-        self._default_run_time = 0
         self._remaining_time = 0
         self._state = "off"
-        self._stop = False
 
     def name(self):
         """Return the name of the variable."""
@@ -126,9 +123,7 @@ class IrrigationZone:
         '''determine watering adjustment'''
         water_adjust_value = 1
         if self._water_adjust is not None:
-            water_adjust_value = float(
-                self.hass.states.get(self._water_adjust).state
-            )
+            water_adjust_value = float(self.hass.states.get(self._water_adjust).state)
         return water_adjust_value
 
     def flow_sensor(self):
@@ -139,12 +134,10 @@ class IrrigationZone:
         '''flow sensor attributes value'''
         flow_value = None
         if self._flow_sensor is not None:
-            flow_value = int(
-                float(self.hass.states.get(self._flow_sensor).state)
-            )
+            flow_value = float(self.hass.states.get(self._flow_sensor).state)
         return flow_value
 
-    def hist_flow_rate(self):
+    def flow_rate(self):
         '''history flow attribute'''
         if self.flow_sensor_value() > 0:
             return self.flow_sensor_value()
@@ -157,7 +150,7 @@ class IrrigationZone:
 
     def water_value(self):
         '''water attibute value'''
-        return int(float(self.hass.states.get(self.water()).state))
+        return float(self.hass.states.get(self.water()).state)
 
     def wait(self):
         '''waith entity attribute'''
@@ -167,7 +160,7 @@ class IrrigationZone:
         ''' wait entity value'''
         wait_value = 0
         if self._wait is not None:
-            wait_value = int(float(self.hass.states.get(self._wait).state))
+            wait_value = float(self.hass.states.get(self._wait).state)
         return wait_value
 
     def repeat(self):
@@ -178,9 +171,7 @@ class IrrigationZone:
         ''' repeat entity value'''
         repeat_value = 1
         if self._repeat is not None:
-            repeat_value = int(
-                float(self.hass.states.get(self._repeat).state)
-            )
+            repeat_value = int(float(self.hass.states.get(self._repeat).state))
             if repeat_value == 0:
                 repeat_value = 1
         return repeat_value
@@ -215,30 +206,35 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def run_time(self):
+    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1):
         """update the run time component"""
-        if self._flow_sensor is None:
-            z_water = math.ceil(
-                float(self.water_value()) * float(self.water_adjust_value())
-            )
-            run_time = (
-                ((z_water + self.wait_value()) * self.repeat_value())
-                - self.wait_value()
-            ) * 60
-        else:
-            z_water = math.ceil(
-                int(float(self.water_value()) * float(self.water_adjust_value()))
-            )
-            z_watertime = z_water / float(self.hist_flow_rate())
-            run_time = (
-                ((z_watertime + self.wait_value()) * self.repeat_value())
-                - self.wait_value()
-            ) * 60
 
+        wait = self.wait_value()*60
+        adjust = self.water_adjust_value()
+
+        if self._flow_sensor is None:
+            #time based
+            water = self.water_value()*60
+            run_time = (water * adjust * repeats) + (wait * (repeats -1))
+        else:
+            #volume based/flow sensor
+            water = self.water_value() #volume
+            flow = self.flow_rate() # flow rate
+            delivery_volume = water * adjust
+            if volume_delivered > 0: # the cycle has started
+                remaining_volume = (delivery_volume * (repeats-1)) +  delivery_volume - volume_delivered
+            else:
+                remaining_volume = delivery_volume * repeats
+
+            watertime = remaining_volume / flow * 60
+            #remaining watering time + remaining waits
+            run_time = watertime + (wait * (repeats -1))
+
+        run_time = run_time - seconds_run
         # zone has been disabled
-        if self.enable_zone_value() is False or float(self.water_adjust_value()) == 0:
+        if self.enable_zone_value() is False or adjust == 0:
             run_time = 0
-        return run_time
+        return math.ceil(run_time)
 
     def last_ran(self):
         '''last ran datetime attribute'''
@@ -257,12 +253,13 @@ class IrrigationZone:
             return False
         if self.is_raining():
             return False
-        if self._last_ran is None:
-            #default to 10 days ago when a zone has never run previously
-            calc_freq = 10
-        else:
-            #calculate how many days since last run
-            calc_freq = float(
+        if self.run_freq_value() is None:
+            return True
+
+        last_ran_relative = 0
+        if self._last_ran:
+            #how long since the zone last ran in days
+            last_ran_relative = float(
                 (
                     (
                         dt_util.as_timestamp(dt_util.now())
@@ -274,107 +271,102 @@ class IrrigationZone:
                 / 86400
             )
 
-        numeric_freq = None
-        string_freq = None
-        response = True
-        if self.run_freq_value() is not None:
-            try:
-                numeric_freq = float(int(self.run_freq_value()))
-                # check if this day matches frequency
-                if numeric_freq <= calc_freq:
-                    response = True
-                else:
-                    response = False
-            except ValueError:
-                string_freq = self.run_freq_value()
-
-        if string_freq is not None: #Mon - Sun
-            #clean up string and captialise
+        response = False
+        if self.run_freq_value().isnumeric():
+            numeric_freq = int(float(self.run_freq_value()))
+            if numeric_freq <= last_ran_relative or not self._last_ran:
+                response = True
+        else:
+            string_freq = self.run_freq_value()
             string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
             string_freq = [x.capitalize() for x in string_freq]
             #if the day is found in the frequency
-            if dt_util.now().strftime("%a") not in string_freq:
-                response = False
-            else:
+            if dt_util.now().strftime("%a") in string_freq:
                 response = True
         return response
     # end should_run
 
+    def check_switch_state(self):
+        """ check the solenoid state if turned off stop this instance"""
+        if self.hass.states.is_state(self._switch, "off"):
+            return True
+        return False
+
     async def async_turn_on(self, **kwargs):
         """start the watering cycle """
 
-        self._stop = False
-        self._state = 'off'
-        self._remaining_time = self.run_time()
+        stop = False
+
+        #initalise the reamining time for display
+        self._remaining_time = self.run_time(repeats=self.repeat_value())
         # run the watering cycle, water/wait/repeat
         for i in range(self.repeat_value(), 0, -1):
+            seconds_run = 0
             #run time adjusted to 0 skip this zone
             if self._remaining_time <= 0:
                 continue
             self._state = "on"
-            if self.hass.states.is_state(self._switch, "off") and not self._stop:
+            if self.hass.states.is_state(self._switch, "off") and not stop:
                 await self.hass.services.async_call(
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
                 )
+            await asyncio.sleep(1)
+
+            #track the watering
             if self._flow_sensor is not None:
-                #estimate the remaining volume and time
-                water = self.water_value() * float(self.water_adjust_value())
-                while water > 0 and not self._stop:
-                    water -= self.flow_sensor_value() / 60
-                    remaining_cycle = water / self.flow_sensor_value() * 60
-                    if remaining_cycle < 0:
-                        remaining_cycle = 0
-                    full_cycle = self.water_value() / self.flow_sensor_value() * 60
-                    self._remaining_time = (
-                        remaining_cycle
-                        + (full_cycle * (i - 1))
-                        + (self.wait_value() * 60 * (i - 1))
-                    )
-                    if self.flow_sensor_value() > self.hist_flow_rate():
-                        self._hist_flow_rate = self.flow_sensor_value()
-                    if not self._stop:
-                        await asyncio.sleep(1)
-            else:
-                #calculate remaining time
-                water = self.water_value() * float(self.water_adjust_value()) * 60
-                # pylint: disable=unused-variable
-                for countdown in range(0, int(water), 1):
-                    self._remaining_time -= 1
-                    if self._stop:
+                volume_remaining = self.water_value() * self.water_adjust_value()
+                volume_delivered = 0
+                while volume_remaining > 0:
+                    volume_delivered += self.flow_sensor_value() / 60
+                    volume_required = self.water_value() * self.water_adjust_value()
+                    volume_remaining = volume_required - volume_delivered #if the adjuster changes during watering
+                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i)
+                    if self.check_switch_state():
+                        stop = True
+                        break
+                    #flow sensor has failed or no water is being provided
+                    if self.flow_sensor_value() == 0:
+                        stop = True
+                        _LOGGER.warning("No flow detected, turning off solenoid to allow program to complete")
                         break
                     await asyncio.sleep(1)
-            if self.wait_value() > 0 and i > 1 and not self._stop:
-                #Eco mode is enabled
+            else:
+                watertime = math.ceil(self.water_value()*60 * self.water_adjust_value())
+                while watertime > 0:
+                    seconds_run += 1
+                    watertime = math.ceil(self.water_value()*60 * self.water_adjust_value()) - seconds_run
+                    self._remaining_time = self.run_time(seconds_run, repeats=i)
+                    if self.check_switch_state():
+                        stop = True
+                        break
+                    await asyncio.sleep(1)
+
+            if stop:
+                break
+            #Eco mode, wait cycle
+            if self.wait_value() > 0 and i > 1:
                 self._state = "eco"
                 if self.hass.states.is_state(self._switch, "on"):
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
                     )
-                wait = self.wait_value() * 60
-                #reduce time remaining in the wait cycle
-                for countdown in range(0, wait, 1):
-                    self._remaining_time -= 1
-                    if self._stop:
+                waittime = self.wait_value() * 60
+                while waittime > 0:
+                    seconds_run += 1
+                    waittime = self.wait_value() * 60 - seconds_run
+                    self._remaining_time = self.run_time(seconds_run, repeats=i)
+                    if stop:
                         break
                     await asyncio.sleep(1)
-            # turn the switch entity off
-            if i <= 1 or self._stop:
-                #last/only cycle
 
-                if self.hass.states.is_state(self._switch, "on"):
-                    await self.hass.services.async_call(
-                        CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-                    )
-
-                if self._stop:
-                    break
+            if stop:
+                break
         # End of repeat loop
-        self._state = "off"
-        self._remaining_time = 0
+        await self.async_turn_off()
+
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
-        self._stop = True
         self._state = "off"
         self._remaining_time = 0
         if self.hass.states.is_state(self._switch, "on"):
@@ -422,7 +414,8 @@ class IrrigationZone:
         '''Show simulation results'''
         _LOGGER.error("Zone:               %s",self._name)
         _LOGGER.error("Should run:         %s", self.should_run())
-        _LOGGER.error("Run time:           %s", self.run_time())
+        _LOGGER.error("Last Run time:      %s", self._last_ran)
+        _LOGGER.error("Run time:           %s", self.run_time(repeats=self.repeat_value()))
         _LOGGER.error("Water Value:              %s",self.water_value())
         _LOGGER.error("Wait Value:               %s",self.wait_value())
         _LOGGER.error("Repeat Value:             %s",self.repeat_value())
