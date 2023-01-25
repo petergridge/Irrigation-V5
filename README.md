@@ -104,7 +104,7 @@ You can optionally define a pump/master soleniod to turn on concurrently with th
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. 
 
-**New V5.1.20** Zone groups can be setup in the config flow.
+**New V5.2.0** Zone groups can be setup in the config flow.
 Once a program is created, choose *configure* again to add groups
 
 This provides for greater validation, for example:
@@ -112,7 +112,7 @@ This provides for greater validation, for example:
 * if a zone is deleted the related group will also be deleted, also 
 * if the switch associated to a zone is changed the related group will be deleted. 
 
-**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently. This model will be phased out in a future release.
+**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently. Is removed in V5.2.0, any existing groups are automatically migrated to the config flow.
 
 ### Monitor Controller feature
 If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
@@ -145,6 +145,7 @@ automation:
         value: "{{ value template calculation }}"
 ```
 ### Interlock
+** New Version 5.2.0
 Turning off running programs when a new program is started, this is the default.
 Remember to change this on all program configurations to get consistent behaviour. 
 
@@ -154,11 +155,14 @@ The *zone_turned_on* event provides this information:
 ```
 event_type: irrigation_event
 data:
-  device_id: afternoon
+  device_id: switch.test_irrigation
   action: zone_turned_on
-  zone: zone_1
-  pump: switch.dummy_pump
-origin: LOCAL
+  zone: zone_3
+  pump: switch.pump
+  runtime: 60
+  water: 1
+  wait: 0
+  repeat: 1
 time_fired: "2022-08-15T23:33:36.358814+00:00"
 context:
   id: 01GAHXP1F6KQWTM6Z6PEJ69KDM
@@ -202,7 +206,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release**|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[frequency](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result **will be depricated in a future release**|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interlock|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
 
@@ -212,14 +216,20 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
-## 5.1.22 - under development - Planned April
-* Remove legacy group features
-## 5.1.21 - under development - Planned March
+
+## 5.2.1 - under development - Planned April
 * Remove yaml configuration support
-## 5.1.20 - under development - Planned February
+* breaking change configuration migration will be removed, upgrade to 5.1.19 first.
+## 5.2.0 - under development - Planned February
 * Groups in config flow
 * Vary Interlock behaviour of programs
 * Expand event data provided
+* Italian translation file
+* Support interactive value changes during program execution
+* link solenoid switch behaviour (off only) with the custom component
+* ability to turn off zones instead of the whole program
+* Warnings raised in the log when a program is stopped by another program or service call
+* Additional attributes have been added to the event data for the start of a zone
 ## 5.1.19
 * Fix issue with reloading after a config flow change
 * Add program remaining time attribute
