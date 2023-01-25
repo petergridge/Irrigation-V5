@@ -3,8 +3,7 @@
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total)
 
 # Deprecation notice:
-* yaml configuration support will be depricated from version 5.1.22 - March 2023
-* diable zone option replaced by frequency value of Off or similar from version 5.1.22 - March 2023
+* yaml configuration support will be depricated from version 5.2.1 - April 2023
 
 # Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
