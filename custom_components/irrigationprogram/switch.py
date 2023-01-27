@@ -423,7 +423,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         await super().async_added_to_hass()
 
     async def entity_run_zone(self, zone) -> None:
-        '''Run a specific zone is to run'''
+        '''Run a specific zone'''
         for stopzone in self._irrigationzones:
             await stopzone.async_turn_off()
         await asyncio.sleep(1)
