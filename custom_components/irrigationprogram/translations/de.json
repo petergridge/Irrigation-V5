@@ -61,8 +61,8 @@
 			"zone_defined": "Ausgewählter Zonenschalter wird in diesem Programm bereits genutzt",
 			"group_define": "Ausgewählter Gruppenname wird bereits benutzt",
 			"two_zones_required": "Eine Gruppe muss aus mindestens zwei Zonen bestehen",
-			"mandatory": "Required field not filled in",
-			"zone_required": "At least one zone must be defined"
+			"mandatory": "Pflichtfeld nicht ausgefüllt",
+			"zone_required": "Es muss mindestens eine Zone definiert sein"
 		},
 		"step": {
 			"user": {
