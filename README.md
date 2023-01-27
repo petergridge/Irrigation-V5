@@ -116,7 +116,7 @@ This provides for greater validation, for example:
 ### Monitor Controller Feature
 If you binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
 
-For example I use an ESPHome implementation to control the hardware that exposes a status sensor, should this lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There will also be a visual indication on the custom card of the status of the controller.
+For example I use an ESPHome implementation to control the hardware it exposes a status sensor, should the controller lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There is also be a visual indication on the custom card of the status of the controller.
 
 ### Watering Adjuster feature
 As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
@@ -146,13 +146,14 @@ automation:
         value: "{{ value template calculation }}"
 ```
 ### Interlock
-** New Version 5.2.0
+
 Turn off running programs when a new program is started, this is the default.
-Remember to change this on all program configurations to get consistent behaviour. 
-For example:
+**Note** Change this on all program configurations to get consistent behaviour. 
+
 With interlock enabled:
 * If Program 1 and Program 2 have the same start time neither program will run and a warning is logged.
 * If Program 2 starts while Program 1 is running Program 1 will be terminated and Program 2 will run, a warning will be logged.
+
 With interlock disabled:
 * If Program 1 and 2 overlap both programs will continue to run.
 * If a running zone is started by the second program a warning is logged.
