@@ -113,9 +113,10 @@ This provides for greater validation, for example:
 
 **Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently. Is removed in V5.2.0, any existing groups are automatically migrated to the config flow.
 
-### Monitor Controller feature
-If this binary sensor is defined it will not execute a schedule if the controller is offline. This is ideal for ESP Home implementations.
+### Monitor Controller Feature
+If you binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
 
+For example I use an ESPHome implementation to control the hardware that exposes a status sensor, should this lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There will also be a visual indication on the custom card of the status of the controller.
 ### Watering Adjuster feature
 As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
