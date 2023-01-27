@@ -145,8 +145,15 @@ automation:
 ```
 ### Interlock
 ** New Version 5.2.0
-Turning off running programs when a new program is started, this is the default.
+Turn off running programs when a new program is started, this is the default.
 Remember to change this on all program configurations to get consistent behaviour. 
+For example:
+With interlock enabaled:
+* If Program 1 and Program 2 have the same start time neither program will run and a warning is logged.
+* If Program 2 starts while Program 1 is running Program 1 will be terminated and Program 2 will run, a warning will be logged.
+With interlock disabled:
+* If Program 1 and 2 overlap both programs will continue to run.
+* If a running zone is started by the second program a warning is logged.
 
 ### Events
 
