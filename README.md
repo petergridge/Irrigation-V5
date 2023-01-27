@@ -34,7 +34,6 @@ Implemented as a switch, you can start a program using the schedule, manually or
 * To define groups first complete the setup of the program and then go back into configuration to add zone groups. (V5.1.20)
 * Modify programs and zones, add new zones, delete zones
 * V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
-* YAML support will be removed in a future release (V5.1.21)
 
 ### Pre-requisite
 * The time_date integration is required
