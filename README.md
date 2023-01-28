@@ -5,7 +5,7 @@
 # Deprecation notice:
 * yaml configuration support will be depricated from version 5.2.1 - April 2023
 
-# Irrigation Component V5.1 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
+# Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 The **custom card https://github.com/petergridge/Irrigation-Card** V5.1 will render the program options specified in the configuration and is also available in HACS.
 
