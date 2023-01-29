@@ -12,7 +12,7 @@
 				"data": {
 					"name": "Name",
 					"run_freq": "Entity für Ausführungs-Häufigkeit",
-					"controller_monitor": "Monitor controller entity",
+					"controller_monitor": "Entity für Überwachung",
 					"start_time": "Startzeit entity",
 					"irrigation_on": "Entity um Programm zu aktivieren",
 					"show_config": "Entity um Einstellungen anzuzeigen",
@@ -82,12 +82,12 @@
 				"description": "Programmdaten aktualisierten",
 				"data": {
 					"run_freq": "Entity für Ausführungs-Häufigkeit",
-					"controller_monitor": "Monitor controller entity",
+					"controller_monitor": "Entity für Überwachung",
 					"start_time": "Startzeit entity",
 					"irrigation_on": "Entity um Bewässerung zu aktivieren",
 					"show_config": "Entity um Einstellungen anzuzeigen",
 					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen",
-					"interlock": "Prevent programs running concurrently"
+					"interlock": "Gleichzeitige Programmausführung unterbinden"
 				}
 			},
 			"add_zone": {
