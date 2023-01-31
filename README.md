@@ -117,6 +117,8 @@ If you binary sensor that indicates the status of the watering system hardware, 
 
 For example I use an ESPHome implementation to control the hardware it exposes a status sensor, should the controller lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There is also be a visual indication on the custom card of the status of the controller.
 
+Zone switches that are not in a known (on, off) state will not be executed.
+
 ### Watering Adjuster feature
 As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
@@ -227,7 +229,6 @@ irrigationprogram.stop_programs:
 
 ## 5.2.1 - under development - Planned April
 * Remove yaml configuration support
-* breaking change configuration migration will be removed, upgrade to 5.1.19 first.
 ## 5.2.0 - under development - Planned February
 * Groups in config flow
 * Vary Interlock behaviour of programs
