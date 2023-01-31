@@ -44,6 +44,20 @@ sensor:
       - 'time'
       - 'date'
 ```
+### Basic Configuration
+You need to define the entities that allow you to control the features you want. I have have moved away from defining the helpers in YMAL and create them via the Helpers tab in the Settings, Devices and services paged, I find it easier and there is no need to restart HA when you add new ones. Create the following for a basic setup.
+
+For the Program:
+- Input_datetime for the program start time (time only)
+- Input_boolean  to support the toggling of the configuration in the custom card
+- Input_boolean to support the enabling/disabling of the program
+
+For each Zone:
+- Input_number to provide the duration of the watering cycle
+- Input_select to define the frequency you want the zone to run, you can do this on the program if you want and save a few entities but I have different frequencies on some zones
+
+This will get a basic setup running, have a read of the notes on GitHub and try a few of the other features.
+
 ### Debug
 Add the following to your logger section configuration.yaml
 ```yaml
