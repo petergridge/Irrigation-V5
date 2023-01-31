@@ -1,0 +1,159 @@
+{
+	"config": {
+		"error": {
+			"zone_defined": "Selected zone switch is already defined in this irrigation program",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
+		},
+		"step": {
+			"user": {
+				"title": "Program data",
+				"description": "Defines the program",
+				"data": {
+					"name": "Name",
+					"run_freq": "Frequency entity",
+					"controller_monitor": "Monitor controller entity",
+					"start_time": "Start time entity",
+					"irrigation_on": "Enable irrigation entity",
+					"show_config": "Show configuration entity",
+					"inter_zone_delay": "Inter zone delay entity",
+					"interlock": "Prevent programs running concurrently"
+				}
+			},
+			"zones": {
+				"title": "Program Zones",
+				"description": "Zone configuration",
+				"data": {
+					"zone": "Zone switch entity",
+					"pump": "Pump switch entity",
+					"flow_sensor": "Flow sensor entity",
+					"water_adjustment": "Runtime adjustment entity",
+					"run_freq": "Frequecy entity",
+					"rain_sensor": "Rain sensor entity",
+					"group": "Zone group entity",
+					"water": "Runtime entity",
+					"wait": "Wait time entity",
+					"repeat": "Repeat count entity",
+					"ignore_rain_sensor": "Ignore rain sensor entity",
+					"enable_zone": "Enable zone entity"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"add_group": "Add zone group",
+					"zones": "Add zone",
+					"finalise": "Apply"
+				}
+			},
+			"add_group": {
+				"title": "Group configuration",
+				"description": "Add group",
+				"data": {
+					"zones": "Select zones"
+				}
+			}
+		}
+	},
+
+ 	"options": {
+		"error": {
+			"zone_defined": "Zone switch is already defined in this irrigation program",
+			"group_define": "Selected group name has already been used",
+			"two_zones_required": "At least two zones required to create a group",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined"
+		},
+		"step": {
+			"user": {
+				"description": "If a zone is deleted or zone switch is changed, any related group will be deleted",
+				"menu_options": {
+					"update_program": "Update program",
+					"update_zone": "Update zone",
+					"delete_zone": "Delete zone",
+					"add_zone": "Add zone",
+					"add_group": "Add zone group",
+					"delete_group": "Delete group",
+					"finalise": "Apply"
+				}
+			},
+			"update_program": {
+				"title": "Program data",
+				"description": "Update the program",
+				"data": {
+						"run_freq": "Run frequency entity",
+						"controller_monitor": "Monitor controller entity",
+						"start_time": "Start time entity",
+						"irrigation_on": "Enable irrigation entity",
+						"show_config": "Show configuration entity",
+						"inter_zone_delay": "Inter zone delay entity",
+						"interlock": "Prevent programs running concurrently"
+				}
+			},
+			"add_zone": {
+				"title": "Zone configuration",
+				"description": "Define zone",
+				"data": {
+					"zone": "Zone switch entity",
+					"pump": "Pump switch entity",
+					"flow_sensor": "Flow sensor entity",
+					"water_adjustment": "Runtime adjustment entity",
+					"run_freq": "Frequecy entity",
+					"rain_sensor": "Rain sensor entity",
+					"group": "Zone group entity",
+					"water": "Runtime entity",
+					"wait": "Wait time entity",
+					"repeat": "Repeat count entity",
+					"ignore_rain_sensor": "Ignore rain sensor entity",
+					"enable_zone": "Enable zone entity"
+				}
+			},
+			"update_zone_data": {
+				"title": "Zone configuration",
+				"description": "Update zone",
+				"data": {
+					"zone": "Zone switch entity",
+					"pump": "Pump switch entity",
+					"flow_sensor": "Flow sensor entity",
+					"water_adjustment": "Runtime adjustment entity",
+					"run_freq": "Frequecy entity",
+					"rain_sensor": "Rain sensor entity",
+					"group": "Zone group entity",
+					"water": "Runtime entity",
+					"wait": "Wait time entity",
+					"repeat": "Repeat count entity",
+					"ignore_rain_sensor": "Ignore rain sensor entity",
+					"enable_zone": "Enable zone entity"
+				}
+			},
+			"delete_zone": {
+				"title": "Zone configuration",
+				"description": "Delete zone",
+				"data": {
+					"zone": "Select zone"
+				}
+			},
+			"update_zone": {
+				"title": "Zone configuration",
+				"description": "Update zone",
+				"data": {
+					"zone": "Select zone"
+				}
+			},
+			"add_group": {
+				"title": "Group configuration",
+				"description": "Add group",
+				"data": {
+					"zones": "Select zones"
+				}
+			},
+			"delete_group": {
+				"title": "Group configuration",
+				"description": "Delete Group",
+				"data": {
+					"group": "Select group"
+				}
+			}
+		}
+	}
+}
