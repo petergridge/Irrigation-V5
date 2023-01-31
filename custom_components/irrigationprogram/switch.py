@@ -330,7 +330,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             '''Triggered when HASS has fully started only required on a hard restart'''
 
 
-#-------------Upgrade config flow schema--------------------------
+        #-------------Upgrade config flow schema--------------------------
             #typically this is undertaken in the __init__ but I needed to
             #process the groups after HA has started and entities are available.
             new={}
@@ -374,8 +374,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.config_entry.version = 2
                 self.hass.config_entries.async_update_entry(self.config_entry, data=new)
                 _LOGGER.info('Irrigation program upgraded to schema version %s',self.config_entry.version)
-
-#---------------------------------------
+        #---------------------------------------
 
             #turn off the underlying switches as a precaution
             for zone in self._irrigationzones:
@@ -549,19 +548,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             else:
                 groups[groupkey] = [zone]
             #---- end new zone group
-        # Config Version 1 will run in parallel until depricated
-            if not groups:
-                #No config version 2 groups build on version 1 rules
-                groupkey = zonecount
-                if zone.zone_group_value() is not None:
-                    zone_group = zone.zone_group_value()
-                    if zone_group:
-                        groupkey = "G" + zone_group
-                if groupkey in groups:
-                    groups[groupkey].append(zone)
-                else:
-                    groups[groupkey] = [zone]
-        #--- end to be depricated
 
         self.async_schedule_update_ha_state()
         return groups

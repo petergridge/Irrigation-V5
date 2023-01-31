@@ -249,6 +249,12 @@ class IrrigationZone:
 
     def should_run(self):
         '''determine if the zone should run'''
+        if self.hass.states.state(self._switch, "unavailable"):
+            _LOGGER.warning("Zone switch %s is offline", self.switch())
+        if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
+            #Switch is unavavailable
+            _LOGGER.warning("Zone switch %s is offline", self.switch())
+            return False
         if not self.enable_zone_value():
             return False
         if self.is_raining():
@@ -351,9 +357,11 @@ class IrrigationZone:
                         CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
                     )
                 waittime = self.wait_value() * 60
+                wait_seconds = 0
                 while waittime > 0:
                     seconds_run += 1
-                    waittime = self.wait_value() * 60 - seconds_run
+                    wait_seconds += 1
+                    waittime = self.wait_value() * 60 - wait_seconds
                     self._remaining_time = self.run_time(seconds_run, repeats=i)
                     if stop:
                         break
@@ -390,7 +398,7 @@ class IrrigationZone:
         if self._run_freq is not None and self.hass.states.async_available(
             self._run_freq
         ):
-            _LOGGER.error("%s not found run freq" , self._run_freq)
+            _LOGGER.error("%s not found run frequency" , self._run_freq)
             valid = False
         if self._rain_sensor is not None and self.hass.states.async_available(
             self._rain_sensor
@@ -405,7 +413,7 @@ class IrrigationZone:
         if self._water_adjust is not None and self.hass.states.async_available(
             self._water_adjust
         ):
-            _LOGGER.error("%s not found water adjust", self._water_adjust)
+            _LOGGER.error("%s not found adjustment", self._water_adjust)
             valid = False
 
         return valid
