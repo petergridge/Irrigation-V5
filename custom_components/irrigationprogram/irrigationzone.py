@@ -249,8 +249,6 @@ class IrrigationZone:
 
     def should_run(self):
         '''determine if the zone should run'''
-        if self.hass.states.state(self._switch, "unavailable"):
-            _LOGGER.warning("Zone switch %s is offline", self.switch())
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             #Switch is unavavailable
             _LOGGER.warning("Zone switch %s is offline", self.switch())
