@@ -24,6 +24,8 @@ from .const import (
     CONST_SWITCH,
 )
 
+CONST_ZERO_FLOW_DELAY = 5
+
 _LOGGER = logging.getLogger(__name__)
 
 class IrrigationZone:
@@ -304,6 +306,7 @@ class IrrigationZone:
         #initalise the reamining time for display
         self._remaining_time = self.run_time(repeats=self.repeat_value())
         # run the watering cycle, water/wait/repeat
+        zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
             seconds_run = 0
             #run time adjusted to 0 skip this zone
@@ -330,9 +333,13 @@ class IrrigationZone:
                         break
                     #flow sensor has failed or no water is being provided
                     if self.flow_sensor_value() == 0:
+                        zeroflowcount += 1
                         stop = True
-                        _LOGGER.warning("No flow detected, turning off solenoid to allow program to complete")
-                        break
+                        if zeroflowcount > CONST_ZERO_FLOW_DELAY:
+                            _LOGGER.warning("No flow detected for %s seconds, turning off solenoid to allow program to complete",CONST_ZERO_FLOW_DELAY)
+                            break
+                    else:
+                        zeroflowcount = 0
                     await asyncio.sleep(1)
             else:
                 watertime = math.ceil(self.water_value()*60 * self.water_adjust_value())

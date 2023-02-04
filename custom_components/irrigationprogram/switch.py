@@ -156,8 +156,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     def __init__(
         self, hass, unique_id, config, device_id, config_entry
     ):
-        #--------------------------
-        #
         self.config_entry = config_entry
 
         """Initialize a Irrigation program."""
