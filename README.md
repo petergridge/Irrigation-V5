@@ -249,10 +249,13 @@ irrigationprogram.stop_programs:
 * Expand event data provided
 * Italian translation file
 * Support interactive value changes during program execution
-* link solenoid switch behaviour (off only) with the custom component
-* ability to turn off zones instead of the whole program
+* Link solenoid switch behaviour (off only) with the custom component
+* Ability to turn off zones instead of the whole program
 * Warnings raised in the log when a program is stopped by another program or service call
 * Additional attributes have been added to the event data for the start of a zone
+* Add a 5 second delay before zone stops when zero flow is indicated by the flow meter
+* Implement hass.config_entries.async_forward_entry_setups required for HA
+* Exclude inactive zones, switch is unavailable, from program runs
 ## 5.1.19
 * Fix issue with reloading after a config flow change
 * Add program remaining time attribute
