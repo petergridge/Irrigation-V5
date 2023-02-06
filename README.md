@@ -66,6 +66,10 @@ logger:
     logs:
         custom_components.irrigationprogram: debug
 ```
+The following services support testing and debugging:
+* irrigationprogram.reset_runtime service will reset the last run details
+* irrigationprogram.run_simulation will list details of the program based on the currently set attributes
+
 ### Rain Sensor feature
 If a rain sensor is defined the zone will be ignored when the value of the sensor is True.
 
