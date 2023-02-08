@@ -120,15 +120,14 @@ You can optionally define a pump/master soleniod to turn on concurrently with th
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. 
 
-**New V5.2.0** Zone groups can be setup in the config flow.
-Once a program is created, choose *configure* again to add groups
+**New V5.2.0** Zone groups are now setup in the config flow. Any existing groups are automatically migrated.
 
 This provides for greater validation, for example:
 * a group must have at least two zones, 
 * if a zone is deleted the related group will also be deleted, also 
 * if the switch associated to a zone is changed the related group will be deleted. 
 
-**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently. Is removed in V5.2.0, any existing groups are automatically migrated to the config flow.
+**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently.
 
 ### Monitor Controller Feature
 If you binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
