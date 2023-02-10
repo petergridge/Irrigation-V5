@@ -6,16 +6,18 @@ from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_O
 
 from .const import CONST_SWITCH
 
+CONST_OFF_DELAY = 2
+
 _LOGGER = logging.getLogger(__name__)
 
 class PumpClass:
     ''' pump class'''
-    def __init__(self, hass, pump, zones, delay):
+    def __init__(self, hass, pump, zones):
         self.hass = hass
         self._pump = pump
         self._zones = zones
         self._stop = False
-        self._off_delay = delay
+        self._off_delay = CONST_OFF_DELAY
 
     async def async_monitor(self, **kwargs):
         '''monitor running zones to determine if pump is required'''

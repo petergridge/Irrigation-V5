@@ -259,6 +259,8 @@ class IrrigationZone:
             return False
         if self.is_raining():
             return False
+        if self.water_adjust_value() == 0:
+            return False
         if self.run_freq_value() is None:
             return True
 

@@ -315,7 +315,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # create pump class to start/stop pumps
         for pump, zones in pumps.items():
             #pass pump_switch, list of zones, off_delay
-            self._pumps.append(PumpClass(self.hass, pump, zones, 2))
+            self._pumps.append(PumpClass(self.hass, pump, zones))
 
         @callback
         async def template_check(entity, old_state, new_state):
