@@ -115,7 +115,7 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 * *repeat* defines the number of watering cycles to run
 
 ### Pump or master solenoid
-You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump will remain active during zone transitions and will shut off a few seconds after the last zone has completed watering.
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The will shut off a few seconds after a zone has completed alowing a smooth transition between zones. Currently the pump class only monitors during a program run cycle.
 
 ### Zone Group
 You can optionally group zones to run concurrently or sequentially. 
@@ -127,7 +127,7 @@ This provides for greater validation, for example:
 * if a zone is deleted the related group will also be deleted, also 
 * if the switch associated to a zone is changed the related group will be deleted. 
 
-**Legacy model:** Zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently.
+**Legacy model:** V5.1 and earlier, zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently.
 
 ### Monitor Controller Feature
 If you binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
