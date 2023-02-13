@@ -171,6 +171,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._zones = config.get(ATTR_ZONES)
         self._interlock = config.get(ATTR_INTERLOCK)
         self._groups = config.get(ATTR_GROUPS)
+        self._run_auto = False
 
         self._device_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, device_id, hass=hass
@@ -454,6 +455,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         '''reset last runtime to support testing'''
         for zone in self._irrigationzones:
             zone.set_last_ran(None)
+            #update the attributes
+            zonelastran = self.format_attr(
+                    zone.name(),
+                    ATTR_LAST_RAN,
+                )
+            self._extra_attrs.pop(zonelastran)
+            self.async_schedule_update_ha_state()
 
     def inter_zone_delay(self):
         """ return interzone delay value"""
@@ -494,6 +502,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._state is False:
             if self._template.async_render():
                 self._run_zone = []
+                self._run_auto = True
                 loop = asyncio.get_event_loop()
                 loop.create_task(self.async_turn_on())
         self.async_write_ha_state()
@@ -523,13 +532,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     if zone.switch() not in self._run_zone:
                         continue
                 else:
-                    if not zone.should_run():
+                    #auto_run where program started based on start time
+                    if zone.should_run(self._run_auto) is False :
                         continue
 
                 # set the runtime attributes for zones that will run
                 zoneremaining = self.format_attr(zone.name(), ATTR_REMAINING)
                 self._extra_attrs[zoneremaining] = self.format_run_time(
-                    zone.run_time(repeats=zone.repeat_value())
+                    zone.run_time(repeats=zone.repeat_value(),auto=self._run_auto)
                 )
 
             #build zone groupings that will run concurrently
@@ -631,7 +641,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if self._state is True:
                 loop = asyncio.get_event_loop()
                 for gzone in group:
-                    loop.create_task(gzone.async_turn_on())
+                    loop.create_task(gzone.async_turn_on(self._run_auto))
                     event_data = {
                         "device_id": self._device_id,
                         "action": "zone_turned_on",
@@ -680,6 +690,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             loop.create_task(pump.async_stop_monitoring())
 
         self._state = False
+        self._run_auto = False
         self._run_zone = []
 
         self.async_schedule_update_ha_state()
@@ -690,4 +701,5 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             for zone in self._irrigationzones:
                 await zone.async_turn_off()
             self._state = False
+            self._run_auto = False
             self._run_zone = []

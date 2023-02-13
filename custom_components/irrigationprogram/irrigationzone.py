@@ -208,11 +208,15 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1):
+    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, auto=False):
         """update the run time component"""
 
         wait = self.wait_value()*60
-        adjust = self.water_adjust_value()
+        #if run manually do not adjust the time
+        if auto:
+            adjust = self.water_adjust_value()
+        else:
+            adjust = 1
 
         if self._flow_sensor is None:
             #time based
@@ -249,7 +253,7 @@ class IrrigationZone:
         else:
             return self.rain_sensor_value()
 
-    def should_run(self):
+    def should_run(self, auto=False):
         '''determine if the zone should run'''
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             #Switch is unavavailable
@@ -257,10 +261,14 @@ class IrrigationZone:
             return False
         if not self.enable_zone_value():
             return False
-        if self.is_raining():
-            return False
-        if self.water_adjust_value() == 0:
-            return False
+
+        # if run manually ignore these two tests
+        if auto:
+            if self.is_raining():
+                return False
+            if self.water_adjust_value() == 0:
+                return False
+
         if self.run_freq_value() is None:
             return True
 
@@ -300,13 +308,12 @@ class IrrigationZone:
             return True
         return False
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, pauto=False):
         """start the watering cycle """
-
         stop = False
 
         #initalise the reamining time for display
-        self._remaining_time = self.run_time(repeats=self.repeat_value())
+        self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto)
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
@@ -329,7 +336,7 @@ class IrrigationZone:
                     volume_delivered += self.flow_sensor_value() / 60
                     volume_required = self.water_value() * self.water_adjust_value()
                     volume_remaining = volume_required - volume_delivered #if the adjuster changes during watering
-                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i)
+                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto)
                     if self.check_switch_state():
                         stop = True
                         break
@@ -348,7 +355,7 @@ class IrrigationZone:
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value()*60 * self.water_adjust_value()) - seconds_run
-                    self._remaining_time = self.run_time(seconds_run, repeats=i)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto)
                     if self.check_switch_state():
                         stop = True
                         break
@@ -369,7 +376,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
-                    self._remaining_time = self.run_time(seconds_run, repeats=i)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto)
                     if stop:
                         break
                     await asyncio.sleep(1)
@@ -378,7 +385,6 @@ class IrrigationZone:
                 break
         # End of repeat loop
         await self.async_turn_off()
-
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
