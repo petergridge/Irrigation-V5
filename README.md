@@ -139,6 +139,8 @@ Zone switches that are not in a known (on, off) state will not be executed.
 ### Watering Adjuster feature
 As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
+If a program or zone is run manually the adjustment is ignored run as if the adjuster has a value of 1.
+
 See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
 
 Setting *water_adjustment* attribute allows a factor to be applied to the watering time.
