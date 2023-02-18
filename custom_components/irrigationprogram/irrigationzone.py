@@ -259,16 +259,19 @@ class IrrigationZone:
             #Switch is unavavailable
             _LOGGER.warning("Zone switch %s is offline", self.switch())
             return False
+        #zone is disabled
         if not self.enable_zone_value():
             return False
+        # if run manually remaining tests
+        if not auto:
+            return True
 
-        # if run manually ignore these two tests
-        if auto:
-            if self.is_raining():
-                return False
-            if self.water_adjust_value() == 0:
-                return False
+        if self.is_raining():
+            return False
+        if self.water_adjust_value() == 0:
+            return False
 
+        #no Frequency provided
         if self.run_freq_value() is None:
             return True
 
@@ -311,7 +314,6 @@ class IrrigationZone:
     async def async_turn_on(self, pauto=False):
         """start the watering cycle """
         stop = False
-
         #initalise the reamining time for display
         self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto)
         # run the watering cycle, water/wait/repeat
