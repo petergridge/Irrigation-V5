@@ -237,7 +237,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release**|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[frequency](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result **will be depricated in a future release**|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interlock|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[interlock](#interlock)|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
 
 ## SERVICES
 ```yaml
