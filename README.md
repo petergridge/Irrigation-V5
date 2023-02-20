@@ -234,9 +234,9 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release**|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release V5.2.0**|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[frequency](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result **will be depricated in a future release**|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[interlock](#interlock)|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
 
 ## SERVICES
