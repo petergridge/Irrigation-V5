@@ -30,8 +30,8 @@ Implemented as a switch, you can start a program using the schedule, manually or
 * Make sure that all of the objects you reference i.e. switches, sensors etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
 
 ### Config Flow
-* Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
-* To define groups first complete the setup of the program and then go back into configuration to add zone groups. (V5.1.20)
+* Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component. 
+* Add the integration many times if you want more than one program.
 * Modify programs and zones, add new zones, delete zones
 * V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
 
