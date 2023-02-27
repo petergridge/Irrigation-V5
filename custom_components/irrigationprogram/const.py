@@ -1,36 +1,18 @@
-'''Constants'''
+'''weather history class defn constants'''
 
-DOMAIN = "irrigationprogram"
-SWITCH_ID_FORMAT = "switch" + ".{}"
+CONST_API_CALL          = 'https://api.openweathermap.org/data/2.5/onecall/timemachine?lat=%s&lon=%s&dt=%s&appid=%s&units=%s'
 
-ATTR_RAIN_SENSOR = "rain_sensor"
-ATTR_IRRIGATION_ON = "irrigation_on"
-ATTR_START = "start_time"
-ATTR_IGNORE_RAIN_SENSOR = "ignore_rain_sensor"
-ATTR_SHOW_CONFIG = "show_config"
-ATTR_RUN_FREQ = "run_freq"
-ATTR_REMAINING = "remaining"
-ATTR_REPEAT = "repeat"
-ATTR_RUNTIME = "runtime"
-ATTR_WAIT = "wait"
-ATTR_DELAY = "inter_zone_delay"
-ATTR_FLOW_SENSOR = "flow_sensor"
-ATTR_WATER = "water"
-ATTR_WATER_ADJUST = "water_adjustment"
-ATTR_ZONES = "zones"
-ATTR_ZONE = "zone"
-ATTR_ZONE_GROUP = "group"
-ATTR_PUMP = "pump"
-ATTR_LAST_RAN = "last_ran"
-ATTR_SWITCHES = "switches"
-ATTR_MONITOR_CONTROLLER = "controller_monitor"
-ATTR_DISABLE_ZONE = "disable_zone"
-ATTR_ENABLE_ZONE = "enable_zone"
-ATTR_RESET = "reset"
-CONST_ENTITY = "entity_id"
-CONST_SWITCH = "switch"
-ATTR_GROUPS = "groups"
-ATTR_GROUP = "group"
-ATTR_GROUP_NAME = "group_name"
-ATTR_HISTORICAL_FLOW = "historical_flow"
-ATTR_INTERLOCK = "interlock"
+ATTR_ICON_FINE          = 'fine_icon'       #icon to display when factor is 1
+ATTR_ICON_LIGHTRAIN     = 'lightrain_icon'  #icon to display when factor is > 0 and <1
+ATTR_ICON_RAIN          = 'rain_icon'       #icon to display when factor is 0
+DFLT_ICON_FINE          = 'mdi:weather-sunny'
+DFLT_ICON_LIGHTRAIN     = 'mdi:weather-rainy'
+DFLT_ICON_RAIN          = 'mdi:weather-pouring'
+
+ATTR_0_SIG              = 'day0sig'
+ATTR_1_SIG              = 'day1sig'
+ATTR_2_SIG              = 'day2sig'
+ATTR_3_SIG              = 'day3sig'
+ATTR_4_SIG              = 'day4sig'
+ATTR_WATERTARGET        = 'watertarget'
+
