@@ -1,12 +1,12 @@
 {
   "domain": "irrigationprogram",
   "name": "Irrigation controller",
-  "version": "5.2.0",
-  "config_flow": true,
-  "documentation": "https://github.com/petergridge/irrigation-v5",
-  "issue_tracker": "https://github.com/petergridge/irrigation-v5/issues",
-  "dependencies": [],
   "codeowners": ["@petergridge"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/petergridge/irrigation-v5",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/petergridge/irrigation-v5/issues",
   "requirements": []
+  "version": "5.2.0",
 }
