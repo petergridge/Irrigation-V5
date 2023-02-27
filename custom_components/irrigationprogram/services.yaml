@@ -1,0 +1,43 @@
+stop_programs:
+  description: Stop any running programs and zones.
+
+run_zone:
+  description: run a specific zone.
+  fields:
+    entity_id:
+      name: Irrigation Program
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+    zone:
+      name: Zone
+      description: Zones to run
+      required: true
+      selector:
+          entity:
+            domain: switch
+            multiple: true
+
+reset_runtime:
+  description: reset the runtime back to none for the program supports testing.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+
+run_simulation:
+  description: Simulate running a program, while exectution logic is not called, the helper functions are executed and results shown in the log.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to test
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
