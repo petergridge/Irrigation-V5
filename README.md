@@ -118,7 +118,7 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The will shut off a few seconds after a zone has completed alowing a smooth transition between zones. Currently the pump class only monitors during a program run cycle.
 
 ### Zone Group
-You can optionally group zones to run concurrently or sequentially. 
+You can optionally configure grouped zones to run concurrently. 
 
 **New V5.2.0** Zone groups are now setup in the config flow. Any existing groups are automatically migrated.
 
@@ -130,16 +130,16 @@ This provides for greater validation, for example:
 **Legacy model:** V5.1 and earlier, zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently.
 
 ### Monitor Controller Feature
-If you binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
+If you have binary binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
 
 For example I use an ESPHome implementation to control the hardware it exposes a status sensor, should the controller lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There is also be a visual indication on the custom card of the status of the controller.
 
 Zone switches that are not in a known (on, off) state will not be executed.
 
 ### Watering Adjuster feature
-As an alternative to the rain sensor you can use the watering adjustment. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
+As an alternative to the rain sensor you can use the watering adjustment feature. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
-If a program or zone is run manually the adjustment is ignored run as if the adjuster has a value of 1.
+If a program or zone is run manually the adjustment is ignored and executed with the adjuster value of 1.
 
 See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
 
@@ -234,10 +234,10 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently. **Will move to to config flow in a future release V5.2.0**|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[zone_group](#zone-group)|input_text |Optional|Zone Group supports running zones concurrently.
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[frequency](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will default to the program level value|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enable_zone|input_boolean |Optional|Disabling a zone, prevents it from running in either manual or scheduled executions, adding 'Off' or similar text value to the run_freq helper will have the same result|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[interlock](#interlock)|input_boolean |Optional|**new V5.1.20** If set, the default, the program will stop other running programs when triggered|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[interlock](#interlock)|input_boolean |Optional|If set, the default, the program will stop other running programs when triggered|
 
 ## SERVICES
 ```yaml
