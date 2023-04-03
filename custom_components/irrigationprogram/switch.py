@@ -301,7 +301,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self._extra_attrs[self.format_attr(z_name,ATTR_FLOW_SENSOR)] = zone.flow_sensor()
                 if zone.water_adjust() is not None:
                     self._extra_attrs[self.format_attr(z_name,ATTR_WATER_ADJUST)] = zone.water_adjust()
-                if zone.run_freq() is not None:
+                if zone.run_freq() is not None and self._run_freq != zone.run_freq():
                     self._extra_attrs[self.format_attr(z_name,ATTR_RUN_FREQ)] = zone.run_freq()
                 if zone.rain_sensor() is not None:
                     self._extra_attrs[self.format_attr(z_name,ATTR_RAIN_SENSOR)] = zone.rain_sensor()
