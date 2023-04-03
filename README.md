@@ -246,8 +246,10 @@ irrigationprogram.stop_programs:
 ```
 ## REVISION HISTORY
 
-## 5.2.1 - under development - Planned April
+## 5.2.2 - under development - Planned May
 * Remove yaml configuration support
+## 5.2.1
+* Correct issue #15
 ## 5.2.0
 * Groups in config flow
 * Vary Interlock behaviour of programs
