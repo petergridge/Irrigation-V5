@@ -223,7 +223,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
 |&nbsp;&nbsp;&nbsp;&nbsp;irrigation_on|input_boolean|Optional|Allows the entire program to be suspend, winter mode|
-|&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|input_number|Optional|Allows provision for a delay between a zone completing and the next one starting. **Will move to to config flow in a future release**|
+|&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|input_number|Optional|Allows provision for a delay, in seconds, between a zone completing and the next one starting.|
 |&nbsp;&nbsp;&nbsp;&nbsp;zones|||data for setting up a zone|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water](#time-or-volume-based-watering)|input_number |Required|The time to run or volume to supply for this zone |
