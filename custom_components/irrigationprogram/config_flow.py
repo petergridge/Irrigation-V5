@@ -27,7 +27,6 @@ from .const import (
     ATTR_WATER,
     ATTR_WATER_ADJUST,
     ATTR_ZONE,
-#    ATTR_ZONE_GROUP,
     ATTR_ZONES,
     DOMAIN,
     ATTR_GROUPS,
@@ -58,13 +57,13 @@ GROUP_ATTR = [
 ]
 
 PROGRAM_ATTR = [
-    [True, ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
-    [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
+    [True,  ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
+    [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": ["input_select","sensor"]})],
     [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "binary_sensor"})],
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_SHOW_CONFIG, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_DELAY, sel.EntitySelector({"domain": "input_number"})],
-    [False,ATTR_INTERLOCK,cv.boolean]
+    [False, ATTR_INTERLOCK,cv.boolean]
 ]
 
 # Required,attribute,type
@@ -76,46 +75,10 @@ ZONE_ATTR = [
     [False, ATTR_PUMP, sel.EntitySelector({"domain": "switch"})],
     [False, ATTR_FLOW_SENSOR, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_WATER_ADJUST, sel.EntitySelector({"domain": ["sensor","input_number"]})],
-    [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": "input_select"})],
+    [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": ["input_select","sensor"]})],
     [False, ATTR_RAIN_SENSOR, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
-]
-
-#ATTR_TEMP references the previous days max temp or equivalent average
-#ATTR_WATER_ADJUST references the amount to change the watering by 1 is no change, 0 no watering
-#ATTR_RUN_FREQ references the frequency to use for the entry, normal freq rules apply
-#Simple CASE application if the temp is less that the first row apply the rule and so on
-#the last row is the else and must be completed
-#Validation
-# each row should have the same or higher temperature than the previous 
-#
-TEMP_ADJUST = [
-    [True, CONF_NAME, cv.string],
-    [
-    [True, ATTR_TEMP, sel.NumberSelector({"min": 0, "max": 100}) ],
-    [True, ATTR_RUN_FREQ, sel.TextSelector],
-    [True, ATTR_WATER_ADJUST]
-    ],
-    [
-    [True, ATTR_TEMP, sel.NumberSelector({"min": 0, "max": 100}) ],
-    [True, ATTR_RUN_FREQ, sel.TextSelector],
-    [True, ATTR_WATER_ADJUST]
-    ],
-    [
-    [True, ATTR_TEMP, sel.NumberSelector({"min": 0, "max": 100}) ],
-    [True, ATTR_RUN_FREQ, sel.TextSelector],
-    [True, ATTR_WATER_ADJUST]
-    ],
-    [
-    [True, ATTR_TEMP, sel.NumberSelector({"min": 0, "max": 100}) ],
-    [True, ATTR_RUN_FREQ, sel.TextSelector],
-    [True, ATTR_WATER_ADJUST]
-    ],
-    [
-    [True, ATTR_RUN_FREQ, sel.TextSelector],
-    [True, ATTR_WATER_ADJUST]
-    ]
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -128,7 +91,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
     VERSION = 2
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._errors = {}
         self._data = {}
         self._data["unique_id"] = str(uuid.uuid4())
@@ -319,7 +282,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
 
-
 #--- Options Flow ----------------------------------------------
     @staticmethod
     @callback
@@ -329,7 +291,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
     VERSION = 2
-    def __init__(self, config_entry):
+    def __init__(self, config_entry) -> None:
         self.config_entry = config_entry
         self._name = self.config_entry.data.get(CONF_NAME)
         self.zoneselect = None

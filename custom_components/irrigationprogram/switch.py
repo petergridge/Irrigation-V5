@@ -1,20 +1,17 @@
 ''' Switch entity definition'''
 
 import asyncio
-#from datetime import timedelta
 import logging
 
 import voluptuous as vol
 
 from homeassistant.components.switch import (
     ENTITY_ID_FORMAT,
-    PLATFORM_SCHEMA,
     SwitchEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
-    CONF_SWITCHES,
     EVENT_HOMEASSISTANT_STARTED,
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_TURN_OFF,
@@ -63,49 +60,6 @@ from .const import (
 from .irrigationzone import IrrigationZone
 from .pump import PumpClass
 
-SWITCH_SCHEMA = vol.All(
-    vol.Schema(
-        {
-            vol.Optional(ATTR_RUN_FREQ): cv.entity_domain("input_select"),
-            vol.Optional(ATTR_MONITOR_CONTROLLER): cv.entity_domain(
-                ["binary_sensor", "input_boolean"]
-            ),
-            vol.Required(ATTR_START): cv.entity_domain("input_datetime"),
-            vol.Optional(ATTR_IRRIGATION_ON): cv.entity_domain("input_boolean"),
-            vol.Optional(ATTR_SHOW_CONFIG): cv.entity_domain("input_boolean"),
-            vol.Optional(ATTR_DELAY): cv.entity_domain("input_number"),
-            vol.Optional('icon'): cv.icon,
-            vol.Optional('name'): cv.string,
-            vol.Required(ATTR_ZONES): [
-                {
-                    vol.Required(ATTR_ZONE): cv.entity_domain(CONST_SWITCH),
-                    vol.Optional(CONF_NAME): cv.string,
-                    vol.Optional(ATTR_PUMP): cv.entity_domain(CONST_SWITCH),
-                    vol.Optional(ATTR_FLOW_SENSOR): cv.entity_domain(
-                        ["input_number", "sensor"]
-                    ),
-                    vol.Optional(ATTR_WATER_ADJUST): cv.entity_domain(
-                        ["input_number", "sensor"]
-                    ),
-                    vol.Optional(ATTR_RUN_FREQ): cv.entity_domain("input_select"),
-                    vol.Optional(ATTR_RAIN_SENSOR): cv.entity_domain("binary_sensor"),
-                    vol.Optional(ATTR_ZONE_GROUP): cv.entity_domain("input_text"),
-                    vol.Required(ATTR_WATER): cv.entity_domain("input_number"),
-                    vol.Optional(ATTR_WAIT): cv.entity_domain("input_number"),
-                    vol.Optional(ATTR_REPEAT): cv.entity_domain("input_number"),
-                    vol.Optional(ATTR_IGNORE_RAIN_SENSOR): cv.entity_domain("input_boolean"),
-                    vol.Optional(ATTR_ENABLE_ZONE): cv.entity_domain("input_boolean"),
-                    vol.Optional('icon'): cv.icon,
-                }
-            ],
-        }
-    ),
-)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required(CONF_SWITCHES): cv.schema_with_slug_keys(SWITCH_SCHEMA)}
-)
-
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
@@ -146,16 +100,12 @@ async def async_setup_entry(
         "async_simulate_program",
     )
 
-
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    """Set up the irrigation switches from yaml required until YAML deprecated"""
-
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
     _attr_has_entity_name = True
     def __init__(
-        self, hass, unique_id, config, device_id, config_entry
-    ):
+        self, hass:HomeAssistant, unique_id, config, device_id, config_entry
+    ) -> None:
         self.config_entry = config_entry
 
         """Initialize a Irrigation program."""
@@ -301,7 +251,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self._extra_attrs[self.format_attr(z_name,ATTR_FLOW_SENSOR)] = zone.flow_sensor()
                 if zone.water_adjust() is not None:
                     self._extra_attrs[self.format_attr(z_name,ATTR_WATER_ADJUST)] = zone.water_adjust()
-                if zone.run_freq() is not None and self._run_freq != zone.run_freq():
+                if zone.run_freq() is not None  and self._run_freq != zone.run_freq():
                     self._extra_attrs[self.format_attr(z_name,ATTR_RUN_FREQ)] = zone.run_freq()
                 if zone.rain_sensor() is not None:
                     self._extra_attrs[self.format_attr(z_name,ATTR_RAIN_SENSOR)] = zone.rain_sensor()
@@ -327,53 +277,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         @callback
         async def hass_startup(event):
             '''Triggered when HASS has fully started only required on a hard restart'''
-
-
-        #-------------Upgrade config flow schema--------------------------
-            #typically this is undertaken in the __init__ but I needed to
-            #process the groups after HA has started and entities are available.
-            new={}
-            new.update(self._config)
-            if self.config_entry.version == 1:
-                #creat group dictionary as per VERSION 2
-                zone_groups = {}
-                for zone in new[ATTR_ZONES]:
-                    if zone.get(ATTR_ZONE_GROUP):
-                        zone_group_value = self.hass.states.get(zone.get(ATTR_ZONE_GROUP)).state
-                        #now check if the group existing in the dictionary
-                        if zone_groups.get(zone_group_value):
-                            #append the zone switch to the switches
-                            zone_groups[zone_group_value].append(zone.get('zone'))
-                        else:
-                            zone_groups[zone_group_value] = [zone.get('zone')]
-
-                groups = []
-                for group in zone_groups.values():
-                    #create the groups entry on the config
-                    zones = {}
-                    zones["zones"] = group
-                    name = ""
-                    for switch in group:
-                        name += self.hass.states.get(switch).attributes.get('friendly_name') + chr(10)
-                    zones["name"] = name.strip().replace(chr(10),', ')
-                    groups.append(zones)
-                new.update({"groups" : groups})
-
-                new.update({'interlock': True})
-
-                for zonecount, zone in enumerate(new[ATTR_ZONES]):
-                    if ATTR_ZONE_GROUP in zone:
-                        #delete old grouping method
-                        new[ATTR_ZONES][zonecount].pop(ATTR_ZONE_GROUP)
-
-                #clean up from previous alpha
-                if new.get('inter_zone_delay'):
-                    new.pop('inter_zone_delay')
-
-                self.config_entry.version = 2
-                self.hass.config_entries.async_update_entry(self.config_entry, data=new)
-                _LOGGER.info('Irrigation program upgraded to schema version %s',self.config_entry.version)
-        #---------------------------------------
 
             #turn off the underlying switches as a precaution
             for zone in self._irrigationzones:
@@ -544,7 +447,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 )
 
             #build zone groupings that will run concurrently
-            #--- new config flow version 2 group functionality
             groupkey = zonecount
             if self._run_zone:
                 zgroup = self._run_zone
@@ -556,7 +458,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 groups[groupkey].append(zone)
             else:
                 groups[groupkey] = [zone]
-            #---- end new zone group
 
         self.async_schedule_update_ha_state()
         return groups

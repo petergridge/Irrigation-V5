@@ -15,19 +15,12 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import HomeAssistant,callback
-#from homeassistant.helpers.config_validation import string
 from homeassistant import config_entries
 
 from .const import (
     DOMAIN,
     SWITCH_ID_FORMAT,
     CONST_SWITCH,
-    ATTR_START,
-    ATTR_INTERLOCK,
-    ATTR_DELAY,
-    ATTR_ZONES,
-    ATTR_ZONE_GROUP,
-    ATTR_GROUPS,
     )
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,7 +51,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ):
         return unload_ok
 
-async def async_setup(hass, config):
+async def async_setup(hass:HomeAssistant, config):
     '''setup the irrigation'''
 
     async def async_stop_programs(call):
@@ -119,9 +112,9 @@ def _async_find_matching_config_entry(
             return True
     return False
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
-    """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
+#async def async_migrate_entry(hass:HomeAssistant, config_entry: ConfigEntry):
+#    """Migrate old entry."""
+#    _LOGGER.debug("Migrating from version %s", config_entry.version)
 
 #---- REVERT to UI based impementation ----#
 
@@ -141,4 +134,4 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 #        hass.config_entries.async_update_entry(config_entry, data=new)
 #        _LOGGER.info("Migration to version %s successful", config_entry.version)
 
-    return True
+#    return True

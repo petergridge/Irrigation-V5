@@ -9,6 +9,7 @@ from homeassistant.const import (
     SERVICE_TURN_ON,
 )
 import homeassistant.util.dt as dt_util
+from homeassistant.core import HomeAssistant
 from .const import (
     ATTR_ENABLE_ZONE,
     ATTR_FLOW_SENSOR,
@@ -32,12 +33,12 @@ class IrrigationZone:
     ''' irrigation zone class'''
     def __init__(
         self,
-        hass,
+        hass:HomeAssistant,
         zone,
         run_freq,
         hist_flow_rate,
         last_ran,
-    ):
+    ) -> None:
         self.hass = hass
         self._name = zone.get(ATTR_ZONE).split(".")[1]
         self._switch = zone.get(ATTR_ZONE)
@@ -45,7 +46,7 @@ class IrrigationZone:
         self._run_freq = run_freq
         self._rain_sensor = zone.get(ATTR_RAIN_SENSOR)
         self._ignore_rain_sensor = zone.get(ATTR_IGNORE_RAIN_SENSOR)
-        self._enable_zone = zone.get(ATTR_ENABLE_ZONE) #deprecate
+        self._enable_zone = zone.get(ATTR_ENABLE_ZONE)
         self._flow_sensor = zone.get(ATTR_FLOW_SENSOR)
         self._hist_flow_rate = hist_flow_rate
         self._water = zone.get(ATTR_WATER)
@@ -152,7 +153,7 @@ class IrrigationZone:
 
     def water_value(self):
         '''water attibute value'''
-        return float(self.hass.states.get(self.water()).state)
+        return float(self.hass.states.get(self._water).state)
 
     def wait(self):
         '''waith entity attribute'''
@@ -208,13 +209,13 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, auto=False):
+    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, auto=False, water_adjustment=1):
         """update the run time component"""
 
         wait = self.wait_value()*60
         #if run manually do not adjust the time
         if auto:
-            adjust = self.water_adjust_value()
+            adjust = water_adjustment
         else:
             adjust = 1
 
@@ -315,7 +316,8 @@ class IrrigationZone:
         """start the watering cycle """
         stop = False
         #initalise the reamining time for display
-        self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto)
+        water_adjust_value = self.water_adjust_value()
+        self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto, water_adjustment=water_adjust_value)
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
@@ -329,16 +331,15 @@ class IrrigationZone:
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
                 )
             await asyncio.sleep(1)
-
             #track the watering
             if self._flow_sensor is not None:
-                volume_remaining = self.water_value() * self.water_adjust_value()
+                volume_remaining = self.water_value() * water_adjust_value
                 volume_delivered = 0
                 while volume_remaining > 0:
                     volume_delivered += self.flow_sensor_value() / 60
-                    volume_required = self.water_value() * self.water_adjust_value()
-                    volume_remaining = volume_required - volume_delivered #if the adjuster changes during watering
-                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto)
+                    volume_required = self.water_value() * water_adjust_value
+                    volume_remaining = volume_required - volume_delivered
+                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
                     if self.check_switch_state():
                         stop = True
                         break
@@ -353,11 +354,11 @@ class IrrigationZone:
                         zeroflowcount = 0
                     await asyncio.sleep(1)
             else:
-                watertime = math.ceil(self.water_value()*60 * self.water_adjust_value())
+                watertime = math.ceil(self.water_value()*60 * water_adjust_value)
                 while watertime > 0:
                     seconds_run += 1
-                    watertime = math.ceil(self.water_value()*60 * self.water_adjust_value()) - seconds_run
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto)
+                    watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
                     if self.check_switch_state():
                         stop = True
                         break
@@ -378,7 +379,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
                     if stop:
                         break
                     await asyncio.sleep(1)
@@ -411,23 +412,19 @@ class IrrigationZone:
             _LOGGER.error("%s not found pump", self._pump)
             valid = False
         if self._run_freq is not None and self.hass.states.async_available(
-            self._run_freq
-        ):
+            self._run_freq):
             _LOGGER.error("%s not found run frequency" , self._run_freq)
             valid = False
         if self._rain_sensor is not None and self.hass.states.async_available(
-            self._rain_sensor
-        ):
+            self._rain_sensor):
             _LOGGER.error("%s not found rain sensor", self._rain_sensor)
             valid = False
         if self._flow_sensor is not None and self.hass.states.async_available(
-            self._flow_sensor
-        ):
+            self._flow_sensor):
             _LOGGER.error("%s not found flow sensor", self._flow_sensor)
             valid = False
         if self._water_adjust is not None and self.hass.states.async_available(
-            self._water_adjust
-        ):
+            self._water_adjust):
             _LOGGER.error("%s not found adjustment", self._water_adjust)
             valid = False
 
