@@ -85,7 +85,7 @@ Watering is by default time based, that is, will run for the minutes set in the 
 You can define a *flow sensor* on a zone that provides a volume/minute rate. eg litres per minute. Once defined the *water* attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Run Days and Run Frequency
-Run frequency allows the definition of when the program will run.
+Run frequency allows the definition of when the program will run. This can be provided as dropdown helper or a sensor, see [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
 
 Frequency can be set on the zone or program. If both are set the zone level frequency is used. If no frequency is provided the program will run every day at the specified start time.  Application at the zone level allows different zones to execute at the same time of day but use varying frequencies. for example: Vege Patch every two days and the Lawn once a week.
 
