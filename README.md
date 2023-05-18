@@ -245,9 +245,11 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
-
-## 5.2.2 - under development - Planned May
+## 5.2.4
+* Handle high latency switches
+## 5.2.2
 * Remove yaml configuration support
+* Add input via a sensor for frequency.
 ## 5.2.1
 * Correct issue #15
 ## 5.2.0
