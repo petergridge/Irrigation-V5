@@ -55,6 +55,7 @@ from .const import (
     ATTR_GROUPS,
     ATTR_HISTORICAL_FLOW,
     ATTR_INTERLOCK,
+    CONST_LATENCY
     )
 
 from .irrigationzone import IrrigationZone
@@ -543,7 +544,19 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if self._state is True:
                 loop = asyncio.get_event_loop()
                 for gzone in group:
+                    #run in parrallel
                     loop.create_task(gzone.async_turn_on(self._run_auto))
+                    # latency issue loop a few times to see if the switch turns on
+                    # otherwise give a warning and skip this switch
+                    for n in range(CONST_LATENCY):
+                        if gzone.check_switch_state():
+                            await asyncio.sleep(1)
+                        else:
+                            break
+                    else:
+                        _LOGGER.warning('Switch has significant delay skipping, %s',gzone.switch())
+                        continue
+
                     event_data = {
                         "device_id": self._device_id,
                         "action": "zone_turned_on",
@@ -555,7 +568,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         "repeat": gzone.repeat_value(),
                     }
                     self.hass.bus.async_fire("irrigation_event", event_data)
-                await asyncio.sleep(1)
+                #await asyncio.sleep(1)
 
             #wait for the zones to complete
             zones_running = True

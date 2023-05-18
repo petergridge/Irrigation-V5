@@ -34,3 +34,5 @@ ATTR_GROUP = "group"
 ATTR_GROUP_NAME = "group_name"
 ATTR_HISTORICAL_FLOW = "historical_flow"
 ATTR_INTERLOCK = "interlock"
+
+CONST_LATENCY = 10

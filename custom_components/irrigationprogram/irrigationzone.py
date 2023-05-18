@@ -23,6 +23,7 @@ from .const import (
     ATTR_ZONE,
     ATTR_ZONE_GROUP,
     CONST_SWITCH,
+    CONST_LATENCY
 )
 
 CONST_ZERO_FLOW_DELAY = 5
@@ -330,7 +331,22 @@ class IrrigationZone:
                 await self.hass.services.async_call(
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
                 )
-            await asyncio.sleep(1)
+                # to handle switch latency issues loop a few times
+                # to wait for the switch to confirm state
+                # otherwise give a warning
+                for n in range(CONST_LATENCY):
+                    if self.hass.states.is_state(self._switch, "off"):
+                        await asyncio.sleep(1)
+                    else:
+                        break
+                else:
+                    _LOGGER.warning('Switch has excesive latency, %s',self._switch)
+                    #send a turn off just in case
+                    await self.hass.services.async_call(
+                        CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+                    )
+                    continue
+
             #track the watering
             if self._flow_sensor is not None:
                 volume_remaining = self.water_value() * water_adjust_value
@@ -370,10 +386,7 @@ class IrrigationZone:
             #Eco mode, wait cycle
             if self.wait_value() > 0 and i > 1:
                 self._state = "eco"
-                if self.hass.states.is_state(self._switch, "on"):
-                    await self.hass.services.async_call(
-                        CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-                    )
+                await self.async_eco_off()
                 waittime = self.wait_value() * 60
                 wait_seconds = 0
                 while waittime > 0:
@@ -390,6 +403,21 @@ class IrrigationZone:
         # End of repeat loop
         await self.async_turn_off()
 
+    async def async_eco_off(self, **kwargs):
+        '''signal the zone to stop'''
+        self._state = "eco"
+        if self.hass.states.is_state(self._switch, "on"):
+            await self.hass.services.async_call(
+                CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+            )
+            for n in range(CONST_LATENCY):
+                if self.hass.states.is_state(self._switch, "on"):
+                    await asyncio.sleep(1)
+                else:
+                    break
+            else:
+                _LOGGER.warning('Switch has excesive latency, %s',self._switch)
+
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
         self._state = "off"
@@ -398,6 +426,13 @@ class IrrigationZone:
             await self.hass.services.async_call(
                 CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
             )
+            for n in range(CONST_LATENCY):
+                if self.hass.states.is_state(self._switch, "on"):
+                    await asyncio.sleep(1)
+                else:
+                    break
+            else:
+                _LOGGER.warning('Switch has excesive latency, %s',self._switch)
 
     def set_last_ran(self, last_ran):
         '''update the last ran attribute'''
