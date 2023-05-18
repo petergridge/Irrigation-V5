@@ -340,7 +340,9 @@ class IrrigationZone:
                     volume_required = self.water_value() * water_adjust_value
                     volume_remaining = volume_required - volume_delivered
                     self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
+                    await asyncio.sleep(1)
                     if self.check_switch_state():
+                        #check if the switch was turned off outside this program
                         stop = True
                         break
                     #flow sensor has failed or no water is being provided
@@ -352,17 +354,16 @@ class IrrigationZone:
                             break
                     else:
                         zeroflowcount = 0
-                    await asyncio.sleep(1)
             else:
                 watertime = math.ceil(self.water_value()*60 * water_adjust_value)
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
                     self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
+                    await asyncio.sleep(1)
                     if self.check_switch_state():
                         stop = True
                         break
-                    await asyncio.sleep(1)
 
             if stop:
                 break
