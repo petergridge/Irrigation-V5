@@ -179,7 +179,20 @@ With interlock disabled:
 * If a running zone is started by the second program a warning is logged.
 
 ### Events
-
+The *zone_turned_off_not_confirmed* event provides the following:
+```
+event_type: irrigation_event
+data:
+  device_id: switch.zone_1
+  action: zone_turned_off_not_confirmed
+  zone: dummy_1
+origin: LOCAL
+time_fired: "2023-05-24T00:19:59.297735+00:00"
+context:
+  id: 01H15J0Y61QMP43HGDFTFNW001
+  parent_id: null
+  user_id: null
+```
 The *zone_turned_on* event provides this information:
 ```
 event_type: irrigation_event
@@ -245,6 +258,9 @@ irrigationprogram.stop_programs:
     description: Stop any running program.
 ```
 ## REVISION HISTORY
+## 5.2.5
+* remove zone switch monitoring to get around problem with zone switch latency causing the program not to run
+* Add warning when latency exceeds 5 seconds when turning off the switch, the switch was not in an 'off' state after 5 seconds
 ## 5.2.4
 * Handle high latency switches
 ## 5.2.2
