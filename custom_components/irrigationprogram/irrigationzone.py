@@ -23,10 +23,9 @@ from .const import (
     ATTR_ZONE,
     ATTR_ZONE_GROUP,
     CONST_SWITCH,
-    CONST_LATENCY
+    CONST_LATENCY,
+    CONST_ZERO_FLOW_DELAY
 )
-
-CONST_ZERO_FLOW_DELAY = 5
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +57,7 @@ class IrrigationZone:
         self._last_ran = last_ran
         self._remaining_time = 0
         self._state = "off"
+        self._stop = False
 
     def name(self):
         """Return the name of the variable."""
@@ -310,12 +310,13 @@ class IrrigationZone:
     def check_switch_state(self):
         """ check the solenoid state if turned off stop this instance"""
         if self.hass.states.is_state(self._switch, "off"):
-            return True
-        return False
+            return False
+        return True
 
     async def async_turn_on(self, pauto=False):
         """start the watering cycle """
         stop = False
+        self._stop = False
         #initalise the reamining time for display
         water_adjust_value = self.water_adjust_value()
         self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto, water_adjustment=water_adjust_value)
@@ -327,25 +328,11 @@ class IrrigationZone:
             if self._remaining_time <= 0:
                 continue
             self._state = "on"
-            if self.hass.states.is_state(self._switch, "off") and not stop:
+            await asyncio.sleep(1)
+            if self.check_switch_state() is False and stop is False:
                 await self.hass.services.async_call(
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
                 )
-                # to handle switch latency issues loop a few times
-                # to wait for the switch to confirm state
-                # otherwise give a warning
-                for n in range(CONST_LATENCY):
-                    if self.hass.states.is_state(self._switch, "off"):
-                        await asyncio.sleep(1)
-                    else:
-                        break
-                else:
-                    _LOGGER.warning('Switch has excesive latency, %s',self._switch)
-                    #send a turn off just in case
-                    await self.hass.services.async_call(
-                        CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-                    )
-                    continue
 
             #track the watering
             if self._flow_sensor is not None:
@@ -357,10 +344,6 @@ class IrrigationZone:
                     volume_remaining = volume_required - volume_delivered
                     self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
-                    if self.check_switch_state():
-                        #check if the switch was turned off outside this program
-                        stop = True
-                        break
                     #flow sensor has failed or no water is being provided
                     if self.flow_sensor_value() == 0:
                         zeroflowcount += 1
@@ -377,11 +360,8 @@ class IrrigationZone:
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
                     self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
-                    if self.check_switch_state():
-                        stop = True
-                        break
 
-            if stop:
+            if stop or self._stop:
                 break
             #Eco mode, wait cycle
             if self.wait_value() > 0 and i > 1:
@@ -394,45 +374,50 @@ class IrrigationZone:
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
                     self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
-                    if stop:
+                    if stop or self._stop:
                         break
                     await asyncio.sleep(1)
 
-            if stop:
+            if stop or self._stop:
                 break
         # End of repeat loop
         await self.async_turn_off()
 
     async def async_eco_off(self, **kwargs):
         '''signal the zone to stop'''
+        await self.hass.services.async_call(
+            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+        )
+        await self.latency_check()
         self._state = "eco"
-        if self.hass.states.is_state(self._switch, "on"):
-            await self.hass.services.async_call(
-                CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-            )
-            for n in range(CONST_LATENCY):
-                if self.hass.states.is_state(self._switch, "on"):
-                    await asyncio.sleep(1)
-                else:
-                    break
-            else:
-                _LOGGER.warning('Switch has excesive latency, %s',self._switch)
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
         self._state = "off"
+        self._stop = True
         self._remaining_time = 0
-        if self.hass.states.is_state(self._switch, "on"):
-            await self.hass.services.async_call(
-                CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-            )
-            for n in range(CONST_LATENCY):
-                if self.hass.states.is_state(self._switch, "on"):
-                    await asyncio.sleep(1)
-                else:
-                    break
+        await self.hass.services.async_call(
+            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+        )
+        await self.latency_check()
+
+    async def latency_check(self):
+        '''Ensure switch has turned off and warn'''
+        for i in range(CONST_LATENCY):
+            if self.check_switch_state() is True: #on
+                await asyncio.sleep(1)
             else:
-                _LOGGER.warning('Switch has excesive latency, %s',self._switch)
+                break
+        else:
+            _LOGGER.warning('Switch has excesive latency, exceding %s seconds, cannot confirm %s is off', i+1, self._switch)
+            #raise an event if switch cannont be confirmed off
+            event_data = {
+                "device_id": self._switch,
+                "action": "zone_turned_off_not_confirmed",
+                "zone": self._name
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+
 
     def set_last_ran(self, last_ran):
         '''update the last ran attribute'''
@@ -463,7 +448,6 @@ class IrrigationZone:
             self._water_adjust):
             _LOGGER.error("%s not found adjustment", self._water_adjust)
             valid = False
-
         return valid
 
     async def async_test_zone(self):
@@ -480,4 +464,3 @@ class IrrigationZone:
         _LOGGER.error("Run frequency Value:      %s",self.run_freq_value())
         _LOGGER.error("Flow Sensor Value:        %s",self.flow_sensor_value())
         _LOGGER.error("Adjuster Value:           %s", self.water_adjust_value())
-
