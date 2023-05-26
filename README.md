@@ -51,10 +51,11 @@ For the Program:
 - Input_datetime for the program start time (time only)
 - Input_boolean  to support the toggling of the configuration in the custom card
 - Input_boolean to support the enabling/disabling of the program
+- Input_select to define the frequency you want the zone to run, you can do this on the program if you want and save a few entities but I have different frequencies on some zones
 
 For each Zone:
 - Input_number to provide the duration of the watering cycle
-- Input_select to define the frequency you want the zone to run, you can do this on the program if you want and save a few entities but I have different frequencies on some zones
+
 
 This will get a basic setup running, have a read of the notes below and try a few of the other features.
 
@@ -92,7 +93,7 @@ Frequency can be set on the zone or program. If both are set the zone level freq
 The values provided can be:
 * numeric, representing how often to run every 2 days for example.
 * days of the week; Mon, Tue etc. These currently only support english abreviations.
-* Off or any unsupported text to stop the zone being run
+* Off or any unsupported text to stop the zone being run.
 
 For Australians you can select to water on specific days of the week to support water restriction rules.
 
@@ -107,34 +108,38 @@ Defining a Dropdown helper to use with the run_freq attribute, for example:
       - Mon, Wed, Fri
       - Mon, Tue, Wed, Thu, Fri, Sat, Sun
 ```
+### Unscheduled execution of a zone or program
+When a program or zone is triggered manually the following rules are applied:
+The zone will not run if:
+- the zone is disabled, or
+- the zone frequency is 'Off'
+
+These sensors will be defaulted:
+- Water Adjustment will default to 1
+- Rain sensor will default to off
 
 ### ECO feature
-The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. Perfect for pots and can reduce water used by 50%, try it.
+The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. Perfect for pots and can reduce water used by 50%.
 
 * *wait* sets the length of time to wait between watering cycles
 * *repeat* defines the number of watering cycles to run
 
 ### Pump or master solenoid
-You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The will shut off a few seconds after a zone has completed alowing a smooth transition between zones. Currently the pump class only monitors during a program run cycle.
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The will shut off a few seconds after a zone has completed alowing a smooth transition between zones. The pump class only monitors during a program run cycle.
 
 ### Zone Group
-You can optionally configure grouped zones to run concurrently. 
-
-**New V5.2.0** Zone groups are now setup in the config flow. Any existing groups are automatically migrated.
-
-This provides for greater validation, for example:
+You can optionally configure zones to run concurrently. 
+Note:
 * a group must have at least two zones, 
-* if a zone is deleted the related group will also be deleted, also 
+* if a zone is deleted the related group will also be deleted, 
 * if the switch associated to a zone is changed the related group will be deleted. 
-
-**Legacy model:** V5.1 and earlier, zones are grouped by having the same text in the input value, for example each zone with a value of 'A' will run concurrently.
 
 ### Monitor Controller Feature
 If you have binary binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
 
 For example I use an ESPHome implementation to control the hardware it exposes a status sensor, should the controller lose power or connectivity to Wi-Fi the custom control will not initiate the watering. There is also be a visual indication on the custom card of the status of the controller.
 
-Zone switches that are not in a known (on, off) state will not be executed.
+Additionaly, zone switches that are not in a known (on, off) state will not be executed, and a warning message will be logged.
 
 ### Watering Adjuster feature
 As an alternative to the rain sensor you can use the watering adjustment feature. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
@@ -148,23 +153,7 @@ Setting *water_adjustment* attribute allows a factor to be applied to the wateri
 * If the factor is 0 no watering will occur
 * If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
 * A factor of 1.1 could also be used to apply 10% more water if required.
-* The watering time will always be rounded up to the nearest minute when applying the factor.
 
-The following automation is an example of how an entity could be maintained using template calculation.
-```yaml
-automation:
-- id: '1553507967550'
-  alias: rain adjuster
-  mode: restart
-  trigger:
-  - platform: time_pattern
-    minutes: "/1"
-  action:
-    - service: input_number.set_value
-      entity_id: input_number.rain_adjuster
-      data:
-        value: "{{ value template calculation }}"
-```
 ### Interlock
 
 Turn off running programs when a new program is started, this is the default.
@@ -179,6 +168,20 @@ With interlock disabled:
 * If a running zone is started by the second program a warning is logged.
 
 ### Events
+The *program_turned_on* event provides the following:
+```
+event_type: irrigation_event
+data:
+  action: program_turned_on
+  program: switch.zone_1
+  scheduled: true
+origin: LOCAL
+time_fired: "2023-05-24T00:19:59.297735+00:00"
+context:
+  id: 01H15J0Y61QMP43HGDFTFNW001
+  parent_id: null
+  user_id: null
+```
 The *zone_turned_off_not_confirmed* event provides the following:
 ```
 event_type: irrigation_event
@@ -211,7 +214,7 @@ context:
   parent_id: null
   user_id: null
 ```
-An automation can then use this data to fire on the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered. Other triggers can be added if there is a use case for them. Let me know.
+An automation can then use this data to fire on the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered.
 ``` yaml
 alias: pump_keep_alive
 description: "Let the pump device know that HA is still alive so it does not time out and shut down"
@@ -254,10 +257,55 @@ The definition of the YAML configuration:
 
 ## SERVICES
 ```yaml
-irrigationprogram.stop_programs:
-    description: Stop any running program.
+stop_programs:
+  description: Stop any running programs and zones.
+
+run_zone:
+  description: run a specific zone.
+  fields:
+    entity_id:
+      name: Irrigation Program
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+    zone:
+      name: Zone
+      description: Zones to run
+      required: true
+      selector:
+          entity:
+            domain: switch
+            multiple: true
+
+reset_runtime:
+  description: reset the runtime back to none for the program supports testing.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+
+run_simulation:
+  description: Simulate running a program, exectution logic is not called, the functions are and results shown in the log.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The irrigation program to test
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
 ```
 ## REVISION HISTORY
+## 5.2.6 - under development
+* refine the manual run behavior, zones will run unless explicitly disabled.
+* Add a new event, program_turned_on, when a program starts.
+* Add scheduled attribute to existing events.
 ## 5.2.5
 * remove zone switch monitoring to get around problem with zone switch latency causing the program not to run
 * Add warning when latency exceeds 5 seconds when turning off the switch, the switch was not in an 'off' state after 5 seconds
@@ -333,4 +381,3 @@ irrigationprogram.stop_programs:
 * Auto create helper entities that do not require intervention. All input_boolean, input_text, input_number, input_datetime are now created automatically if required.
 * When optional functionality requires a helper only the friendly name is required to trigger the creation of the object.
 * Requires Irrigation Custom Card V5.0.0
-
