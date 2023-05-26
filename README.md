@@ -175,12 +175,6 @@ data:
   action: program_turned_on
   program: switch.zone_1
   scheduled: true
-origin: LOCAL
-time_fired: "2023-05-24T00:19:59.297735+00:00"
-context:
-  id: 01H15J0Y61QMP43HGDFTFNW001
-  parent_id: null
-  user_id: null
 ```
 The *zone_turned_off_not_confirmed* event provides the following:
 ```
@@ -189,12 +183,6 @@ data:
   device_id: switch.zone_1
   action: zone_turned_off_not_confirmed
   zone: dummy_1
-origin: LOCAL
-time_fired: "2023-05-24T00:19:59.297735+00:00"
-context:
-  id: 01H15J0Y61QMP43HGDFTFNW001
-  parent_id: null
-  user_id: null
 ```
 The *zone_turned_on* event provides this information:
 ```
@@ -208,11 +196,6 @@ data:
   water: 1
   wait: 0
   repeat: 1
-time_fired: "2022-08-15T23:33:36.358814+00:00"
-context:
-  id: 01GAHXP1F6KQWTM6Z6PEJ69KDM
-  parent_id: null
-  user_id: null
 ```
 An automation can then use this data to fire on the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered.
 ``` yaml
