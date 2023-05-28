@@ -80,7 +80,7 @@ class IrrigationZone:
         run_freq_value = None
         if self._run_freq is not None:
             if self.hass.states.get(self._run_freq) is None:
-                _LOGGER.warning(
+                _LOGGER.error(
                     "Run_freq: %s not found, check your configuration", self._run_freq
                 )
             else:
@@ -96,7 +96,7 @@ class IrrigationZone:
         rain_sensor_value = False
         if self._rain_sensor is not None:
             if self.hass.states.get(self._rain_sensor) is None:
-                _LOGGER.warning(
+                _LOGGER.error(
                     "Rain sensor: %s not found, check your configuration",
                     self._rain_sensor,
                 )
@@ -210,12 +210,12 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, auto=False, water_adjustment=1):
+    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
         """update the run time component"""
 
         wait = self.wait_value()*60
         #if run manually do not adjust the time
-        if auto:
+        if scheduled:
             adjust = water_adjustment
         else:
             adjust = 1
@@ -240,8 +240,8 @@ class IrrigationZone:
 
         run_time = run_time - seconds_run
         # zone has been disabled
-        if self.enable_zone_value() is False or adjust == 0:
-            run_time = 0
+#        if self.enable_zone_value() is False or adjust == 0:
+#            run_time = 0
         return math.ceil(run_time)
 
     def last_ran(self):
@@ -255,7 +255,7 @@ class IrrigationZone:
         else:
             return self.rain_sensor_value()
 
-    def should_run(self, auto=False):
+    def should_run(self, scheduled=False):
         '''determine if the zone should run'''
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             #Switch is unavavailable
@@ -264,18 +264,17 @@ class IrrigationZone:
         #zone is disabled
         if not self.enable_zone_value():
             return False
-        # if run manually remaining tests
-        if not auto:
-            return True
 
-        if self.is_raining():
-            return False
-        if self.water_adjust_value() == 0:
+        if self.water_adjust_value() == 0 and scheduled is True:
             return False
 
         #no Frequency provided
         if self.run_freq_value() is None:
             return True
+
+        # Only stop the zone if it is a scheduled run
+        if self.is_raining() is True and scheduled is True:
+            return False
 
         last_ran_relative = 0
         if self._last_ran:
@@ -292,19 +291,30 @@ class IrrigationZone:
                 / 86400
             )
 
-        response = False
         if self.run_freq_value().isnumeric():
             numeric_freq = int(float(self.run_freq_value()))
             if numeric_freq <= last_ran_relative or not self._last_ran:
-                response = True
+                return True
+            if scheduled: return False
+            #this is a manual request
+            return True
         else:
             string_freq = self.run_freq_value()
             string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
             string_freq = [x.capitalize() for x in string_freq]
             #if the day is found in the frequency
             if dt_util.now().strftime("%a") in string_freq:
-                response = True
-        return response
+                #found today in the frequency
+                return True
+            #Not today, now check if there is an invalid data i.e. off
+            valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            valid_freq = any(item in string_freq for item in valid_days)
+            #the frequency is a list of valid days
+            #if this a scheduled run or not a valid freq do not run
+            if scheduled is True or valid_freq is False: return False
+            #this is a manual request
+            return True
+
     # end should_run
 
     def check_switch_state(self):
@@ -313,13 +323,18 @@ class IrrigationZone:
             return False
         return True
 
-    async def async_turn_on(self, pauto=False):
+    async def async_turn_on(self, scheduled=False):
         """start the watering cycle """
         stop = False
         self._stop = False
+
         #initalise the reamining time for display
-        water_adjust_value = self.water_adjust_value()
-        self._remaining_time = self.run_time(repeats=self.repeat_value(), auto=pauto, water_adjustment=water_adjust_value)
+        if scheduled is True:
+            water_adjust_value = self.water_adjust_value()
+        else:
+            water_adjust_value = 1
+
+        self._remaining_time = self.run_time(repeats=self.repeat_value(), scheduled=scheduled, water_adjustment=water_adjust_value)
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
@@ -342,7 +357,7 @@ class IrrigationZone:
                     volume_delivered += self.flow_sensor_value() / 60
                     volume_required = self.water_value() * water_adjust_value
                     volume_remaining = volume_required - volume_delivered
-                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
                     #flow sensor has failed or no water is being provided
                     if self.flow_sensor_value() == 0:
@@ -358,7 +373,7 @@ class IrrigationZone:
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
 
             if stop or self._stop:
@@ -373,7 +388,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, auto=pauto, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     if stop or self._stop:
                         break
                     await asyncio.sleep(1)
@@ -388,7 +403,16 @@ class IrrigationZone:
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
         )
-        await self.latency_check()
+        latency = await self.latency_check()
+        #raise an event
+        event_data = {
+            "action": "zone_turned_off",
+            "device_id": self._switch,
+            "zone": self._name,
+            "state":"eco",
+            "latency": latency
+        }
+        self.hass.bus.async_fire("irrigation_event", event_data)
         self._state = "eco"
 
     async def async_turn_off(self, **kwargs):
@@ -399,7 +423,16 @@ class IrrigationZone:
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
         )
-        await self.latency_check()
+        #raise an event
+        latency = await self.latency_check()
+        event_data = {
+            "action": "zone_turned_off",
+            "device_id": self._switch,
+            "zone": self._name,
+            "state":"off",
+            "latency": latency
+        }
+        self.hass.bus.async_fire("irrigation_event", event_data)
 
     async def latency_check(self):
         '''Ensure switch has turned off and warn'''
@@ -407,17 +440,9 @@ class IrrigationZone:
             if self.check_switch_state() is True: #on
                 await asyncio.sleep(1)
             else:
-                break
-        else:
-            _LOGGER.warning('Switch has excesive latency, exceding %s seconds, cannot confirm %s is off', i+1, self._switch)
-            #raise an event if switch cannont be confirmed off
-            event_data = {
-                "device_id": self._switch,
-                "action": "zone_turned_off_not_confirmed",
-                "zone": self._name
-            }
-            self.hass.bus.async_fire("irrigation_event", event_data)
-
+                return False
+        _LOGGER.warning('Switch has excesive latency, exceding %s seconds, cannot confirm %s is off', i+1, self._switch)
+        return True
 
     def set_last_ran(self, last_ran):
         '''update the last ran attribute'''
@@ -452,15 +477,16 @@ class IrrigationZone:
 
     async def async_test_zone(self):
         '''Show simulation results'''
-        _LOGGER.error("Zone:               %s",self._name)
-        _LOGGER.error("Should run:         %s", self.should_run())
-        _LOGGER.error("Last Run time:      %s", self._last_ran)
-        _LOGGER.error("Run time:           %s", self.run_time(repeats=self.repeat_value()))
-        _LOGGER.error("Water Value:              %s",self.water_value())
-        _LOGGER.error("Wait Value:               %s",self.wait_value())
-        _LOGGER.error("Repeat Value:             %s",self.repeat_value())
-        _LOGGER.error("Rain sensor value:        %s",self.rain_sensor_value())
-        _LOGGER.error("Ignore rain sensor Value: %s",self.ignore_rain_sensor_value())
-        _LOGGER.error("Run frequency Value:      %s",self.run_freq_value())
-        _LOGGER.error("Flow Sensor Value:        %s",self.flow_sensor_value())
-        _LOGGER.error("Adjuster Value:           %s", self.water_adjust_value())
+        _LOGGER.warning("----------------------------")
+        _LOGGER.warning("Zone:                     %s", self._name)
+        _LOGGER.warning("Should run:               %s", self.should_run())
+        _LOGGER.warning("Last Run time:            %s", self._last_ran)
+        _LOGGER.warning("Run time:                 %s", self.run_time(repeats=self.repeat_value()))
+        _LOGGER.warning("Water Value:              %s", self.water_value())
+        _LOGGER.warning("Wait Value:               %s", self.wait_value())
+        _LOGGER.warning("Repeat Value:             %s", self.repeat_value())
+        _LOGGER.warning("Rain sensor value:        %s", self.rain_sensor_value())
+        _LOGGER.warning("Ignore rain sensor Value: %s", self.ignore_rain_sensor_value())
+        _LOGGER.warning("Run frequency Value:      %s", self.run_freq_value())
+        _LOGGER.warning("Flow Sensor Value:        %s", self.flow_sensor_value())
+        _LOGGER.warning("Adjuster Value:           %s", self.water_adjust_value())
