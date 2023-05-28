@@ -35,7 +35,7 @@ Implemented as a switch, you can start a program using the schedule, manually or
 * Modify programs and zones, add new zones, delete zones
 * V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
 
-### Pre-requisite 
+### Pre-requisite - removed in V5.2.6(current beta)
 * The time_date integration is required
 ```yaml
 sensor:
@@ -303,7 +303,7 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
-## 5.2.6 - under development
+## 5.2.6 - beta
 * refine the manual run behavior, zones will run unless explicitly disabled.
 * expand events: program_turned_on, program_turned_off, zone_turned_on, zone_turned_off when a program starts.
 * remove requirement for datetime sensor.
