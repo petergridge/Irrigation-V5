@@ -35,7 +35,7 @@ Implemented as a switch, you can start a program using the schedule, manually or
 * Modify programs and zones, add new zones, delete zones
 * V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
 
-### Pre-requisite
+### Pre-requisite 
 * The time_date integration is required
 ```yaml
 sensor:
@@ -55,7 +55,6 @@ For the Program:
 
 For each Zone:
 - Input_number to provide the duration of the watering cycle
-
 
 This will get a basic setup running, have a read of the notes below and try a few of the other features.
 
@@ -149,7 +148,6 @@ If a program or zone is run manually the adjustment is ignored and executed with
 See the **https://github.com/petergridge/openweathremaphistory** for a companion custom sensor that may be useful.
 
 Setting *water_adjustment* attribute allows a factor to be applied to the watering time.
-
 * If the factor is 0 no watering will occur
 * If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
 * A factor of 1.1 could also be used to apply 10% more water if required.
@@ -157,6 +155,7 @@ Setting *water_adjustment* attribute allows a factor to be applied to the wateri
 ### Interlock
 
 Turn off running programs when a new program is started, this is the default.
+
 **Note** Change this on all program configurations to get consistent behaviour. 
 
 With interlock enabled:
@@ -169,44 +168,63 @@ With interlock disabled:
 
 ### Events
 The *program_turned_on* event provides the following:
+- scheduled: false indicates the program was run manually
 ```
 event_type: irrigation_event
 data:
   action: program_turned_on
-  program: switch.zone_1
+  device_id: switch.test
   scheduled: true
+  program: test
 ```
-The *zone_turned_off_not_confirmed* event provides the following:
+The *program_turned_off* event provides the following:
+- completed:  true indicates the program was not teminated manually
 ```
 event_type: irrigation_event
 data:
-  device_id: switch.zone_1
-  action: zone_turned_off_not_confirmed
-  zone: dummy_1
+  action: program_turned_off
+  device_id: switch.test
+  completed: true
+  program: test
 ```
 The *zone_turned_on* event provides this information:
+- scheduled: false indicates the zone was run manually
 ```
 event_type: irrigation_event
 data:
-  device_id: switch.test_irrigation
   action: zone_turned_on
-  zone: zone_3
-  pump: switch.pump
-  runtime: 60
+  device_id: switch.test
+  scheduled: true
+  zone: dummy_3
+  pump: null
+  runtime: 59
   water: 1
   wait: 0
   repeat: 1
 ```
-An automation can then use this data to fire on the event, in this example it the automation would run only when the *pump* event data is '*switch.pump*'. but you could refine it more to include a specific zone or remove the event data clause and it would run every time the event is triggered.
+The *zone_turned_off* event provides this information:
+- latency: true indicates that the zone could not be confirmed as off
+- state:  the state of the switch when the event was raised
+```
+event_type: irrigation_event
+data:
+  action: zone_turned_off
+  device_id: switch.dummy_3
+  zone: dummy_3
+  latency: false
+  state: "off"
+```
+
+An automation can then use this data to fire on the event you can refine it by adding specific event data.
 ``` yaml
-alias: pump_keep_alive
-description: "Let the pump device know that HA is still alive so it does not time out and shut down"
+alias: irrigation_program_starts
+description: "do something when the program is initiated on schedule, not manually"
 trigger:
   - platform: event
     event_type: irrigation_event
     event_data:
-      pump: switch.pump
-      action: zone_turned_on
+      action: program_turned_on
+      scheduled: true
 action: ---- Put your action here ----
 mode: single
 ```
@@ -287,8 +305,8 @@ run_simulation:
 ## REVISION HISTORY
 ## 5.2.6 - under development
 * refine the manual run behavior, zones will run unless explicitly disabled.
-* Add a new event, program_turned_on, when a program starts.
-* Add scheduled attribute to existing events.
+* expand events: program_turned_on, program_turned_off, zone_turned_on, zone_turned_off when a program starts.
+* remove requirement for datetime sensor.
 ## 5.2.5
 * remove zone switch monitoring to get around problem with zone switch latency causing the program not to run
 * Add warning when latency exceeds 5 seconds when turning off the switch, the switch was not in an 'off' state after 5 seconds
