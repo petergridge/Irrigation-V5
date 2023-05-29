@@ -5,6 +5,11 @@
 ### Would like to more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github.
 
+### Latest Change
+- Remove pre requisite for time-data sensor V5.2.6
+### Coming Soon
+- next run time attribute V5.2.7
+
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.
