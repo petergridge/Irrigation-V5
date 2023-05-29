@@ -2,6 +2,9 @@
 
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total)
 
+### Would like to more language support? Can you help with a translation? Contact me!
+Create a PR, contact me using the community link above, or raise and issue on github.
+
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.
