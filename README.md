@@ -2,9 +2,6 @@
 
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total)
 
-# Deprecation notice:
-* yaml configuration support will be depricated from version 5.2.2 - May 2023
-
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.
@@ -47,13 +44,13 @@ sensor:
 ### Basic Configuration
 You need to define the entities that allow you to control the features you want. I have have moved away from defining the helpers in YAML and create them via the Helpers tab in the Settings, Devices and services paged, I find it easier and there is no need to restart HA when you add new ones. Create the following for a basic setup.
 
-For the Program:
+For the Program create these helpers:
 - Input_datetime for the program start time (time only)
 - Input_boolean  to support the toggling of the configuration in the custom card
 - Input_boolean to support the enabling/disabling of the program
 - Input_select to define the frequency you want the zone to run, you can do this on the program if you want and save a few entities but I have different frequencies on some zones
 
-For each Zone:
+For each Zone create these helpers:
 - Input_number to provide the duration of the watering cycle
 
 This will get a basic setup running, have a read of the notes below and try a few of the other features.
@@ -303,6 +300,9 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
+## 5.2.7 - under development
+* Add next run time attribute. Custom Card will also need to be updated
+* Fix spelling mistakes in en.json and strings.json
 ## 5.2.6 - beta
 * refine the manual run behavior, zones will run unless explicitly disabled.
 * expand events: program_turned_on, program_turned_off, zone_turned_on, zone_turned_off when a program starts.
@@ -313,7 +313,8 @@ run_simulation:
 ## 5.2.4
 * Handle high latency switches
 ## 5.2.2
-* Remove yaml configuration support
+# Deprecation notice:
+* yaml configuration support has been depricated
 * Add input via a sensor for frequency.
 ## 5.2.1
 * Correct issue #15
