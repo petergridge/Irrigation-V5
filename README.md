@@ -104,7 +104,7 @@ For Australians you can select to water on specific days of the week to support 
 Defining a Dropdown helper to use with the run_freq attribute, for example:
 ```yaml
     options:
-      - Off
+      - off
       - 1
       - 2
       - 3
