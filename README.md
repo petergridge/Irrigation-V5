@@ -311,6 +311,7 @@ run_simulation:
 ## 5.2.7 - under development
 * Add next run time attribute. Custom Card will also need to be updated
 * Fix spelling mistakes in en.json and strings.json
+* Fix stop not working as expected in custom card
 ## 5.2.6 - beta
 * refine the manual run behavior, zones will run unless explicitly disabled.
 * expand events: program_turned_on, program_turned_off, zone_turned_on, zone_turned_off when a program starts.
