@@ -12,7 +12,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
-The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.
+The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.co
 
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
@@ -20,11 +20,17 @@ This program is essentially a scheduling tool, one user has used this to schedul
 
 The information provided by the configuration is evaluated to trigger the irrigation action according to the inputs provided.
 
-Watering can occur in an ECO mode where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
+Watering can occur in an [ECO mode](eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
 
-The rain sensor is implemented as a binary_sensor, this allows practically any combination of sensors to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+Supports watering by [time or volume](#time-or-volume-based-watering).
 
-Implemented as a switch, you can start a program using the schedule, manually or using an automation.
+A number os sensor inputs are available to stop or modify the watering based on external inputs.
+* The [rain sensor](#rain-sensor-feature) is implemented as a binary_sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* The [water adjustment](#watering-adjuster-feature) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
+
+[Scheduling](#run-days-and-run-frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
+
+The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
 ## INSTALLATION
 
@@ -38,17 +44,7 @@ Implemented as a switch, you can start a program using the schedule, manually or
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component. 
 * Add the integration many times if you want more than one program.
 * Modify programs and zones, add new zones, delete zones
-* V4 yaml configuration will be imported, if it fails to load run check configuration first and correct any changes implemented to support this release.
 
-### Pre-requisite - removed in V5.2.6(current beta)
-* The time_date integration is required
-```yaml
-sensor:
-  - platform: time_date
-    display_options:
-      - 'time'
-      - 'date'
-```
 ### Basic Configuration
 You need to define the entities that allow you to control the features you want. I have have moved away from defining the helpers in YAML and create them via the Helpers tab in the Settings, Devices and services paged, I find it easier and there is no need to restart HA when you add new ones. Create the following for a basic setup.
 
@@ -62,6 +58,13 @@ For each Zone create these helpers:
 - Input_number to provide the duration of the watering cycle
 
 This will get a basic setup running, have a read of the notes below and try a few of the other features.
+
+### Test configuration
+testhelpers.yaml provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
+
+This allow me to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration to ensure an operational configuration after coming out your winter hinernation.
+
+Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
 
 ### Debug
 Add the following to your logger section configuration.yaml
