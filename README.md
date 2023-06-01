@@ -12,13 +12,11 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
-The [custom card](https://github.com/petergridge/Irrigation-Card) will render the program options specified in the configuration and is also available in HACS.
-
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
 This program is essentially a scheduling tool, one user has used this to schedule the running of his lawn mower, so the use is far broader than I anticipated.
 
-Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
+Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
 
 Supports watering by [time or volume](#time-or-volume-based-watering).
 
@@ -31,6 +29,11 @@ A number of sensor inputs are available to stop or modify the watering based on 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
 There is also support for a [pump or master solenoid](#pump-or-master-solenoid), running [programs](#interlock) or [zones](#zone-group) sequentially or concurrently.
+
+The [custom card](https://github.com/petergridge/Irrigation-Card) renders the program configuration as a card. It exposes in addition to the state of each of the configured helpers:
+* the remaining run time for the program and zone
+* the last run and/or next run details
+Some configuration items (show config) of this control do not affect the watering, but impact the behaviour of the custom card.
 
 ## INSTALLATION
 
@@ -74,7 +77,7 @@ logger:
     logs:
         custom_components.irrigationprogram: debug
 ```
-The following services support testing and debugging:
+The following [services](#services) support testing and debugging:
 * irrigationprogram.reset_runtime service will reset the last run details
 * irrigationprogram.run_simulation will list details of the program based on the currently set attributes
 
