@@ -20,7 +20,7 @@ This program is essentially a scheduling tool, one user has used this to schedul
 
 The information provided by the configuration is evaluated to trigger the irrigation action according to the inputs provided.
 
-Watering can occur in an [ECO mode]((#eco-feature)) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
+Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. The wait and repeat configuration is optional.
 
 Supports watering by [time or volume](#time-or-volume-based-watering).
 
