@@ -12,7 +12,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
-The **custom card https://github.com/petergridge/Irrigation-Card** V5.2 will render the program options specified in the configuration and is also available in HACS.
+The **[custom card] (#https://github.com/petergridge/Irrigation-Card)** V5.2 will render the program options specified in the configuration and is also available in HACS.
 
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
