@@ -1,0 +1,189 @@
+
+# create helpers to support testing the irrigation custom control.
+# supports creating 3 zones with all attributes configured
+
+
+switch:
+  - platform: template
+    switches:
+      dummy_1:
+        friendly_name: Zone 1
+        value_template: "{{ is_state('input_boolean.dummy_switch_1', 'on') }}"
+        turn_on:
+          - delay: '00:00:01'
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.dummy_switch_1
+        turn_off:
+          - delay: '00:00:01'
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.dummy_switch_1
+      dummy_2:
+        friendly_name: Zone 2
+        value_template: "{{ is_state('input_boolean.dummy_switch_2', 'on') }}"
+        turn_on:
+          - delay: '00:00:01'
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.dummy_switch_2
+        turn_off:
+          - delay: '00:00:01'
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.dummy_switch_2
+      dummy_3:
+        friendly_name: Zone 3
+        value_template: "{{ is_state('input_boolean.dummy_switch_3', 'on') }}"
+        turn_on:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.dummy_switch_3
+        turn_off:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.dummy_switch_3
+      dummy_pump:
+        friendly_name: Pump
+        value_template: "{{ is_state('input_boolean.dummy_pump', 'on') }}"
+        turn_on:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.dummy_pump
+        turn_off:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.dummy_pump
+
+input_boolean:
+  dummy_switch_1:
+  dummy_switch_2:
+  dummy_switch_3:
+  program_enabled:
+  zone_1_enabled:
+  zone_2_enabled:
+  zone_3_enabled:
+  program_rain:
+  zone_1_rain:
+  zone_1_ignore_rain:
+  dummy_pump:
+  show_config:
+
+input_datetime:
+  program_1_start:
+    name: Start Time
+    has_time: true
+
+input_number:
+  zone_1_run_time:
+    min: 1
+    max: 30
+    step: 1
+  zone_2_run_time:
+    min: 1
+    max: 30
+    step: 1
+  zone_3_run_time:
+    min: 1
+    max: 30
+    step: 1
+  zone_1_wait_time:
+    min: 1
+    max: 5
+    step: 1
+  zone_2_wait_time:
+    min: 1
+    max: 5
+    step: 1
+  zone_3_wait_time:
+    min: 1
+    max: 5
+    step: 1
+  zone_1_repeat:
+    min: 1
+    max: 5
+    step: 1
+  zone_2_repeat:
+    min: 1
+    max: 5
+    step: 1
+  zone_3_repeat:
+    min: 1
+    max: 5
+    step: 1
+  zone_1_adjust:
+    initial: 1
+    min: 0
+    max: 2
+    step: .1
+  zone_2_adjust:
+    initial: 1
+    min: 0
+    max: 2
+    step: .1
+  zone_3_adjust:
+    initial: 1
+    min: 0
+    max: 2
+    step: 0.1
+  flow_sensor:
+    min: 0
+    max: 20
+    step: 1
+  inter_zone_delay:
+    min: 0
+    max: 20
+    step: 1
+
+input_select:
+  zone_1_freq:
+   options:
+    - 1
+    - 2
+    - 3
+    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
+    - Mon
+    - Tue
+    - Wed
+    - Thu
+    - Fri
+    - Sat
+    - Sun
+    - Off
+
+  zone_2_freq:
+   options:
+    - 1
+    - 2
+    - 3
+    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
+    - Mon
+    - Tue
+    - Wed
+    - Thu
+    - Fri
+    - Sat
+    - Sun
+    - Off
+
+  zone_3_freq:
+   options:
+    - 1
+    - 2
+    - 3
+    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
+    - Mon
+    - Tue
+    - Wed
+    - Thu
+    - Fri
+    - Sat
+    - Sun
+    - Off
+
+  program_freq:
+   options:
+    - 1
+    - 2
+    - 3
+    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
+    - Mon
+    - Tue
+    - Wed
+    - Thu
+    - Fri
+    - Sat
+    - Sun
+    - Off
