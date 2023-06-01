@@ -67,4 +67,4 @@ select save and the card is built.
 
 There are options to split the config across multiple cards you may want to investigate if you have many zones. 
 
-There is much more detail in the (readme)[https://github.com/petergridge/Irrigation-Card].
+There is much more detail in the [readme](https://github.com/petergridge/Irrigation-Card)
