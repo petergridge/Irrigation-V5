@@ -15,7 +15,7 @@ Add a 'Date and/or time' helper with this configuration
 
 <img src="createdatetime.png" width="300">
 
-Add a ''Dropdown' helper
+Add a 'Dropdown' helper
 
 <img src="createdropdown.png" width="300">
 
@@ -67,4 +67,4 @@ select save and the card is built.
 
 There are options to split the config across multiple cards you may want to investigate if you have many zones. 
 
-There is much more detail in the readme.
+There is much more detail in the (readme)[https://github.com/petergridge/Irrigation-Card].
