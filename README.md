@@ -26,7 +26,7 @@ A number of sensor inputs are available to stop or modify the watering based on 
 * The [rain sensor](#rain-sensor-feature) is implemented as a binary_sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
 * The [water adjustment](#watering-adjuster-feature) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
 * [Scheduling](#run-days-and-run-frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
-* See **https://github.com/petergridge/openweathermaphistory** for a companion custom sensor that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
+* The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
