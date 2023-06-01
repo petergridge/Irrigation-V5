@@ -22,6 +22,7 @@ ATTR_ZONE = "zone"
 ATTR_ZONE_GROUP = "group"
 ATTR_PUMP = "pump"
 ATTR_LAST_RAN = "last_ran"
+ATTR_NEXT_RUN = "next_run"
 ATTR_SWITCHES = "switches"
 ATTR_MONITOR_CONTROLLER = "controller_monitor"
 ATTR_DISABLE_ZONE = "disable_zone"
@@ -35,5 +36,5 @@ ATTR_GROUP_NAME = "group_name"
 ATTR_HISTORICAL_FLOW = "historical_flow"
 ATTR_INTERLOCK = "interlock"
 
-CONST_LATENCY = 5
+CONST_LATENCY = 10
 CONST_ZERO_FLOW_DELAY = 5

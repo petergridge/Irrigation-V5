@@ -1,8 +1,10 @@
 '''Irrigation zone class'''
-
+#from datetime import datetime
+from datetime import timedelta, datetime, timezone
 import asyncio
 import logging
 import math
+import pytz
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
@@ -201,7 +203,7 @@ class IrrigationZone:
 
     def enable_zone_value(self):
         '''enable zone entity value'''
-        zone_value = 'on'
+        zone_value = True
         if self._enable_zone is not None:
             zone_value = self.hass.states.is_state(self._enable_zone, "on")
         return zone_value
@@ -248,12 +250,91 @@ class IrrigationZone:
         '''last ran datetime attribute'''
         return self._last_ran
 
+    def next_run(self,starthour=0, startmin=0, program_enabled = True):
+        '''Determine when a zone will next attempt to run'''
+        #need to determine what to do when it is raining
+        #or adjusted to 0
+
+        if self.enable_zone_value() is False:
+            return "Off"
+        if program_enabled is False:
+            return "Off"
+        if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
+            return "Unavailable"
+
+        localtz  = self.hass.config.time_zone
+        localtimezone = pytz.timezone(localtz)
+        if self._last_ran is None:
+            #default to today and start time
+            #is the run time after now
+            last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            if last_ran > datetime.now().astimezone(tz=localtimezone):
+                last_ran = last_ran - timedelta(days=1)
+        else:
+            if isinstance(self._last_ran,datetime):
+                last_ran = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            if isinstance(self._last_ran,str):
+                last_ran = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+
+        #frq is not defined
+        if self.run_freq_value() is None:
+            next_run = dt_util.as_timestamp(last_ran) + 86400
+            next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            return next_run
+        # Frq is numeric
+        if self.run_freq_value().isnumeric():
+            if (datetime.now().astimezone(tz=localtimezone) - last_ran).days > int(self.run_freq_value()):
+                #zone has not run due to rain or other factor
+                numeric_freq = (datetime.now().astimezone(tz=localtimezone) - last_ran).days + 1
+            else:
+                numeric_freq = int(float(self.run_freq_value()))
+            next_run = dt_util.as_timestamp(last_ran) + (numeric_freq * 86400)
+            next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            return next_run
+
+        #Frq is Alpha
+        string_freq = self.run_freq_value()
+        string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
+        string_freq = [x.capitalize() for x in string_freq]
+        valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        valid_freq = any(item in string_freq for item in valid_days)
+        if valid_freq is True:
+            #default to today and start time for day based running
+            last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            next_run = dt_util.as_timestamp(last_ran) + (100 * 86400) #arbitary max
+            next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            if last_ran > datetime.now().astimezone(tz=localtimezone):
+                next_run = last_ran
+            else:
+                for day in string_freq:
+                    next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
+
+            return next_run
+        else:
+            #zone is marked as off
+            return "Off"
+
+    def get_weekday(self,day):
+        '''determine weekday num'''
+        days  = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        return days.index(day) + 1
+
+    def get_next_dayofweek_datetime(self,date_time, dayofweek):
+        '''next date for the given day'''
+        start_time_w = date_time.isoweekday()
+        target_w = self.get_weekday(dayofweek)
+        if start_time_w < target_w:
+            day_diff = target_w - start_time_w
+        else:
+            day_diff = 7 - (start_time_w - target_w)
+        return date_time + timedelta(days=day_diff)
+
     def is_raining(self):
         """assess the rain_sensor including ignore rain_sensor"""
         if self.ignore_rain_sensor_value():
             return False
-        else:
-            return self.rain_sensor_value()
+
+        return self.rain_sensor_value()
 
     def should_run(self, scheduled=False):
         '''determine if the zone should run'''
@@ -325,7 +406,6 @@ class IrrigationZone:
 
     async def async_turn_on(self, scheduled=False):
         """start the watering cycle """
-        stop = False
         self._stop = False
 
         #initalise the reamining time for display
@@ -344,10 +424,17 @@ class IrrigationZone:
                 continue
             self._state = "on"
             await asyncio.sleep(1)
-            if self.check_switch_state() is False and stop is False:
+            if self.check_switch_state() is False and self._stop is False:
                 await self.hass.services.async_call(
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
                 )
+                for _ in range(CONST_LATENCY):
+                    if self.check_switch_state() is False:
+                        await asyncio.sleep(1)
+                    else:
+                        break
+                else:
+                    continue
 
             #track the watering
             if self._flow_sensor is not None:
@@ -359,10 +446,13 @@ class IrrigationZone:
                     volume_remaining = volume_required - volume_delivered
                     self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
+                    if self.check_switch_state() is False:
+                        self._stop = True
+                        break
                     #flow sensor has failed or no water is being provided
                     if self.flow_sensor_value() == 0:
                         zeroflowcount += 1
-                        stop = True
+                        self._stop = True
                         if zeroflowcount > CONST_ZERO_FLOW_DELAY:
                             _LOGGER.warning("No flow detected for %s seconds, turning off solenoid to allow program to complete",CONST_ZERO_FLOW_DELAY)
                             break
@@ -375,8 +465,11 @@ class IrrigationZone:
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
                     self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
+                    if self.check_switch_state() is False:
+                        self._stop = True
+                        break
 
-            if stop or self._stop:
+            if self._stop:
                 break
             #Eco mode, wait cycle
             if self.wait_value() > 0 and i > 1:
@@ -389,11 +482,11 @@ class IrrigationZone:
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
                     self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
-                    if stop or self._stop:
+                    if self._stop:
                         break
                     await asyncio.sleep(1)
 
-            if stop or self._stop:
+            if self._stop:
                 break
         # End of repeat loop
         await self.async_turn_off()
