@@ -60,7 +60,7 @@ For the Program create these helpers:
 For each Zone create these helpers:
 - Input_number to provide the duration of the watering cycle
 
-This will get a basic setup running, have a read of the notes below and try a few of the other features.
+This [demonstration](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running, have a read of the notes below and try a few of the other features.
 
 ### Test configuration
 testhelpers.yaml provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
