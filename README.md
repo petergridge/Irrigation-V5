@@ -67,7 +67,7 @@ This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help
 ### Test configuration
 [testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
 
-This allow me to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration to ensure an operational configuration after coming out your winter hinernation.
+This allow me to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hinernation.
 
 Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
 
