@@ -35,6 +35,8 @@ The [custom card](https://github.com/petergridge/Irrigation-Card) renders the pr
 * the last run and/or next run details
 Some configuration items (show config) of this control do not affect the watering, but impact the behaviour of the custom card.
 
+This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
+
 ## INSTALLATION
 
 ### HACS installation
@@ -60,7 +62,7 @@ For the Program create these helpers:
 For each Zone create these helpers:
 - Input_number to provide the duration of the watering cycle
 
-This [demonstration](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running, have a read of the notes below and try a few of the other features.
+This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running, have a read of the notes below and try a few of the other features.
 
 ### Test configuration
 testhelpers.yaml provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
