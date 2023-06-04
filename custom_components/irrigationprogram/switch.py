@@ -54,7 +54,8 @@ from .const import (
     ATTR_GROUPS,
     ATTR_HISTORICAL_FLOW,
     ATTR_INTERLOCK,
-    CONST_LATENCY
+    CONST_LATENCY,
+    ATTR_SCHEDULED
     )
 from .irrigationzone import IrrigationZone
 from .pump import PumpClass
@@ -94,7 +95,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         "run_simulation",
         {
-
+            vol.Optional(ATTR_SCHEDULED, default=True): cv.boolean
         },
         "async_simulate_program",
     )
@@ -201,7 +202,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self.unsub = async_track_point_in_utc_time(
             self.hass, self.point_in_time_listener, self.get_next_interval()
         )
-
 
         last_state = await self.async_get_last_state()
         self._extra_attrs = {}
@@ -335,7 +335,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # run validation over the zones
             for zone in self._irrigationzones:
                 zone.validate()
-
+            #set the next run attribute
+            await update_next_run(None, None, None)
         #setup the callback to kick in when HASS has started
         self.hass.bus.async_listen_once(
             EVENT_HOMEASSISTANT_STARTED, hass_startup
@@ -389,7 +390,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         loop.create_task(self.async_turn_on())
         await asyncio.sleep(1)
 
-    async def async_simulate_program(self) -> None:
+    async def async_simulate_program(self, scheduled) -> None:
         '''execute a simulation tests'''
         _LOGGER.warning("Irrigation Program: %s:",self._name)
         if len(self.build_run_script(False).values()) == 0:
@@ -404,7 +405,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             _LOGGER.warning(text)
         #list all zone details
         for testzone in self._irrigationzones:
-            await testzone.async_test_zone()
+            await testzone.async_test_zone(scheduled)
         #clean up after the simulation
         for group in self.build_run_script(False).values():
             await self.async_finalise_group_run(group, None)

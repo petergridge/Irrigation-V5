@@ -41,3 +41,10 @@ run_simulation:
       selector:
         entity:
             integration: irrigationprogram
+    scheduled:
+      name: Scheduled
+      description: Scheduled (true) or manual (false) execution simulation
+      default: true
+      required: true
+      selector:
+        boolean:

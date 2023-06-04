@@ -283,9 +283,11 @@ class IrrigationZone:
             return next_run
         # Frq is numeric
         if self.run_freq_value().isnumeric():
-            if (datetime.now().astimezone(tz=localtimezone) - last_ran).days > int(self.run_freq_value()):
+#            _LOGGER.warning('%s, %s',(datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400, int(self.run_freq_value()))
+            if (datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400 >= int(self.run_freq_value()):
                 #zone has not run due to rain or other factor
-                numeric_freq = (datetime.now().astimezone(tz=localtimezone) - last_ran).days + 1
+#                numeric_freq = (datetime.now().astimezone(tz=localtimezone) - last_ran).days + 1
+                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400)
             else:
                 numeric_freq = int(float(self.run_freq_value()))
             next_run = dt_util.as_timestamp(last_ran) + (numeric_freq * 86400)
@@ -310,9 +312,9 @@ class IrrigationZone:
                     next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
 
             return next_run
-        else:
-            #zone is marked as off
-            return "Off"
+
+        #zone is marked as off
+        return "Off"
 
     def get_weekday(self,day):
         '''determine weekday num'''
@@ -333,7 +335,6 @@ class IrrigationZone:
         """assess the rain_sensor including ignore rain_sensor"""
         if self.ignore_rain_sensor_value():
             return False
-
         return self.rain_sensor_value()
 
     def should_run(self, scheduled=False):
@@ -568,11 +569,11 @@ class IrrigationZone:
             valid = False
         return valid
 
-    async def async_test_zone(self):
+    async def async_test_zone(self, scheduled):
         '''Show simulation results'''
         _LOGGER.warning("----------------------------")
         _LOGGER.warning("Zone:                     %s", self._name)
-        _LOGGER.warning("Should run:               %s", self.should_run())
+        _LOGGER.warning("Should run:               %s", self.should_run(scheduled=scheduled))
         _LOGGER.warning("Last Run time:            %s", self._last_ran)
         _LOGGER.warning("Run time:                 %s", self.run_time(repeats=self.repeat_value()))
         _LOGGER.warning("Water Value:              %s", self.water_value())

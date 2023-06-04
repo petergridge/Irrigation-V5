@@ -73,7 +73,7 @@ async def async_setup(hass:HomeAssistant, config):
                 await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
     # END async_stop_switches
-    # register services
+    # register service
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
 
     #import YAML to config entries
