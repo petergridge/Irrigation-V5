@@ -316,7 +316,10 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
-## 5.2.7 - under development
+## 5.2.8
+* resolve incorrect next run for numeric frequency where scheduled run did not proceed 
+* Add scheduled/manual options for program simulation
+## 5.2.7 - Beta
 * Add next run time attribute. Custom Card will also need to be updated
 * Fix spelling mistakes in en.json and strings.json
 * Fix stop not working as expected in custom card
