@@ -267,33 +267,30 @@ class IrrigationZone:
         if self._last_ran is None:
             #default to today and start time
             #is the run time after now
-            last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            if last_ran > datetime.now().astimezone(tz=localtimezone):
-                last_ran = last_ran - timedelta(days=1)
+            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            if today_run > datetime.now().astimezone(tz=localtimezone):
+                today_run = today_run - timedelta(days=1)
         else:
             if isinstance(self._last_ran,datetime):
-                last_ran = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                today_run = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             if isinstance(self._last_ran,str):
-                last_ran = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                today_run = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
 
         #frq is not defined
         if self.run_freq_value() is None:
-            next_run = dt_util.as_timestamp(last_ran) + 86400
+            next_run = dt_util.as_timestamp(today_run) + 86400
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             return next_run
         # Frq is numeric
         if self.run_freq_value().isnumeric():
-#            _LOGGER.warning('%s, %s',(datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400, int(self.run_freq_value()))
-            if (datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400 >= int(self.run_freq_value()):
+            if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= int(self.run_freq_value()):
                 #zone has not run due to rain or other factor
-#                numeric_freq = (datetime.now().astimezone(tz=localtimezone) - last_ran).days + 1
-                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400)
+                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
             else:
                 numeric_freq = int(float(self.run_freq_value()))
-            next_run = dt_util.as_timestamp(last_ran) + (numeric_freq * 86400)
+            next_run = dt_util.as_timestamp(today_run) + (numeric_freq * 86400)
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             return next_run
-
         #Frq is Alpha
         string_freq = self.run_freq_value()
         string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
@@ -302,17 +299,16 @@ class IrrigationZone:
         valid_freq = any(item in string_freq for item in valid_days)
         if valid_freq is True:
             #default to today and start time for day based running
-            last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            next_run = dt_util.as_timestamp(last_ran) + (100 * 86400) #arbitary max
+            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            today = today_run.isoweekday()
+            next_run = dt_util.as_timestamp(today_run) + (100 * 86400) #arbitary max
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
-            if last_ran > datetime.now().astimezone(tz=localtimezone):
-                next_run = last_ran
-            else:
-                for day in string_freq:
-                    next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
-
+            for day in string_freq :
+                if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
+                    next_run = today_run
+                else:
+                    next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
             return next_run
-
         #zone is marked as off
         return "Off"
 
@@ -350,13 +346,13 @@ class IrrigationZone:
         if self.water_adjust_value() == 0 and scheduled is True:
             return False
 
-        #no Frequency provided
-        if self.run_freq_value() is None:
-            return True
-
         # Only stop the zone if it is a scheduled run
         if self.is_raining() is True and scheduled is True:
             return False
+
+        #no Frequency provided
+        if self.run_freq_value() is None:
+            return True
 
         last_ran_relative = 0
         if self._last_ran:
