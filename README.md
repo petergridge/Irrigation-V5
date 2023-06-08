@@ -256,7 +256,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;inter_zone_delay|input_number|Optional|Allows provision for a delay, in seconds, between a zone completing and the next one starting.|
 |&nbsp;&nbsp;&nbsp;&nbsp;zones|||data for setting up a zone|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;zone|switch|Required|This is the switch that represents the solenoid to be triggered|
-|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water](#time-or-volume-based-watering)|input_number |Required|The time to run or volume to supply for this zone |
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water](#time-or-volume-based-watering)|input_number, sensor |Required|The time to run or volume to supply for this zone |
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_adjustment](#watering-adjuster-feature)|sensor, input_number|Optional|A factor, applied to the watering time to decrease or increase the watering time|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Wait'. Wait time of the water/wait/repeat ECO option|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|input_number |Optional|Display name for the auto generated helper, for example 'Repeat'. The number of cycles to run water/wait/repeat|
