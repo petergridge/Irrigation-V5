@@ -21,7 +21,7 @@ run_zone:
             multiple: true
 
 reset_runtime:
-  description: reset the runtime back to none for the program supports testing.
+  description: Reset the runtime back to none for the program supports testing.
   fields:
     entity_id:
       name: Entity ID
@@ -32,7 +32,7 @@ reset_runtime:
             integration: irrigationprogram
 
 run_simulation:
-  description: Simulate running a program, while exectution logic is not called, the helper functions are executed and results shown in the log.
+  description: Simulate running a program. The results are shown in the log.
   fields:
     entity_id:
       name: Entity ID
