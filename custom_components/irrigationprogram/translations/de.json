@@ -1,4 +1,17 @@
 {
+	"entity": {
+		"sensor": {
+			"zonestatus": {
+				"state": {
+					"off": "Off",
+					"on": "On",
+					"disable": "Disabled",
+					"pending": "Pending",
+					"eco": "ECO"
+				}
+			}
+		}
+	},
 	"config": {
 		"error": {
 			"zone_defined": "Die ausgewählte Zone ist bereits in diesem Programm vorhanden",
@@ -35,7 +48,8 @@
 					"wait": "Entity für Wartezeit zwischen Wiederholungen",
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
-					"enable_zone": "Schalter um Zone zu de-/aktivieren"
+					"enable_zone": "Schalter um Zone zu de-/aktivieren",
+					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},
 			"menu": {
@@ -105,7 +119,8 @@
 					"wait": "Entity für Wartezeit zwischen Wiederholungen",
 					"repeat": "Entity für Wiederholungsanzahl",
 					"ignore_rain_sensor": "Entity um Regensensor zu ignorieren",
-					"enable_zone": "Entity um Zone zu aktivieren"
+					"enable_zone": "Entity um Zone zu aktivieren",
+					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},
 			"update_zone_data": {
@@ -123,7 +138,8 @@
  					"wait": "Entity für Verzögerung zwischen zwei Zonen",
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
-					"enable_zone": "Zonenschalter"
+					"enable_zone": "Zonenschalter",
+					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},
 			"delete_zone": {

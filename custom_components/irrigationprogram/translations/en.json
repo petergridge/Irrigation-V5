@@ -1,4 +1,17 @@
 {
+	"entity": {
+		"sensor": {
+			"zonestatus": {
+				"state": {
+					"off": "Off",
+					"on": "On",
+					"disable": "Disabled",
+					"pending": "Pending",
+					"eco": "ECO"
+				}
+			}
+		}
+	},
 	"config": {
 		"error": {
 			"zone_defined": "Selected zone switch is already defined in this irrigation program",
@@ -35,7 +48,8 @@
 					"wait": "Wait time entity",
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
-					"enable_zone": "Enable zone entity"
+					"enable_zone": "Enable zone entity",
+					"show_config": "Show configuration entity"
 				}
 			},
 			"menu": {
@@ -105,7 +119,8 @@
 					"wait": "Wait time entity",
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
-					"enable_zone": "Enable zone entity"
+					"enable_zone": "Enable zone entity",
+					"show_config": "Show configuration entity"
 				}
 			},
 			"update_zone_data": {
@@ -123,7 +138,8 @@
 					"wait": "Wait time entity",
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
-					"enable_zone": "Enable zone entity"
+					"enable_zone": "Enable zone entity",
+					"show_config": "Show configuration entity"
 				}
 			},
 			"delete_zone": {

@@ -1,4 +1,17 @@
 {
+	"entity": {
+		"sensor": {
+			"zonestatus": {
+				"state": {
+					"off": "Off",
+					"on": "On",
+					"disable": "Disabled",
+					"pending": "Pending",
+					"eco": "ECO"
+				}
+			}
+		}
+	},
 	"config": {
 		"error": {
 			"zone_defined": "La zona specificata è già stata definita in questo programma di irrigazione",
@@ -35,7 +48,8 @@
 					"wait": "Entità tempo attesa tra ripetizioni",
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
-					"enable_zone": "Entità attivazione zona"
+					"enable_zone": "Entità attivazione zona",
+					"show_config": "Entità mostra configurazione"
 				}
 			},
 			"menu": {
@@ -105,7 +119,8 @@
 					"wait": "Entità tempo attesa tra ripetizioni",
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
-					"enable_zone": "Entità attivazione zona"
+					"enable_zone": "Entità attivazione zona",
+					"show_config": "Entità mostra configurazione"
 				}
 			},
 			"update_zone_data": {
@@ -123,7 +138,8 @@
 					"wait": "Entità tempo attesa tra ripetizioni",
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
-					"enable_zone": "Entità attivazione zona"
+					"enable_zone": "Entità attivazione zona",
+					"show_config": "Entità mostra configurazione"
 				}
 			},
 			"delete_zone": {
