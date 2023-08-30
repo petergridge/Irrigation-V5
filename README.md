@@ -5,11 +5,11 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github.
 
-### Latest Change
-* Addded support for watering time to be supplied using a sensor
-* Fix issue with rain sensor
-* Fixed issue with next run attribute
-* Resolve incorrect next run for numeric frequency where scheduled run did not proceed 
+### Coming in V5.3.3
+* Custom Card deployed with this component, no need to install separately. Uninstall the HACS Custom Card.
+* Custom Card updated each zone setting can be expanded independently.
+* Fixed issue with WeatherHistory Frequency and water adjustment.
+* Added support for RainBird controller 
 * Add scheduled/manual options for program simulation
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
