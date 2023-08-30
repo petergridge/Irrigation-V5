@@ -11,6 +11,27 @@ run_zone:
       selector:
         entity:
             integration: irrigationprogram
+            domain: switch
+    zone:
+      name: Zone
+      description: Zones to run
+      required: true
+      selector:
+          entity:
+            domain: switch
+            multiple: true
+
+toggle_zone:
+  description: run a specific zone.
+  fields:
+    entity_id:
+      name: Irrigation Program
+      description: The irrigation program to run
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+            domain: switch
     zone:
       name: Zone
       description: Zones to run
@@ -30,6 +51,7 @@ reset_runtime:
       selector:
         entity:
             integration: irrigationprogram
+            domain: switch
 
 run_simulation:
   description: Simulate running a program. The results are shown in the log.
@@ -41,6 +63,7 @@ run_simulation:
       selector:
         entity:
             integration: irrigationprogram
+            domain: switch
     scheduled:
       name: Scheduled
       description: Scheduled (true) or manual (false) execution simulation
@@ -48,3 +71,40 @@ run_simulation:
       required: true
       selector:
         boolean:
+
+set_zone_status:
+  description: set the zone status.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The zone sensor to set
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+            domain: sensor
+    status:
+      name: state
+      description: State
+      default: 'off'
+      required: true
+      selector:
+        select:
+          options:
+           - 'on'
+           - 'off'
+           - 'pending'
+           - 'eco'
+           - 'disabled'
+
+toggle:
+  description: toggle config
+  fields:
+    entity_id:
+      name: Entity ID
+      description: Sensor to toggle
+      required: true
+      selector:
+        entity:
+            integration: irrigationprogram
+            domain: binary_sensor

@@ -1,8 +1,13 @@
 '''Constants'''
 
+RAINBIRD_TURN_ON = 'start_irrigation'
+RAINBIRD = 'rainbird'
+RAINBIRD_DURATION = 'duration'
+
 DOMAIN = "irrigationprogram"
 SWITCH_ID_FORMAT = "switch" + ".{}"
 
+ATTR_DEVICE_TYPE = "device_type"
 ATTR_RAIN_SENSOR = "rain_sensor"
 ATTR_IRRIGATION_ON = "irrigation_on"
 ATTR_START = "start_time"

@@ -79,14 +79,21 @@
     },
 	"selector": {
 		"status": {
-				"options": {
-					"off": "Off",
-					"on": "On",
-					"disable": "Disabled",
-					"pending": "Pending",
-					"eco": "ECO"
-				}
+			"options": {
+				"off": "Off",
+				"on": "On",
+				"disable": "Disabled",
+				"pending": "Pending",
+				"eco": "ECO"
+			}
+		},
+		"device_type": {
+			"options": {
+				"generic": "Generic",
+				"rainbird": "RainBird"
+			}
 		}
+
 	},
 	"entity": {
 		"sensor": {
@@ -118,6 +125,7 @@
 					"start_time": "Startzeit entity",
 					"irrigation_on": "Entity um Programm zu aktivieren",
 					"show_config": "Entity um Einstellungen anzuzeigen",
+					"device_type": "Controller type",
 					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen",
 					"interlock": "Gleichzeitige Programmausführung unterbinden"
 				}
@@ -189,6 +197,7 @@
 					"start_time": "Startzeit entity",
 					"irrigation_on": "Entity um Bewässerung zu aktivieren",
 					"show_config": "Entity um Einstellungen anzuzeigen",
+					"device_type": "Controller type",
 					"inter_zone_delay": "Entity für Verzögerung zwischen zwei Zonen",
 					"interlock": "Gleichzeitige Programmausführung unterbinden"
 				}

@@ -1,7 +1,7 @@
 '''pump classs'''
 import asyncio
 import logging
-
+from homeassistant.core import HomeAssistant
 from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
 
 from .const import CONST_SWITCH
@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class PumpClass:
     ''' pump class'''
-    def __init__(self, hass, pump, zones):
+    def __init__(self, hass: HomeAssistant, pump, zones) -> None:
         self.hass = hass
         self._pump = pump
         self._zones = zones

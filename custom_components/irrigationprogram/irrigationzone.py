@@ -5,6 +5,7 @@ import asyncio
 import logging
 import math
 import pytz
+from homeassistant.util import slugify
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
@@ -24,9 +25,15 @@ from .const import (
     ATTR_WATER_ADJUST,
     ATTR_ZONE,
     ATTR_ZONE_GROUP,
+    ATTR_SHOW_CONFIG,
     CONST_SWITCH,
     CONST_LATENCY,
-    CONST_ZERO_FLOW_DELAY
+    CONST_ZERO_FLOW_DELAY,
+    DOMAIN,
+    RAINBIRD_TURN_ON,
+    RAINBIRD_DURATION,
+    RAINBIRD
+
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,12 +43,15 @@ class IrrigationZone:
     def __init__(
         self,
         hass:HomeAssistant,
+        program_name,
         zone,
+        device_type,
         run_freq,
         hist_flow_rate,
         last_ran,
     ) -> None:
         self.hass = hass
+        self._program_name = program_name
         self._name = zone.get(ATTR_ZONE).split(".")[1]
         self._switch = zone.get(ATTR_ZONE)
         self._pump = zone.get(ATTR_PUMP)
@@ -49,6 +59,7 @@ class IrrigationZone:
         self._rain_sensor = zone.get(ATTR_RAIN_SENSOR)
         self._ignore_rain_sensor = zone.get(ATTR_IGNORE_RAIN_SENSOR)
         self._enable_zone = zone.get(ATTR_ENABLE_ZONE)
+        self._show_config = zone.get(ATTR_SHOW_CONFIG)
         self._flow_sensor = zone.get(ATTR_FLOW_SENSOR)
         self._hist_flow_rate = hist_flow_rate
         self._water = zone.get(ATTR_WATER)
@@ -60,6 +71,7 @@ class IrrigationZone:
         self._remaining_time = 0
         self._state = "off"
         self._stop = False
+        self._device_type = device_type
 
     def name(self):
         """Return the name of the variable."""
@@ -182,9 +194,23 @@ class IrrigationZone:
                 repeat_value = 1
         return repeat_value
 
-    def state(self):
+    async def state(self):
         ''' state value'''
+#       await self.set_state_sensor(self._state, self._program_name, self._name)
         return self._state
+
+    async def set_state_sensor(self, state, program, zone):
+        '''Set the state sensor'''
+        new_status = 'off'
+        program = slugify(program)
+        zone = slugify(zone)
+        if state in ('on','eco'):
+            new_status = state
+        elif self._remaining_time != 0:
+            new_status = 'pending'
+        device = f'sensor.{program}_{zone}_status'
+        servicedata = {ATTR_ENTITY_ID: device, 'status': new_status}
+        await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
 
     def zone_group(self):
         '''zone group entity attribute'''
@@ -208,8 +234,20 @@ class IrrigationZone:
             zone_value = self.hass.states.is_state(self._enable_zone, "on")
         return zone_value
 
-    def remaining_time(self):
+    def show_config(self):
+        '''enable zone entity attribute'''
+        return self._show_config
+
+    def show_config_value(self):
+        '''enable zone entity value'''
+        show_config_value = True
+        if self._show_config is not None:
+            show_config_value = self.hass.states.is_state(self._show_config, "on")
+        return show_config_value
+
+    async def remaining_time(self):
         """remaining time or remaining volume"""
+#        await self.set_state_sensor(self._state, self._program_name, self._name)
         return self._remaining_time
 
     def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
@@ -256,9 +294,9 @@ class IrrigationZone:
         #or adjusted to 0
 
         if self.enable_zone_value() is False:
-            return "Off"
+            return "off"
         if program_enabled is False:
-            return "Off"
+            return "off"
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             return "Unavailable"
 
@@ -282,18 +320,23 @@ class IrrigationZone:
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             return next_run
         # Frq is numeric
-        if self.run_freq_value().isnumeric():
-            if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= int(self.run_freq_value()):
+#        if self.run_freq_value().isnumeric():
+        try: # is Frq numeric?
+            frq = int(float(self.run_freq_value()))
+            if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= frq:
                 #zone has not run due to rain or other factor
                 numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
             else:
-                numeric_freq = int(float(self.run_freq_value()))
+                numeric_freq = frq
             next_run = dt_util.as_timestamp(today_run) + (numeric_freq * 86400)
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             return next_run
-        #Frq is Alpha
-        string_freq = self.run_freq_value()
-        string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
+        except ValueError: #Frq is alpha
+            #Frq is Alpha
+            string_freq = self.run_freq_value()
+#        string_freq = self.run_freq_value()
+        # remove spaces, new line, quotes and brackets
+        string_freq = string_freq.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
         string_freq = [x.capitalize() for x in string_freq]
         valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         valid_freq = any(item in string_freq for item in valid_days)
@@ -304,13 +347,17 @@ class IrrigationZone:
             next_run = dt_util.as_timestamp(today_run) + (100 * 86400) #arbitary max
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             for day in string_freq :
-                if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
-                    next_run = today_run
-                else:
-                    next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
+                try:
+                    if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
+                        next_run = today_run
+                    else:
+                        next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
+                except ValueError:
+                    #_LOGGER.error('Invalid value in week day list %s:',string_freq)
+                    next_run = 'Error, invalid value in week day list'
             return next_run
         #zone is marked as off
-        return "Off"
+        return "off"
 
     def get_weekday(self,day):
         '''determine weekday num'''
@@ -341,6 +388,7 @@ class IrrigationZone:
             return False
         #zone is disabled
         if not self.enable_zone_value():
+            # set sensor status to disabled
             return False
 
         if self.water_adjust_value() == 0 and scheduled is True:
@@ -369,16 +417,16 @@ class IrrigationZone:
                 / 86400
             )
 
-        if self.run_freq_value().isnumeric():
+        try:
             numeric_freq = int(float(self.run_freq_value()))
             if numeric_freq <= last_ran_relative or not self._last_ran:
                 return True
             if scheduled: return False
             #this is a manual request
             return True
-        else:
+        except ValueError:
             string_freq = self.run_freq_value()
-            string_freq = string_freq.replace(" ","").replace("'","").strip("[]'").split(",")
+            string_freq = string_freq.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
             string_freq = [x.capitalize() for x in string_freq]
             #if the day is found in the frequency
             if dt_util.now().strftime("%a") in string_freq:
@@ -420,11 +468,19 @@ class IrrigationZone:
             if self._remaining_time <= 0:
                 continue
             self._state = "on"
+            await self.set_state_sensor(self._state, self._program_name, self._name)
             await asyncio.sleep(1)
             if self.check_switch_state() is False and self._stop is False:
-                await self.hass.services.async_call(
-                    CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
-                )
+                if self._device_type == 'rainbird':
+                   # RAINBIRD controller requires a different service call
+                    await self.hass.services.async_call(
+                        RAINBIRD, RAINBIRD_TURN_ON, {ATTR_ENTITY_ID: self._switch, RAINBIRD_DURATION: self.water_value()}
+                    )
+                else:
+                    await self.hass.services.async_call(
+                        CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
+                    )
+
                 for _ in range(CONST_LATENCY):
                     if self.check_switch_state() is False:
                         await asyncio.sleep(1)
@@ -470,8 +526,9 @@ class IrrigationZone:
                 break
             #Eco mode, wait cycle
             if self.wait_value() > 0 and i > 1:
-                self._state = "eco"
+#                self._state = "eco"
                 await self.async_eco_off()
+#                await self.set_state_sensor(self._state, self._program_name, self._name)
                 waittime = self.wait_value() * 60
                 wait_seconds = 0
                 while waittime > 0:
@@ -504,12 +561,15 @@ class IrrigationZone:
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
         self._state = "eco"
+        await self.set_state_sensor(self._state, self._program_name, self._name)
+
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
         self._state = "off"
         self._stop = True
         self._remaining_time = 0
+#        await self.set_state_sensor(self._state, self._program_name, self._name)
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
         )
