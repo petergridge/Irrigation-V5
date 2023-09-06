@@ -6,6 +6,7 @@ from homeassistant.util import slugify
 import asyncio
 from . import utils
 from pathlib import Path
+from homeassistant.helpers import config_validation as cv
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -25,6 +26,8 @@ from .const import (
     ATTR_DEVICE_TYPE,
     ATTR_SHOW_CONFIG
     )
+
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
