@@ -131,7 +131,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         else:
             new = {**config_entry.options} #config_entry.options
         new.update({ATTR_DEVICE_TYPE: 'generic'})
-        new.pop(ATTR_SHOW_CONFIG)
+        try:
+            new.pop(ATTR_SHOW_CONFIG)
+        except KeyError:
+            pass
         config_entry.version = 3
         hass.config_entries.async_update_entry(config_entry, data=new)
 
