@@ -42,7 +42,7 @@ This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help
 ## INSTALLATION
 
 ### HACS installation
-* Adding the repository using HACS is the simplest approach
+* Adding the repository using HACS is the simplest approach. From V5.3 a Custom Card deployed with the component, no need to install separately.
 
 ### Important
 * Make sure that all of the objects you reference i.e. switches, sensors etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
