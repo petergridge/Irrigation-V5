@@ -58,13 +58,8 @@ On your Home Assistant page open the dashboard menu, the three dots top right, c
 
 select ADD CARD, scroll to the bottom and you should see an option 'Custom: Irrigation Card' select this.
 
-the configuration should be
-```
-type: custom:irrigation-card
-program: switch.program_1
-```
-select save and the card is built.
+![image](https://github.com/petergridge/Irrigation-V5/assets/40281772/00133659-72c1-49b6-bd20-07e8151794b0)
+
+Select the desired program from the list select save and the card is built.
 
 There are options to split the config across multiple cards you may want to investigate if you have many zones. 
-
-There is much more detail in the [readme](https://github.com/petergridge/Irrigation-Card)
