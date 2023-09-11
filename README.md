@@ -5,9 +5,10 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github.
 
-### Coming in V5.3.3
+### Coming in V5.3.5
 * Custom Card deployed with this component, no need to install separately. Uninstall the HACS Custom Card.
-* Custom Card updated each zone setting can be expanded independently.
+* Custom Card updated, program/zone setting can be expanded independently.
+* Custom Card updated to add configuration form
 * Fixed issue with WeatherHistory Frequency and water adjustment.
 * Added support for RainBird controller 
 * Add scheduled/manual options for program simulation
@@ -139,7 +140,7 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 * *repeat* defines the number of watering cycles to run
 
 ### Pump or master solenoid
-You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The will shut off a few seconds after a zone has completed alowing a smooth transition between zones. The pump class only monitors during a program run cycle.
+You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The pump will shut off a few seconds after a zone has completed alowing a smooth transition between zones. The pump is only started and monitored when water in started by the custom control.
 
 ### Zone Group
 You can optionally configure zones to run concurrently. 
@@ -164,8 +165,8 @@ See the **https://github.com/petergridge/openweathermaphistory** for a companion
 
 Setting *water_adjustment* attribute allows a factor to be applied to the watering time.
 * If the factor is 0 no watering will occur
-* If the factor is 0.5 watering will run for only half the configured watering time/volume. Wait and repeat attributes are unaffected.
-* A factor of 1.1 could also be used to apply 10% more water if required.
+* If the factor is 0.5 watering will run for only half (50%) the configured watering time/volume. Wait and repeat attributes are unaffected.
+* A factor of 1.1 could also be used to apply 110% of the water defined watering.
 
 ### Interlock
 
@@ -318,6 +319,14 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
+## 5.3.5
+* Custom Card deployed with this component, no need to install separately. **Uninstall the old HACS Custom Card**.
+* Custom Card updated so each zone setting can be expanded independently.
+* Custom Card updated to add configuration form
+* Fixed issue with WeatherHistory Frequency and water adjustment.
+* Added support for RainBird controller 
+* Add scheduled/manual options for program simulation
+
 ## 5.2.10
 * addded support for watering time to be supplied using a sensor
 ## 5.2.9
