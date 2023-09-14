@@ -6,8 +6,13 @@
 Create a PR, contact me using the community link above, or raise and issue on github.
 
 ### Coming in V5.3.5
-* Custom Card deployed with this component, no need to install separately. Uninstall the HACS Custom Card.
+* Custom Card deployed with this component, no need to install separately.
+    * Remove the custom card from the dashboard.
+    * Uninstall the HACS Custom Card.
+    * Install V5.3 and restart
+    * There have been reports that an additional restart has been required for some users
 * Custom Card updated, program/zone setting can be expanded independently.
+    * Show Config option has been replaced with automatically created sensors.
 * Custom Card updated to add configuration form
 * Fixed issue with WeatherHistory Frequency and water adjustment.
 * Added support for RainBird controller 
