@@ -257,7 +257,7 @@ mode: single
 The definition of the YAML configuration:
 |Attribute       |Type   |Mandatory|Description|
 |:---            |:---   |:---     |:---       |
-|&nbsp;&nbsp;&nbsp;&nbsp;start_time|input_datetime |Required| entity to set the start time of the program|
+|&nbsp;&nbsp;&nbsp;&nbsp;start_time|input_datetime, input_text |Required| Entity to set the start time of the program. From V5.4 a list of times from an input_text helper will allow the program to run multiple times e.g. 10:00:00, 12:00:00, 14:30:00. Format must be HH24:MM:00 |
 |&nbsp;&nbsp;&nbsp;&nbsp;show_config|input_boolean |Optional| 'Show configuration' used to show/hide the configuration in the companion card |
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
