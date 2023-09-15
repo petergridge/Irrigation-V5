@@ -4,8 +4,9 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
-
-### Coming in V5.3.5
+### coming in V5.4
+* Support for multiple start times, e.g. allowing a program to start at 10:00:00, 14:30:00 and 18:30:00.
+### In V5.3.5
 * Custom Card deployed with this component, no need to install separately.
     * Remove the custom card from the dashboard.
     * Uninstall the HACS Custom Card.
