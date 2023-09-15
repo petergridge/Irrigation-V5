@@ -172,6 +172,7 @@ Setting *water_adjustment* attribute allows a factor to be applied to the wateri
 * If the factor is 0 no watering will occur
 * If the factor is 0.5 watering will run for only half (50%) the configured watering time/volume. Wait and repeat attributes are unaffected.
 * A factor of 1.1 could also be used to apply 110% of the water defined watering.
+* If you want to water in seconds apply a factor of .0167 will be an approximate solution
 
 ### Interlock
 
