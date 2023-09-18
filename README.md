@@ -106,6 +106,21 @@ Watering is by default time based, that is, will run for the minutes set in the 
 
 You can define a *flow sensor* on a zone that provides a volume/minute rate. eg litres per minute. Once defined the *water* attribute will be read as volume eg 15 litres not 15 minutes. 
 
+### Start time
+You can define the start time using two methods.
+* As an input_datetime
+   * This supports selecting the start time
+
+![image](https://github.com/petergridge/Irrigation-V5/assets/40281772/9cb6b488-ddab-4b64-beca-0843e956cb19)
+
+* As an input_text
+   * This allows you to input multiple start times for the program
+   * Time format **MUST** be hh:mm:00, 24 hour time format with 00 as seconds e.g. 18:55:00
+   * Use this regex pattern to help ensure the correct time structure (([0-2][0-9]:[0-5][0-9]:00)(?:,|$)){1,10}
+   * If no valid time is supplied the start time will be defaulted to 08:00:00
+
+![image](https://github.com/petergridge/Irrigation-V5/assets/40281772/65dc4606-43e3-43a8-9151-2ea67cab38ed)
+
 ### Run Days and Run Frequency
 Run frequency allows the definition of when the program will run. This can be provided as dropdown helper or a sensor, see [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
 
@@ -258,7 +273,7 @@ mode: single
 The definition of the YAML configuration:
 |Attribute       |Type   |Mandatory|Description|
 |:---            |:---   |:---     |:---       |
-|&nbsp;&nbsp;&nbsp;&nbsp;start_time|input_datetime, input_text |Required| Entity to set the start time of the program. From V5.4 a list of times from an input_text helper will allow the program to run multiple times e.g. 10:00:00, 12:00:00, 14:30:00. Format must be HH24:MM:00 |
+|&nbsp;&nbsp;&nbsp;&nbsp;[start_time](#start-time)|input_datetime, input_text |Required| Entity to set the start time of the program. From V5.4 a list of times from an input_text helper will allow the program to run multiple times e.g. 10:00:00, 12:00:00, 14:30:00. Format must be HH24:MM:00 |
 |&nbsp;&nbsp;&nbsp;&nbsp;show_config|input_boolean |Optional| 'Show configuration' used to show/hide the configuration in the companion card |
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
