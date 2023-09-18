@@ -116,6 +116,7 @@ You can define the start time using two methods.
 * As an input_text
    * This allows you to input multiple start times for the program
    * Time format **MUST** be hh:mm:00, 24 hour time format with 00 as seconds e.g. 18:55:00
+   * Each time **MUST** be seperated by a ','
    * Use this regex pattern to help ensure the correct time structure (([0-2][0-9]:[0-5][0-9]:00)(?:,|$)){1,10}
    * If no valid time is supplied the start time will be defaulted to 08:00:00
 
