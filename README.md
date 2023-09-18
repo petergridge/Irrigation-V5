@@ -326,6 +326,9 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
+## 5.4.0
+* improved handling of offline solenoid switches
+* support multiple start times for a program
 ## 5.3.5
 * Custom Card deployed with this component, no need to install separately. **Uninstall the old HACS Custom Card**.
 * Custom Card updated so each zone setting can be expanded independently.
