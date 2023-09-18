@@ -38,6 +38,7 @@ class IrrigationCard extends HTMLElement {
     let runtimes = [];
     let zone_attrs = [];
     let zfname = "";
+    let name = ""
     let zname = "";
     let first_zone = null;
     let showconfig = null;
@@ -182,20 +183,20 @@ class IrrigationCard extends HTMLElement {
       } //add_attr_value
 
       function ProcessZone(array) {
-        name = array[0].split(".")[1];
-        let zonestatus =
-          hass.states[config.program].attributes[name + "_status"];
+        let pname = array[0].split(".")[1];
+        //let zonestatus =
+        //  hass.states[config.program].attributes[parentname + "_status"];
 
         // list of other in order
-        add_attr_value(name + "_enable_zone", zone_attrs);
-        add_attr_value(name + "_run_freq", zone_attrs);
-        add_attr_value(name + "_water", zone_attrs);
-        add_attr_value(name + "_water_adjustment", zone_attrs);
-        add_attr_value(name + "_flow_sensor", zone_attrs);
-        add_attr_value(name + "_wait", zone_attrs);
-        add_attr_value(name + "_repeat", zone_attrs);
-        add_attr_value(name + "_rain_sensor", zone_attrs);
-        add_attr_value(name + "_ignore_rain_sensor", zone_attrs);
+        add_attr_value(pname + "_enable_zone", zone_attrs);
+        add_attr_value(pname + "_run_freq", zone_attrs);
+        add_attr_value(pname + "_water", zone_attrs);
+        add_attr_value(pname + "_water_adjustment", zone_attrs);
+        add_attr_value(pname + "_flow_sensor", zone_attrs);
+        add_attr_value(pname + "_wait", zone_attrs);
+        add_attr_value(pname + "_repeat", zone_attrs);
+        add_attr_value(pname + "_rain_sensor", zone_attrs);
+        add_attr_value(pname + "_ignore_rain_sensor", zone_attrs);
       } //ProcessZone
 
       //check if two arrays are the same
@@ -207,25 +208,25 @@ class IrrigationCard extends HTMLElement {
         if (array.length == 0) return false;
         let basezone = [];
         for (var i = 0; i < array.length; i++) {
-          name = array[i].split(".")[1];
+          let pname = array[i].split(".")[1];
 
           // list of other in order
           let zone = [];
-          zone.push(hass.states[config.program].attributes[name + "_run_freq"]);
-          zone.push(hass.states[config.program].attributes[name + "_water"]);
+          zone.push(hass.states[config.program].attributes[pname + "_run_freq"]);
+          zone.push(hass.states[config.program].attributes[pname + "_water"]);
           zone.push(
-            hass.states[config.program].attributes[name + "_water_adjustment"]
+            hass.states[config.program].attributes[pname + "_water_adjustment"]
           );
           zone.push(
-            hass.states[config.program].attributes[name + "_flow_sensor"]
+            hass.states[config.program].attributes[pname + "_flow_sensor"]
           );
-          zone.push(hass.states[config.program].attributes[name + "_wait"]);
-          zone.push(hass.states[config.program].attributes[name + "_repeat"]);
+          zone.push(hass.states[config.program].attributes[pname + "_wait"]);
+          zone.push(hass.states[config.program].attributes[pname + "_repeat"]);
           zone.push(
-            hass.states[config.program].attributes[name + "_rain_sensor"]
+            hass.states[config.program].attributes[pname + "_rain_sensor"]
           );
           zone.push(
-            hass.states[config.program].attributes[name + "_ignore_rain_sensor"]
+            hass.states[config.program].attributes[pname + "_ignore_rain_sensor"]
           );
 
           if (i == 0) {
@@ -519,7 +520,7 @@ class IrrigationCardEditor extends HTMLElement {
     for (var x in this._hass.states) {
       if (Number(this._hass.states[x].attributes["zone_count"]) > 0) {
         let newOption = new Option(x, x);
-        
+
         if (x == this._config.program) {
           newOption.selected = true;
         }
@@ -577,7 +578,7 @@ class IrrigationCardEditor extends HTMLElement {
 
     // this._config is readonly, copy needed
     const newConfig = Object.assign({}, this._config);
-		
+
     if (changedEvent.target.id == "program") {
       // get the selected program
       var selected = this._elements.editor.querySelector("#program");
@@ -603,7 +604,7 @@ class IrrigationCardEditor extends HTMLElement {
     } else if (changedEvent.target.id == "next_run_label") {
       newConfig.next_run_label = changedEvent.target.value;
     }
-		
+
     const event = new Event("config-changed", {
       bubbles: true,
       composed: true,

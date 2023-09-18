@@ -32,8 +32,7 @@ from .const import (
     DOMAIN,
     RAINBIRD_TURN_ON,
     RAINBIRD_DURATION,
-    RAINBIRD
-
+    RAINBIRD,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,6 +69,7 @@ class IrrigationZone:
         self._last_ran = last_ran
         self._remaining_time = 0
         self._state = "off"
+        self._next_run = "off"
         self._stop = False
         self._device_type = device_type
 
@@ -196,11 +196,11 @@ class IrrigationZone:
 
     async def state(self):
         ''' state value'''
-#       await self.set_state_sensor(self._state, self._program_name, self._name)
         return self._state
 
     async def set_state_sensor(self, state, program, zone):
         '''Set the state sensor'''
+
         new_status = 'off'
         program = slugify(program)
         zone = slugify(zone)
@@ -247,7 +247,6 @@ class IrrigationZone:
 
     async def remaining_time(self):
         """remaining time or remaining volume"""
-#        await self.set_state_sensor(self._state, self._program_name, self._name)
         return self._remaining_time
 
     def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
@@ -279,26 +278,32 @@ class IrrigationZone:
             run_time = watertime + (wait * (repeats -1))
 
         run_time = run_time - seconds_run
-        # zone has been disabled
-#        if self.enable_zone_value() is False or adjust == 0:
-#            run_time = 0
+
         return math.ceil(run_time)
 
     def last_ran(self):
         '''last ran datetime attribute'''
         return self._last_ran
 
-    def next_run(self,starthour=0, startmin=0, program_enabled = True):
+    def next_run(self,starttime, program_enabled = True):
         '''Determine when a zone will next attempt to run'''
-        #need to determine what to do when it is raining
-        #or adjusted to 0
+        if starttime:
+            starthour = int(starttime.split(':')[0])
+            startmin = int(starttime.split(':')[1])
+        else:
+            starthour = 6
+            startmin = 0
+
 
         if self.enable_zone_value() is False:
-            return "off"
+            self._next_run = "off"
+            return self._next_run
         if program_enabled is False:
-            return "off"
+            self._next_run =  "off"
+            return self._next_run
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
-            return "Unavailable"
+            self._next_run = "unavailable"
+            return self._next_run
 
         localtz  = self.hass.config.time_zone
         localtimezone = pytz.timezone(localtz)
@@ -318,46 +323,54 @@ class IrrigationZone:
         if self.run_freq_value() is None:
             next_run = dt_util.as_timestamp(today_run) + 86400
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
-            return next_run
-        # Frq is numeric
-#        if self.run_freq_value().isnumeric():
-        try: # is Frq numeric?
+            self._next_run =  next_run
+            return self._next_run
+
+        try: # Frq is numeric
             frq = int(float(self.run_freq_value()))
             if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= frq:
                 #zone has not run due to rain or other factor
                 numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
             else:
                 numeric_freq = frq
-            next_run = dt_util.as_timestamp(today_run) + (numeric_freq * 86400)
-            next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
-            return next_run
+
+            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            #if next start time > now, next time is still today i.e. multipe start times
+            if today_run > datetime.now().astimezone(tz=localtimezone):
+                next_run = dt_util.as_timestamp(today_run)
+                next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            else:
+                next_run = dt_util.as_timestamp(today_run) + (numeric_freq * 86400)
+                next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            self._next_run =  next_run
+            return self._next_run
         except ValueError: #Frq is alpha
             #Frq is Alpha
             string_freq = self.run_freq_value()
-#        string_freq = self.run_freq_value()
-        # remove spaces, new line, quotes and brackets
-        string_freq = string_freq.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
-        string_freq = [x.capitalize() for x in string_freq]
-        valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        valid_freq = any(item in string_freq for item in valid_days)
-        if valid_freq is True:
-            #default to today and start time for day based running
-            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            today = today_run.isoweekday()
-            next_run = dt_util.as_timestamp(today_run) + (100 * 86400) #arbitary max
-            next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
-            for day in string_freq :
-                try:
-                    if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
-                        next_run = today_run
-                    else:
-                        next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
-                except ValueError:
-                    #_LOGGER.error('Invalid value in week day list %s:',string_freq)
-                    next_run = 'Error, invalid value in week day list'
-            return next_run
-        #zone is marked as off
-        return "off"
+            # remove spaces, new line, quotes and brackets
+            string_freq = string_freq.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
+            string_freq = [x.capitalize() for x in string_freq]
+            valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            valid_freq = any(item in string_freq for item in valid_days)
+            if valid_freq is True:
+                #default to today and start time for day based running
+                today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                today = today_run.isoweekday()
+                next_run = dt_util.as_timestamp(today_run) + (100 * 86400) #arbitary max
+                next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+                for day in string_freq :
+                    try:
+                        if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
+                            next_run = today_run
+                        else:
+                            next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
+                    except ValueError:
+                        next_run = 'Error, invalid value in week day list'
+                self._next_run =  next_run
+                return self._next_run
+            #zone is marked as off
+            self._next_run =  "off"
+            return self._next_run
 
     def get_weekday(self,day):
         '''determine weekday num'''
@@ -382,72 +395,33 @@ class IrrigationZone:
 
     def should_run(self, scheduled=False):
         '''determine if the zone should run'''
-        if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
-            #Switch is unavavailable
-            _LOGGER.warning("Zone switch %s is offline", self.switch())
-            return False
-        #zone is disabled
-        if not self.enable_zone_value():
-            # set sensor status to disabled
+
+        #zone has been turned off or is offline
+        if self._next_run in  ["off", "unavailable"]:
             return False
 
-        if self.water_adjust_value() == 0 and scheduled is True:
-            return False
+        if scheduled is True:
+            if self.water_adjust_value() == 0:
+                return False
 
-        # Only stop the zone if it is a scheduled run
-        if self.is_raining() is True and scheduled is True:
-            return False
+            # Only stop the zone if it is a scheduled run
+            if self.is_raining() is True:
+                return False
 
-        #no Frequency provided
-        if self.run_freq_value() is None:
-            return True
+            #not time to run yet
+            if dt_util.as_timestamp(self._next_run) > dt_util.as_timestamp(dt_util.now()):
+                return False
 
-        last_ran_relative = 0
-        if self._last_ran:
-            #how long since the zone last ran in days
-            last_ran_relative = float(
-                (
-                    (
-                        dt_util.as_timestamp(dt_util.now())
-                        - dt_util.as_timestamp(self._last_ran)
-                    )
-                    #adjust by 10 minutes to allow for any variances
-                    + 600
-                )
-                / 86400
-            )
-
-        try:
-            numeric_freq = int(float(self.run_freq_value()))
-            if numeric_freq <= last_ran_relative or not self._last_ran:
-                return True
-            if scheduled: return False
-            #this is a manual request
-            return True
-        except ValueError:
-            string_freq = self.run_freq_value()
-            string_freq = string_freq.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
-            string_freq = [x.capitalize() for x in string_freq]
-            #if the day is found in the frequency
-            if dt_util.now().strftime("%a") in string_freq:
-                #found today in the frequency
-                return True
-            #Not today, now check if there is an invalid data i.e. off
-            valid_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-            valid_freq = any(item in string_freq for item in valid_days)
-            #the frequency is a list of valid days
-            #if this a scheduled run or not a valid freq do not run
-            if scheduled is True or valid_freq is False: return False
-            #this is a manual request
-            return True
-
+        return True
     # end should_run
 
     def check_switch_state(self):
         """ check the solenoid state if turned off stop this instance"""
         if self.hass.states.is_state(self._switch, "off"):
             return False
-        return True
+        if self.hass.states.is_state(self._switch, "on"):
+            return True
+        return None
 
     async def async_turn_on(self, scheduled=False):
         """start the watering cycle """
@@ -526,9 +500,7 @@ class IrrigationZone:
                 break
             #Eco mode, wait cycle
             if self.wait_value() > 0 and i > 1:
-#                self._state = "eco"
                 await self.async_eco_off()
-#                await self.set_state_sensor(self._state, self._program_name, self._name)
                 waittime = self.wait_value() * 60
                 wait_seconds = 0
                 while waittime > 0:
@@ -569,7 +541,6 @@ class IrrigationZone:
         self._state = "off"
         self._stop = True
         self._remaining_time = 0
-#        await self.set_state_sensor(self._state, self._program_name, self._name)
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
         )
@@ -586,12 +557,16 @@ class IrrigationZone:
 
     async def latency_check(self):
         '''Ensure switch has turned off and warn'''
+        if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
+            #switch is offline
+            return True
+
         for i in range(CONST_LATENCY):
             if self.check_switch_state() is True: #on
                 await asyncio.sleep(1)
             else:
                 return False
-        _LOGGER.warning('Switch has excesive latency, exceding %s seconds, cannot confirm %s is off', i+1, self._switch)
+        _LOGGER.warning('Switch has latency exceding %s seconds, cannot confirm %s state is off', i+1, self._switch)
         return True
 
     def set_last_ran(self, last_ran):

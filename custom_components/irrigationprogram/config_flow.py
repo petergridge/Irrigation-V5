@@ -40,7 +40,7 @@ ATTR_FREQ = "freq"
 PROGRAM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): str,
-        vol.Required(ATTR_START): sel.EntitySelector({"domain": "input_datetime"}),
+        vol.Required(ATTR_START): sel.EntitySelector({"domain": ["input_datetime", "input_text"]}),
         vol.Optional(ATTR_RUN_FREQ): sel.EntitySelector({"domain": "input_select"}),
         vol.Optional(ATTR_MONITOR_CONTROLLER): sel.EntitySelector(
             {"domain": "binary_sensor"}
@@ -57,7 +57,7 @@ GROUP_ATTR = [
 ]
 
 PROGRAM_ATTR = [
-    [True,  ATTR_START, sel.EntitySelector({"domain": "input_datetime"})],
+    [True,  ATTR_START, sel.EntitySelector({"domain": ["input_datetime", "input_text"]})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": ["input_select","sensor"]})],
     [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "binary_sensor"})],
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],

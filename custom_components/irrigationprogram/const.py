@@ -1,5 +1,7 @@
 '''Constants'''
 
+TIME_STR_FORMAT = "%H:%M:00"
+
 RAINBIRD_TURN_ON = 'start_irrigation'
 RAINBIRD = 'rainbird'
 RAINBIRD_DURATION = 'duration'
