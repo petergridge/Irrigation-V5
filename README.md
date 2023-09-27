@@ -152,15 +152,17 @@ Defining a Dropdown helper to use with the run_freq attribute, for example:
 ### Unscheduled execution of a zone or program
 When a program or zone is triggered manually the following rules are applied:
 
-The zone will not run if:
-- the zone is disabled, or
-- the zone frequency is 'Off'
+If the Program is disabled it can still be initiated manually to run all enabled zones.
+* If the Program is disabled and the Zone is enabled the zone will run if manually started,
+* If the Program is disabled and the Zone is disabled the zone will not run,
+
+If the Zone is disabled it will not run until it is enabled.
+* the zone is disabled, or
+* the zone frequency is 'Off'
 
 These sensors will be defaulted:
 - Water Adjustment will default to 1
 - Rain sensor will default to off
-
-If a program is triggered manually zones will run based on the above conditions.
 
 ### ECO feature
 The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. Perfect for pots and can reduce water used by 50%.
