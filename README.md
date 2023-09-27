@@ -4,8 +4,11 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
+### V5.4.1
+* Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
+* Remove warning messages
 ### coming in V5.4
-* Support for multiple start times, e.g. allowing a program to start at 10:00:00, 14:30:00 and 18:30:00.
+* Support for multiple start times, e.g. allowing a program to start at 10:00:00, 14:30:00 and 18:30:00. see [start_time](#start-time)
 ### In V5.3.5
 * Custom Card deployed with this component, no need to install separately.
     * Remove the custom card from the dashboard.
@@ -147,6 +150,7 @@ Defining a Dropdown helper to use with the run_freq attribute, for example:
 ```
 ### Unscheduled execution of a zone or program
 When a program or zone is triggered manually the following rules are applied:
+
 The zone will not run if:
 - the zone is disabled, or
 - the zone frequency is 'Off'
@@ -154,6 +158,8 @@ The zone will not run if:
 These sensors will be defaulted:
 - Water Adjustment will default to 1
 - Rain sensor will default to off
+
+If a program is triggered manually zones will run based on the above conditions.
 
 ### ECO feature
 The ECO feature allows multiple short watering cycles to be configure for a zone in the program to minimise run off and wastage. Setting the optional configuration of the Wait, Repeat attributes of a zone will enable the feature. Perfect for pots and can reduce water used by 50%.
