@@ -4,7 +4,7 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
 
-from .const import CONST_SWITCH
+from .const import CONST_SWITCH, CONST_LATENCY
 
 CONST_OFF_DELAY = 2
 
@@ -36,27 +36,67 @@ class PumpClass:
 
             #check if any of the zones are running
             if zone_running():
-                if self.hass.states.get(self._pump).state == 'off':
-                    _LOGGER.debug('pump is off, turn on pump %s', pump)
+                if self.hass.states.is_state(self._pump, "off"):
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_ON, pump
                     )
+                    #handle latency
+                    for _ in range(CONST_LATENCY):
+                        if self.check_switch_state() is False: #still off
+                            await asyncio.sleep(1)
+                        else:
+                            break
 
-            await asyncio.sleep(step)
             #check if the zone is running, delay incase another zone starts
             if not zone_running():
                 await asyncio.sleep(self._off_delay)
                 if (
-                    self.hass.states.get(self._pump).state == "on"
+                    self.hass.states.is_state(self._pump, "on")
                     and not zone_running()
                 ):
-                    _LOGGER.debug("pump is on,  turn off pump %s", pump)
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_OFF, pump
                     )
+                    #handle latency
+                    for _ in range(CONST_LATENCY):
+                        if self.check_switch_state() is True: #still on
+                            await asyncio.sleep(1)
+                        else:
+                            break
+
+            await asyncio.sleep(step)
         # reset for next call
         self._stop = False
 
     async def async_stop_monitoring(self, **kwargs):
         '''flag turn off pump monitoring'''
         self._stop = True
+
+    async def latency_check(self, check = 'off'):
+        '''Ensure switch has turned off and warn'''
+        if not (self.hass.states.is_state(self._pump, "on") or self.hass.states.is_state(self._pump, "off")):
+            #switch is offline
+            return True
+
+        for i in range(CONST_LATENCY):
+            if check == 'off':
+                if self.check_switch_state() is False: #on
+                    await asyncio.sleep(1)
+                else:
+                    return False
+            if check == 'on':
+                if self.check_switch_state() is True: #on
+                    return True
+                else:
+                    await asyncio.sleep(1)
+
+        _LOGGER.warning('Switch has latency exceding %s seconds, cannot confirm %s state is off', i+1, self._switch)
+        return
+
+    def check_switch_state(self):
+        """ check the solenoid state if turned off stop this instance"""
+        if self.hass.states.is_state(self._pump, "off"):
+            return False
+        if self.hass.states.is_state(self._pump, "on"):
+            return True
+        return None

@@ -291,15 +291,14 @@ class IrrigationZone:
             starthour = int(starttime.split(':')[0])
             startmin = int(starttime.split(':')[1])
         else:
-            starthour = 6
+            starthour = 8
             startmin = 0
 
-
         if self.enable_zone_value() is False:
-            self._next_run = "off"
+            self._next_run = "disabled"
             return self._next_run
         if program_enabled is False:
-            self._next_run =  "off"
+            self._next_run =  "program disabled"
             return self._next_run
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             self._next_run = "unavailable"
@@ -397,7 +396,7 @@ class IrrigationZone:
         '''determine if the zone should run'''
 
         #zone has been turned off or is offline
-        if self._next_run in  ["off", "unavailable"]:
+        if self._next_run in  ["disabled", "unavailable"]:
             return False
 
         if scheduled is True:
@@ -538,9 +537,13 @@ class IrrigationZone:
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
+        if  self.hass.states.is_state(self._switch, "off"):
+            #switch is already off
+            return
         self._state = "off"
         self._stop = True
         self._remaining_time = 0
+
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
         )

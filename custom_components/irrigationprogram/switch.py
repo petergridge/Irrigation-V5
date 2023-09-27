@@ -231,7 +231,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         @callback
         async def hass_started(event):
-
             last_state = await self.async_get_last_state()
             self._extra_attrs = {}
             if self._start_time is not None:
@@ -248,6 +247,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
             #create the zone class
             zonedict = {}
+            pumps = {}
             for zone in self._zones:
                 #initialise historical flow
                 z_name = zone.get(ATTR_ZONE).split(".")[1]
@@ -290,7 +290,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             groups = await self.build_run_script(True)
             # zone loop to initialise the attributes
             zonecount = 0
-            pumps = {}
+
             for group in groups.values():
                 z_group = []
                 if len(group) > 1:
@@ -304,8 +304,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         #create pump - zone list
                         if zone.pump() not in pumps:
                             pumps[zone.pump()] = [zone.switch()]
+                            _LOGGER.debug("creating pump %s", zone.pump())
                         else:
                             pumps[zone.pump()].append(zone.switch())
+                            _LOGGER.debug("Appending zone to pump %s", zone.pump())
                     # Build Zone Attributes to support the custom card
                     z_name =  zone.name()
                     attr = self.format_attr("zone" + str(zonecount), CONF_NAME)
@@ -351,13 +353,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # create pump class to start/stop pumps
             for pump, zones in pumps.items():
                 #pass pump_switch, list of zones, off_delay
+                _LOGGER.debug("pump class added %s", pump)
                 self._pumps.append(PumpClass(self.hass, pump, zones))
 
             #turn off the underlying switches as a precaution
             for pump in pumps.keys():
-                await self.hass.services.async_call(
-                    CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: pump}
-                    )
+                if self.hass.states.is_state(pump, "on"):
+                    await self.hass.services.async_call(
+                        CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: pump}
+                        )
 
             for zone in self._irrigationzones:
                 if self.hass.states.is_state(zone.switch(), "on"):
@@ -385,9 +389,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await update_next_run(None, None, None)
 
         #setup the callback to kick in when HASS has started
-        self.hass.bus.async_listen_once(
-            EVENT_HOMEASSISTANT_STARTED, hass_started
-        )
+#        self.hass.bus.async_listen_once(
+#            EVENT_HOMEASSISTANT_STARTED, hass_started
+#        )
         #listen for config_flow change and apply the updates
         self.unsub_start = async_at_start(self.hass,hass_started)
 

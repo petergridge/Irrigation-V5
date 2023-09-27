@@ -84,7 +84,8 @@
 				"on": "On",
 				"disable": "Disabled",
 				"pending": "Pending",
-				"eco": "ECO"
+				"eco": "ECO",
+				"onhold": "On-hold"
 			}
 		},
 		"device_type": {
