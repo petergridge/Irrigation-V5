@@ -7,8 +7,9 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 ### V5.4.1
 * Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
 * Remove warning messages
-### coming in V5.4
+### In V5.4
 * Support for multiple start times, e.g. allowing a program to start at 10:00:00, 14:30:00 and 18:30:00. see [start_time](#start-time)
+* Fix delay introduced when offline devices specified
 ### In V5.3.5
 * Custom Card deployed with this component, no need to install separately.
     * Remove the custom card from the dashboard.
