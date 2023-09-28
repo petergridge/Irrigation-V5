@@ -389,9 +389,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await update_next_run(None, None, None)
 
         #setup the callback to kick in when HASS has started
-#        self.hass.bus.async_listen_once(
-#            EVENT_HOMEASSISTANT_STARTED, hass_started
-#        )
         #listen for config_flow change and apply the updates
         self.unsub_start = async_at_start(self.hass,hass_started)
 
@@ -716,6 +713,23 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     #run in parrallel
                     loop.create_task(gzone.async_turn_on(self.scheduled))
                     await asyncio.sleep(1)
+                    #switch has gone off-line
+                    if gzone.check_switch_state() is None:
+                        _LOGGER.warning("Switch %s has become unavailable",gzone.name())
+                        event_data = {
+                            "action": "zone_became_unavailable",
+                            "device_id": self._device_id,
+                            "scheduled": self.scheduled,
+                            "zone": gzone.name(),
+                            "pump": gzone.pump(),
+                            "runtime": gzone.run_time(gzone.repeat_value()),
+                            "water": gzone.water_value(),
+                            "wait": gzone.wait_value(),
+                            "repeat": gzone.repeat_value(),
+                        }
+                        self.hass.bus.async_fire("irrigation_event", event_data)
+                        continue
+
                     # latency issue loop a few times to see if the switch turns on
                     # otherwise give a warning and skip this switch
                     for _ in range(CONST_LATENCY):
@@ -739,8 +753,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         "repeat": gzone.repeat_value(),
                     }
                     self.hass.bus.async_fire("irrigation_event", event_data)
-            #wait for the zones to complete
-            zones_running = True
+                #wait for the zones to complete
+                zones_running = True
             while zones_running and self._state is True:
                 zones_running = False
                 for gzone in group:
