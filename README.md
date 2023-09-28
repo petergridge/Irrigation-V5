@@ -369,6 +369,11 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
+### V5.4.2
+* Handle scenario where zone switch becomes unavailable mid run
+   * Add irrigation_event/zone_became_unavailable event see [Events](#events)
+* Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
+* Remove warning messages
 ## 5.4.0
 * improved handling of offline solenoid switches
 * support multiple start times for a program
