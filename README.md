@@ -7,7 +7,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 ### V5.4.2
 * Handle scenario where zone switch becomes unavailable mid run
-   * Add irrigation_event/zone_became_unavailable event
+   * Add irrigation_event/zone_became_unavailable event see [Events](#events)
 ### V5.4.1
 * Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
 * Remove warning messages
