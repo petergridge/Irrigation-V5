@@ -4,6 +4,10 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
+
+### V5.4.2
+* Handle scenario where zone switch becomes unavailable mid run
+   * Add irrigation_event/zone_became_unavailable event
 ### V5.4.1
 * Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
 * Remove warning messages
@@ -261,6 +265,20 @@ data:
   zone: dummy_3
   latency: false
   state: "off"
+```
+The *zone_became_unavailable* event provides this information:
+```
+event_type: irrigation_event
+data:
+  action: zone_became_unavailable
+  device_id: switch.test
+  scheduled: false
+  zone: dummy_2
+  pump: switch.dummy_pump
+  runtime: 59
+  water: 1
+  wait: 0
+  repeat: 1
 ```
 
 An automation can then use this data to fire on the event you can refine it by adding specific event data.
