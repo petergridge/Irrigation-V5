@@ -185,10 +185,9 @@ You can optionally define a pump/master soleniod to turn on concurrently with th
 
 ### Zone Group
 You can optionally configure zones to run concurrently. 
-Note:
-* a group must have at least two zones, 
-* if a zone is deleted the related group will also be deleted, 
-* if the switch associated to a zone is changed the related group will be deleted. 
+Create a switch group, [group helper](https://www.home-assistant.io/integrations/group/). This feature allows you to group switches together to operate as a single switch.
+
+You can use this 'new' switch to define a zone in the program.
 
 ### Monitor Controller Feature
 If you have binary binary sensor that indicates the status of the watering system hardware, you can use this to prevent this system from initiating watering until the system is active.
