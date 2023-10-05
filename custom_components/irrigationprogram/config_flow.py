@@ -29,8 +29,6 @@ from .const import (
     ATTR_ZONE,
     ATTR_ZONES,
     DOMAIN,
-    ATTR_GROUPS,
-    ATTR_GROUP,
     ATTR_INTERLOCK,
 )
 
@@ -51,10 +49,6 @@ PROGRAM_SCHEMA = vol.Schema(
         vol.Optional(ATTR_INTERLOCK, default=True): cv.boolean,
     }
 )
-
-GROUP_ATTR = [
-    [True,ATTR_ZONES,"list"],
-]
 
 PROGRAM_ATTR = [
     [True,  ATTR_START, sel.EntitySelector({"domain": ["input_datetime", "input_text"]})],
@@ -187,16 +181,8 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_menu(self, user_input=None):
-        '''Add a group or finalise the flow'''
+        '''Add or finalise the flow'''
         xmenu_options = ["zones"]
-        groupedzones = 0
-        if ATTR_GROUPS in self._data:
-            #list of used zones
-            for groups in self._data[ATTR_GROUPS]:
-                groupedzones += len(groups[ATTR_ZONES])
-        #two or more ungrouped zones
-        if len(self._data.get(ATTR_ZONES)) - groupedzones > 1:
-            xmenu_options.extend(["add_group"])
         xmenu_options.extend(["finalise"])
 
         return self.async_show_menu(
@@ -209,76 +195,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         # User is done adding, create the config entry.
         return self.async_create_entry(
             title=self._data.get(CONF_NAME), data=self._data
-        )
-
-    async def async_step_add_group(self, user_input=None):
-        """ add a group"""
-        errors = {}
-        newdata = {}
-        newdata.update(self._data)
-        data_schema = {}
-
-        if ATTR_GROUPS not in newdata:
-            newdata.update ({ATTR_GROUPS : []})
-            groups = []
-        else:
-            groups = newdata[ATTR_GROUPS]
-
-        if user_input is not None:
-            if ATTR_ZONES in user_input:
-                if len(user_input[ATTR_ZONES]) < 2:
-                    errors[ATTR_ZONES] = "two_zones_required"
-            else:
-                return await self.async_step_menu()
-
-            if not errors:
-                # Input is valid, set data.
-                group_data = {}
-                for attr in user_input:
-                    group_data[attr] = user_input[attr]
-                groupname = ""
-                for name in user_input[ATTR_ZONES]:
-                    groupname = groupname + " " + name.split(".")[1]
-                groupname = groupname.strip()
-                group_data[CONF_NAME] = groupname
-                groups.append(group_data)
-                newdata[ATTR_GROUPS] = groups
-
-                self._data = newdata
-                return await self.async_step_menu()
-
-        # build a dict including original values
-        if user_input is None:
-            default_input = {}
-        else:
-            #error raised
-            default_input = user_input
-
-        for attr in GROUP_ATTR:
-            default = default_input.get(attr[1])
-            if attr[2] == "list":
-                options = []
-                for zone in newdata[ATTR_ZONES]:
-                    zoneused = False
-                    for group in newdata[ATTR_GROUPS]:
-                        if zone[ATTR_ZONE] in group[ATTR_ZONES]:
-                            zoneused = True
-                            break
-                    if zoneused:
-                        continue
-                    options.append({"label":zone[ATTR_ZONE],"value":zone[ATTR_ZONE]})
-                attr2 = sel.selector({"select": {"options": options,"multiple": True }})
-                data_schema[vol.Optional(attr[1]
-                                         ,description={"suggested_value": default}
-                                         )] = attr2
-            else:
-                data_schema = self.process_schema_row(data_schema, attr, default)
-
-
-        return self.async_show_form(
-            step_id="add_group",
-            data_schema=vol.Schema(data_schema),
-            errors=errors
         )
 
 
@@ -329,17 +245,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # only one zone so don't show delete zone option
         if len(data.get(ATTR_ZONES)) > 1:
             xmenu_options.extend(["delete_zone"])
-        #two or more ungrouped zones
-        groupedzones = 0
-        if ATTR_GROUPS in self._data:
-            for groups in self._data[ATTR_GROUPS]:
-                groupedzones += len(groups[ATTR_ZONES])
-        if len(data.get(ATTR_ZONES)) - groupedzones > 1:
-            xmenu_options.extend(["add_group"])
-        # no groups so don't show delete group option
-        if ATTR_GROUPS in data:
-            if len(data[ATTR_GROUPS]):
-                xmenu_options.extend(["delete_group"])
         xmenu_options.extend(["finalise"])
         return self.async_show_menu(
             step_id="user",
@@ -396,107 +301,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             errors=errors,
         )
 
-    async def async_step_add_group(self, user_input=None):
-        """ add a group"""
-        errors = {}
-        newdata = {}
-        newdata.update(self._data)
-        data_schema = {}
-
-        if ATTR_GROUPS not in newdata:
-            newdata.update ({ATTR_GROUPS : []})
-            groups = []
-        else:
-            groups = newdata[ATTR_GROUPS]
-
-        if user_input is not None:
-            if ATTR_ZONES in user_input:
-                if len(user_input[ATTR_ZONES]) < 2:
-                    errors[ATTR_ZONES] = "two_zones_required"
-            else:
-                return await self.async_step_init()
-
-            if not errors:
-                # Input is valid, set data.
-                group_data = {}
-                for attr in user_input:
-                    group_data[attr] = user_input[attr]
-                groupname = ""
-                for name in user_input[ATTR_ZONES]:
-                    groupname = groupname + " " + name.split(".")[1]
-                groupname = groupname.strip()
-                group_data[CONF_NAME] = groupname
-                groups.append(group_data)
-                newdata[ATTR_GROUPS] = groups
-
-                self._data = newdata
-                return await self.async_step_init()
-
-        # build a dict including original values
-        if user_input is None:
-            default_input = {}
-        else:
-            default_input = user_input
-        for attr in GROUP_ATTR:
-            default = default_input.get(attr[1])
-
-            if attr[2] == "list":
-                #build list ignore zones that have been used in a group already
-                options = []
-                for zone in newdata[ATTR_ZONES]:
-                    zoneused = False
-                    for group in newdata[ATTR_GROUPS]:
-                        if zone[ATTR_ZONE] in group[ATTR_ZONES]:
-                            zoneused = True
-                            break
-                    if zoneused:
-                        continue
-                    options.append({"label":zone[ATTR_ZONE],"value":zone[ATTR_ZONE]})
-                attr2 = sel.selector({"select": {"options": options,"multiple": True }})
-                data_schema[vol.Optional(attr[1]
-                                         ,description={"suggested_value": default}
-                                         )] = attr2
-            else:
-                data_schema = self.process_schema_row(data_schema, attr, default)
-
-
-        return self.async_show_form(
-            step_id="add_group",
-            data_schema=vol.Schema(data_schema),
-            errors=errors
-        )
-
-    async def async_step_delete_group(self, user_input=None):
-        '''delete a group'''
-        errors = {}
-        display = []
-        newdata = {}
-        newdata.update(self._data)
-
-        if user_input is not None:
-            if user_input != {}:
-                # find the position of the zone in the zones.
-                groups = newdata[ATTR_GROUPS]
-                if groups:
-                    for groupnumber, group in enumerate(groups):
-                        if group.get(CONF_NAME) == user_input.get('group').split(":")[0]:
-                            # delete the zone from the list of zones
-                            newdata[ATTR_GROUPS].pop(groupnumber)
-                            break
-
-                self._data = newdata
-                return await self.async_step_init()
-
-        # build list of zones
-        for group in newdata.get(ATTR_GROUPS):
-            display.append(group.get(CONF_NAME))
-        # define the display schema
-        list_schema = vol.Schema({vol.Optional(ATTR_GROUP): vol.In(display)})
-
-        return self.async_show_form(
-            step_id="delete_group", data_schema=list_schema, errors=errors
-        )
-
     async def async_step_delete_zone(self, user_input=None):
         '''delete a zone'''
         errors = {}
@@ -518,12 +322,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     newdata[ATTR_ZONES].pop(zonenumber)
                     delzone = zone[ATTR_ZONE]
                     break
-            #delete any group including this zone
-            if ATTR_GROUPS in newdata:
-                for groupnumber, group in enumerate(newdata[ATTR_GROUPS]):
-                    if delzone in group[ATTR_ZONES]:
-                        newdata[ATTR_GROUPS].pop(groupnumber)
-                        break
 
             self._data = newdata
             return await self.async_step_init()
@@ -609,13 +407,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     zone_data[attr] = user_input[attr]
                 # update with the new data into the list of zones
                 newdata.get(ATTR_ZONES)[zone_pos] = zone_data
-
-                #delete any group including this zone
-                if this_zone[ATTR_ZONE] != user_input[ATTR_ZONE] and ATTR_GROUPS in newdata:
-                    for groupnumber, group in enumerate(newdata[ATTR_GROUPS]):
-                        if this_zone[ATTR_ZONE] in group[ATTR_ZONES]:
-                            newdata[ATTR_GROUPS].pop(groupnumber)
-                            break
 
                 self._data = newdata
                 return await self.async_step_init()

@@ -24,7 +24,6 @@ from .const import (
     ATTR_WATER,
     ATTR_WATER_ADJUST,
     ATTR_ZONE,
-    ATTR_ZONE_GROUP,
     ATTR_SHOW_CONFIG,
     CONST_SWITCH,
     CONST_LATENCY,
@@ -65,7 +64,6 @@ class IrrigationZone:
         self._water_adjust = zone.get(ATTR_WATER_ADJUST)
         self._wait = zone.get(ATTR_WAIT)
         self._repeat = zone.get(ATTR_REPEAT)
-        self._zone_group = zone.get(ATTR_ZONE_GROUP)
         self._last_ran = last_ran
         self._remaining_time = 0
         self._state = "off"
@@ -211,17 +209,6 @@ class IrrigationZone:
         device = f'sensor.{program}_{zone}_status'
         servicedata = {ATTR_ENTITY_ID: device, 'status': new_status}
         await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
-
-    def zone_group(self):
-        '''zone group entity attribute'''
-        return self._zone_group
-
-    def zone_group_value(self):
-        '''zone group entity value'''
-        zone_group_value = None
-        if self._zone_group is not None:
-            zone_group_value = self.hass.states.get(self._zone_group).state
-        return zone_group_value
 
     def enable_zone(self):
         '''enable zone entity attribute'''
@@ -537,12 +524,12 @@ class IrrigationZone:
 
     async def async_turn_off(self, **kwargs):
         '''signal the zone to stop'''
-        if  self.hass.states.is_state(self._switch, "off"):
-            #switch is already off
-            return
         self._state = "off"
         self._stop = True
         self._remaining_time = 0
+        if  self.hass.states.is_state(self._switch, "off"):
+            #switch is already off
+            return
 
         await self.hass.services.async_call(
             CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}

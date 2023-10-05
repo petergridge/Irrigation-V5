@@ -33,15 +33,6 @@ class IrrigationCard extends HTMLElement {
     let validconfig = "invalid";
 
     let zones = Number(hass.states[config.program].attributes["zone_count"]);
-    let last_run_zones = "";
-
-    let runtimes = [];
-    let zone_attrs = [];
-    let zfname = "";
-    let name = ""
-    let zname = "";
-    let first_zone = null;
-    let showconfig = null;
 
     const x = hass.states[config.program];
     if (!x) {
@@ -68,15 +59,12 @@ class IrrigationCard extends HTMLElement {
     }
 
     function cardentities(hass, program) {
-      function addZoneRunConfigButtons(p_zones, p_config) {
-        var zone_name = hass.states[p_zones[0]].attributes["friendly_name"];
-        for (let i = 1; i < p_zones.length; i++) {
-          zone_name += ', ' + (hass.states[p_zones[i]].attributes["friendly_name"]);
-        }
+      function addZoneRunConfigButtons(p_zone, p_config) {
+        var zone_name = hass.states[p_zone].attributes["friendly_name"];
 
         var buttons = [];
         buttons[0] = {
-          entity: p_zones[0],
+          entity: p_zone,
           name: zone_name,
           icon: "mdi:water",
           tap_action: {
@@ -84,7 +72,7 @@ class IrrigationCard extends HTMLElement {
             service: "irrigationprogram.toggle_zone",
             service_data: {
               entity_id: config.program,
-              zone: p_zones,
+              zone: p_zone,
             },
           },
         };
@@ -107,33 +95,26 @@ class IrrigationCard extends HTMLElement {
         });
       } //addZoneRunConfigButtons
 
-      function addProgramRunConfigButtons(p_config) {
+      function addProgramRunConfigButtons() {
         var buttons = [];
+        let showconfig = hass.states[config.program].attributes["show_config"];
         buttons[0] = {
           entity: config.program,
           show_name: true,
           icon: "mdi:power",
         };
 
-				//check if there are any other attributes to show
-				// before creating this button
-				if (hass.states[config.program].attributes["irrigation_on"]
-					|| hass.states[config.program].attributes["run_freq"]
-					|| hass.states[config.program].attributes["controller_monitor"]
-					|| hass.states[config.program].attributes["inter_zone_delay"]
-				    ) {
-					buttons[1] = {
-						entity: p_config,
-						show_name: false,
-						tap_action: {
-							action: "call-service",
-							service: "irrigationprogram.toggle",
-							service_data: {
-								entity_id: p_config,
-							},
-						},
-					};
-				}
+        buttons[1] = {
+          entity: showconfig,
+          show_name: false,
+          tap_action: {
+            action: "call-service",
+            service: "irrigationprogram.toggle",
+            service_data: {
+              entity_id: showconfig,
+            },
+          },
+        };
 
         entities.push({
           type: "buttons",
@@ -168,90 +149,42 @@ class IrrigationCard extends HTMLElement {
         }
       } //add_attribute
 
-      function attr_value(p_attribute) {
+      function has_attr_value(p_attribute) {
         let attrvalue = null;
         if (hass.states[config.program].attributes[p_attribute]) {
           attrvalue = hass.states[config.program].attributes[p_attribute];
         }
         return attrvalue;
-      } //attr_value
+      } //has_attr_value
 
-      function add_attr_value(p_attribute, array) {
-        if (attr_value(p_attribute)) {
+      function add_attr_value(p_attribute, array,showconfig) {
+        if (has_attr_value(p_attribute)) {
           add_entity([{ entity: showconfig, state: "on" }], p_attribute, array);
         }
       } //add_attr_value
 
-      function ProcessZone(array) {
-        let pname = array[0].split(".")[1];
+      function ProcessZone(zone, zone_attrs) {
+        let pname = zone.split(".")[1];
+        let showconfig = hass.states[config.program].attributes[pname + "_show_config"];
         //let zonestatus =
         //  hass.states[config.program].attributes[parentname + "_status"];
 
         // list of other in order
-        add_attr_value(pname + "_enable_zone", zone_attrs);
-        add_attr_value(pname + "_run_freq", zone_attrs);
-        add_attr_value(pname + "_water", zone_attrs);
-        add_attr_value(pname + "_water_adjustment", zone_attrs);
-        add_attr_value(pname + "_flow_sensor", zone_attrs);
-        add_attr_value(pname + "_wait", zone_attrs);
-        add_attr_value(pname + "_repeat", zone_attrs);
-        add_attr_value(pname + "_rain_sensor", zone_attrs);
-        add_attr_value(pname + "_ignore_rain_sensor", zone_attrs);
+        add_attr_value(pname + "_enable_zone", zone_attrs,showconfig);
+        add_attr_value(pname + "_run_freq", zone_attrs, showconfig);
+        add_attr_value(pname + "_water", zone_attrs, showconfig);
+        add_attr_value(pname + "_water_adjustment", zone_attrs, showconfig);
+        add_attr_value(pname + "_flow_sensor", zone_attrs, showconfig);
+        add_attr_value(pname + "_wait", zone_attrs, showconfig);
+        add_attr_value(pname + "_repeat", zone_attrs, showconfig);
+        add_attr_value(pname + "_rain_sensor", zone_attrs, showconfig);
+        add_attr_value(pname + "_ignore_rain_sensor", zone_attrs, showconfig);
       } //ProcessZone
 
-      //check if two arrays are the same
-      const equalsCheck = (a, b) =>
-        a.length === b.length && a.every((v, i) => v === b[i]);
 
-      function ProcessGroup(array) {
-        // return true if the group is consistent
-        if (array.length == 0) return false;
-        let basezone = [];
-        for (var i = 0; i < array.length; i++) {
-          let pname = array[i].split(".")[1];
+      function ZoneHeader(zone, zone_name, first_zone) {
 
-          // list of other in order
-          let zone = [];
-          zone.push(hass.states[config.program].attributes[pname + "_run_freq"]);
-          zone.push(hass.states[config.program].attributes[pname + "_water"]);
-          zone.push(
-            hass.states[config.program].attributes[pname + "_water_adjustment"]
-          );
-          zone.push(
-            hass.states[config.program].attributes[pname + "_flow_sensor"]
-          );
-          zone.push(hass.states[config.program].attributes[pname + "_wait"]);
-          zone.push(hass.states[config.program].attributes[pname + "_repeat"]);
-          zone.push(
-            hass.states[config.program].attributes[pname + "_rain_sensor"]
-          );
-          zone.push(
-            hass.states[config.program].attributes[pname + "_ignore_rain_sensor"]
-          );
-
-          if (i == 0) {
-            basezone = zone;
-            continue;
-          }
-          if (equalsCheck(basezone, zone)) {
-            //we have a match move onto the next zone in the array
-            basezone = zone;
-          } else {
-            return false;
-          }
-        }
-        return true;
-      } //ProcessGroup
-
-      function getName(value, index, array) {
-        name = value.split(".")[1];
-        zfname += hass.states[value].attributes["friendly_name"] + ", ";
-      } //getName
-
-      function ZoneHeader(zones, zname) {
-        zfname = "";
-        zones.forEach(getName);
-        zfname = zfname.substring(0, zfname.length - 2);
+        let name = zone.split(".")[1];
         // process zone/zonegroup main section
         let zonestatus =
           hass.states[config.program].attributes[name + "_status"];
@@ -261,9 +194,9 @@ class IrrigationCard extends HTMLElement {
           entities.push({ type: "section", label: "" });
         }
 
-        showconfig =
-          hass.states[config.program].attributes[zname + "_show_config"];
-        addZoneRunConfigButtons(zones, showconfig);
+        let showconfig =
+          hass.states[config.program].attributes[zone_name + "_show_config"];
+        addZoneRunConfigButtons(zone, showconfig);
 
         // Show the remaining time
         entities.push({
@@ -275,7 +208,7 @@ class IrrigationCard extends HTMLElement {
           row: {
             type: "attribute",
             entity: config.program,
-            attribute: zname + "_remaining",
+            attribute: zone_name + "_remaining",
             name: " ",
             icon: "mdi:timer-outline",
           },
@@ -283,7 +216,7 @@ class IrrigationCard extends HTMLElement {
 
         // Next/Last run details
         add_attribute(
-          zname + "_next_run",
+          zone_name + "_next_run",
           config.next_run_label || "Next Run",
           "mdi:clock-start",
           [],
@@ -291,7 +224,7 @@ class IrrigationCard extends HTMLElement {
         );
 
         add_attribute(
-          zname + "_last_ran",
+          zone_name + "_last_ran",
           config.last_ran_label || "Last Ran",
           "mdi:clock-end",
           [
@@ -303,10 +236,8 @@ class IrrigationCard extends HTMLElement {
       } //ZoneHeader
 
       // Build the Program level entities
-
       if (config.show_program === true) {
-        showconfig = hass.states[config.program].attributes["show_config"];
-        addProgramRunConfigButtons(showconfig);
+        addProgramRunConfigButtons();
         add_entity([], "start_time", entities);
         add_attribute(
           "remaining",
@@ -317,46 +248,32 @@ class IrrigationCard extends HTMLElement {
         );
 
         //add the program level configuration
-        add_attr_value("irrigation_on", entities);
-        add_attr_value("run_freq", entities);
-        add_attr_value("controller_monitor", entities);
-        add_attr_value("inter_zone_delay", entities);
+        let showconfig = hass.states[config.program].attributes["show_config"];
+        add_attr_value("irrigation_on", entities, showconfig);
+        add_attr_value("run_freq", entities, showconfig);
+        add_attr_value("controller_monitor", entities, showconfig);
+        add_attr_value("inter_zone_delay", entities, showconfig);
       }
 
-      let dzones = [];
-      //add the entity level configuration use conditional if show config entity is provided
-      first_zone = true;
+      //add the zone level configuration
+      let first_zone = true;
       for (let i = 1; i < zones + 1; i++) {
-        let zname =
+        let zone_name =
           hass.states[config.program].attributes["zone" + String(i) + "_name"];
         if (config.entities) {
           if (config.entities.length > 0) {
-            if (config.entities.indexOf("switch." + zname) == -1) {
+            if (config.entities.indexOf("switch." + zone_name) == -1) {
               continue;
             }
           }
         }
 
-        let run_zones = ["switch." + zname];
-        if (hass.states[config.program].attributes[zname + "_group"]) {
-          run_zones = hass.states[config.program].attributes[zname + "_group"];
-        }
-
-        if (ProcessGroup(run_zones) === true) {
-          //same group skip to the next zone
-          if (equalsCheck(run_zones, last_run_zones)) continue;
-          dzones = run_zones;
-        } else {
-          dzones = ["switch." + zname];
-        }
-        ZoneHeader(run_zones, zname);
-        runtimes = [];
-        zone_attrs = [];
-        ProcessZone(dzones);
-
-        const newentities = entities.concat(zone_attrs, runtimes);
+        let zone = "switch." + zone_name;
+        ZoneHeader(zone, zone_name, first_zone);
+        let zone_attrs = [];
+        ProcessZone(zone, zone_attrs);
+        const newentities = entities.concat(zone_attrs);
         entities = newentities;
-        last_run_zones = run_zones;
         first_zone = false;
       }
       return entities;
@@ -543,11 +460,11 @@ class IrrigationCardEditor extends HTMLElement {
     }
     //rebuild the options
     for (i = 1; i < zones + 1; i++) {
-      var zname =
+      var zone_name =
         "switch." +
         this._hass.states[program].attributes["zone" + String(i) + "_name"];
-      let newOption = new Option(zname, zname);
-      if (entities.includes(zname)) {
+      let newOption = new Option(zone_name, zone_name);
+      if (entities.includes(zone_name)) {
         newOption.selected = true;
       }
       select.add(newOption);

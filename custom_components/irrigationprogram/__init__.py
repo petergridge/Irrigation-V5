@@ -24,7 +24,8 @@ from .const import (
     SWITCH_ID_FORMAT,
     CONST_SWITCH,
     ATTR_DEVICE_TYPE,
-    ATTR_SHOW_CONFIG
+    ATTR_SHOW_CONFIG,
+    ATTR_GROUPS
     )
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
@@ -136,6 +137,20 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         except KeyError:
             pass
         config_entry.version = 3
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+    if config_entry.version == 3:
+        if config_entry.options == {}:
+            new = {**config_entry.data} #config_entry.data
+        else:
+            new = {**config_entry.options} #config_entry.options
+
+        try:
+            new.pop(ATTR_GROUPS)
+            _LOGGER.info("Removing Groups configuration")
+        except KeyError:
+            pass
+        config_entry.version = 4
         hass.config_entries.async_update_entry(config_entry, data=new)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
