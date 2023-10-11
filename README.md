@@ -6,7 +6,7 @@
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
 ### Coming in V5.4.3, December 2023
-* **Remove group functionality**.
+* **BREAKING CHANGE: Remove group functionality**.
   * Grouping zones can now be achieved using a switch [group helper](https://www.home-assistant.io/integrations/group/) provided by Home Assistant to present multiple switches as a single switch that can be configured as a zone in this component.
   * There is some loss of functionality, in this new model all switches will have the same parameters, you will no longer be able to have a goup of zones that have different watering times but run concurrently.
   * The helper grouping model is supported already in the current version.
