@@ -281,6 +281,8 @@ class IrrigationZone:
             starthour = 8
             startmin = 0
 
+        _LOGGER.debug('start time %s, %s',starthour,startmin)
+
         if self.enable_zone_value() is False:
             self._next_run = "disabled"
             return self._next_run
@@ -302,8 +304,10 @@ class IrrigationZone:
         else:
             if isinstance(self._last_ran,datetime):
                 today_run = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                _LOGGER.debug('datetime %s',today_run)
             if isinstance(self._last_ran,str):
                 today_run = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                _LOGGER.debug('str %s',today_run)
 
         #frq is not defined
         if self.run_freq_value() is None:
@@ -314,11 +318,15 @@ class IrrigationZone:
 
         try: # Frq is numeric
             frq = int(float(self.run_freq_value()))
+            _LOGGER.debug('FRQ %s', frq)
             if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= frq:
-                #zone has not run due to rain or other factor
-                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
-            else:
                 numeric_freq = frq
+            else:
+                #zone has not run due to rain or other factor
+                _LOGGER.debug('test %s',(datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
+                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
+
+            _LOGGER.debug('numeric frq %s',numeric_freq)
 
             today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             #if next start time > now, next time is still today i.e. multipe start times
