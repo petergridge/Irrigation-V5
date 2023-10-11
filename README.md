@@ -81,7 +81,6 @@ You need to define the entities that allow you to control the features you want.
 
 For the Program create these helpers:
 - Input_datetime for the program start time (time only)
-- Input_boolean  to support the toggling of the configuration in the custom card
 - Input_boolean to support the enabling/disabling of the program
 - Input_select to define the frequency you want the zone to run, you can do this on the program if you want and save a few entities but I have different frequencies on some zones
 
@@ -310,7 +309,6 @@ The definition of the YAML configuration:
 |Attribute       |Type   |Mandatory|Description|
 |:---            |:---   |:---     |:---       |
 |&nbsp;&nbsp;&nbsp;&nbsp;[start_time](#start-time)|input_datetime, input_text |Required| Entity to set the start time of the program. From V5.4 a list of times from an input_text helper will allow the program to run multiple times e.g. 10:00:00, 12:00:00, 14:30:00. Format must be HH24:MM:00 |
-|&nbsp;&nbsp;&nbsp;&nbsp;show_config|input_boolean |Optional| 'Show configuration' used to show/hide the configuration in the companion card |
 |&nbsp;&nbsp;&nbsp;&nbsp;[run_freq](#run-days-and-run-frequency)|input_select|Optional|Indicate how often to run. If not provided will run every day|
 |&nbsp;&nbsp;&nbsp;&nbsp;[controller_monitor](#monitor-controller-feature)|binary_sensor|Optional|Detect if the irrigation controller is online. Schedule will not execute if offline|
 |&nbsp;&nbsp;&nbsp;&nbsp;irrigation_on|input_boolean|Optional|Allows the entire program to be suspend, winter mode|
