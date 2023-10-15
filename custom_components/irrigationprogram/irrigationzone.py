@@ -236,7 +236,7 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
+    def last_ran(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
         """update the run time component"""
 
         wait = self.wait_value()*60
@@ -249,7 +249,7 @@ class IrrigationZone:
         if self._flow_sensor is None:
             #time based
             water = self.water_value()*60
-            run_time = (water * adjust * repeats) + (wait * (repeats -1))
+            last_ran = (water * adjust * repeats) + (wait * (repeats -1))
         else:
             #volume based/flow sensor
             water = self.water_value() #volume
@@ -262,11 +262,11 @@ class IrrigationZone:
 
             watertime = remaining_volume / flow * 60
             #remaining watering time + remaining waits
-            run_time = watertime + (wait * (repeats -1))
+            last_ran = watertime + (wait * (repeats -1))
 
-        run_time = run_time - seconds_run
+        last_ran = last_ran - seconds_run
 
-        return math.ceil(run_time)
+        return math.ceil(last_ran)
 
     def last_ran(self):
         '''last ran datetime attribute'''
@@ -298,43 +298,38 @@ class IrrigationZone:
         if self._last_ran is None:
             #default to today and start time
             #is the run time after now
-            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            if today_run > datetime.now().astimezone(tz=localtimezone):
-                today_run = today_run - timedelta(days=1)
+            last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            if last_ran > datetime.now().astimezone(tz=localtimezone):
+                last_ran = last_ran - timedelta(days=1)
         else:
-            if isinstance(self._last_ran,datetime):
-                today_run = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-                _LOGGER.debug('datetime %s',today_run)
             if isinstance(self._last_ran,str):
-                today_run = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-                _LOGGER.debug('str %s',today_run)
+                last_ran = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            if isinstance(self._last_ran,datetime):
+                last_ran = self._last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
 
         #frq is not defined
         if self.run_freq_value() is None:
-            next_run = dt_util.as_timestamp(today_run) + 86400
+            next_run = dt_util.as_timestamp(last_ran) + 86400
             next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             self._next_run =  next_run
             return self._next_run
 
         try: # Frq is numeric
             frq = int(float(self.run_freq_value()))
-            _LOGGER.debug('FRQ %s', frq)
-            if (datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400 >= frq:
-                numeric_freq = frq
+            #should it run today?
+            if (datetime.now().astimezone(tz=localtimezone) - last_ran).total_seconds()/86400 < frq:
+                run_today = False
             else:
-                #zone has not run due to rain or other factor
-                _LOGGER.debug('test %s',(datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
-                numeric_freq = math.ceil((datetime.now().astimezone(tz=localtimezone) - today_run).total_seconds()/86400)
+                run_today = True
 
-            _LOGGER.debug('numeric frq %s',numeric_freq)
-
-            today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            #if next start time > now, next time is still today i.e. multipe start times
-            if today_run > datetime.now().astimezone(tz=localtimezone):
-                next_run = dt_util.as_timestamp(today_run)
-                next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
+            if run_today:
+                next_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                if next_run < datetime.now().astimezone(tz=localtimezone):
+                    #it is after the run_time so wait until tomorrow
+                    next_run = dt_util.as_timestamp(last_ran) + ((frq+1) * 86400)
+                    next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             else:
-                next_run = dt_util.as_timestamp(today_run) + (numeric_freq * 86400)
+                next_run = dt_util.as_timestamp(last_ran) + (frq * 86400)
                 next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
             self._next_run =  next_run
             return self._next_run
@@ -348,16 +343,16 @@ class IrrigationZone:
             valid_freq = any(item in string_freq for item in valid_days)
             if valid_freq is True:
                 #default to today and start time for day based running
-                today_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-                today = today_run.isoweekday()
-                next_run = dt_util.as_timestamp(today_run) + (100 * 86400) #arbitary max
+                last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                today = last_ran.isoweekday()
+                next_run = dt_util.as_timestamp(last_ran) + (100 * 86400) #arbitary max
                 next_run = datetime.utcfromtimestamp(next_run).replace(tzinfo=timezone.utc).astimezone(tz=localtimezone)
                 for day in string_freq :
                     try:
-                        if self.get_weekday(day) == today and today_run > datetime.now().astimezone(tz=localtimezone):
-                            next_run = today_run
+                        if self.get_weekday(day) == today and last_ran > datetime.now().astimezone(tz=localtimezone):
+                            next_run = last_ran
                         else:
-                            next_run = min(self.get_next_dayofweek_datetime(today_run, day), next_run)
+                            next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
                     except ValueError:
                         next_run = 'Error, invalid value in week day list'
                 self._next_run =  next_run
@@ -427,7 +422,7 @@ class IrrigationZone:
         else:
             water_adjust_value = 1
 
-        self._remaining_time = self.run_time(repeats=self.repeat_value(), scheduled=scheduled, water_adjustment=water_adjust_value)
+        self._remaining_time = self.last_ran(repeats=self.repeat_value(), scheduled=scheduled, water_adjustment=water_adjust_value)
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
@@ -465,7 +460,7 @@ class IrrigationZone:
                     volume_delivered += self.flow_sensor_value() / 60
                     volume_required = self.water_value() * water_adjust_value
                     volume_remaining = volume_required - volume_delivered
-                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.last_ran(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
                     if self.check_switch_state() is False:
                         self._stop = True
@@ -484,7 +479,7 @@ class IrrigationZone:
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.last_ran(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
                     if self.check_switch_state() is False:
                         self._stop = True
@@ -501,7 +496,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.last_ran(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     if self._stop:
                         break
                     await asyncio.sleep(1)
@@ -604,7 +599,7 @@ class IrrigationZone:
         _LOGGER.warning("Zone:                     %s", self._name)
         _LOGGER.warning("Should run:               %s", self.should_run(scheduled=scheduled))
         _LOGGER.warning("Last Run time:            %s", self._last_ran)
-        _LOGGER.warning("Run time:                 %s", self.run_time(repeats=self.repeat_value()))
+        _LOGGER.warning("Run time:                 %s", self.last_ran(repeats=self.repeat_value()))
         _LOGGER.warning("Water Value:              %s", self.water_value())
         _LOGGER.warning("Wait Value:               %s", self.wait_value())
         _LOGGER.warning("Repeat Value:             %s", self.repeat_value())
