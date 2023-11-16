@@ -236,7 +236,7 @@ class IrrigationZone:
         """remaining time or remaining volume"""
         return self._remaining_time
 
-    def last_ran(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
+    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False, water_adjustment=1):
         """update the run time component"""
 
         wait = self.wait_value()*60
@@ -249,7 +249,7 @@ class IrrigationZone:
         if self._flow_sensor is None:
             #time based
             water = self.water_value()*60
-            last_ran = (water * adjust * repeats) + (wait * (repeats -1))
+            run_time = (water * adjust * repeats) + (wait * (repeats -1))
         else:
             #volume based/flow sensor
             water = self.water_value() #volume
@@ -262,11 +262,11 @@ class IrrigationZone:
 
             watertime = remaining_volume / flow * 60
             #remaining watering time + remaining waits
-            last_ran = watertime + (wait * (repeats -1))
+            run_time = watertime + (wait * (repeats -1))
 
-        last_ran = last_ran - seconds_run
+        run_time = run_time - seconds_run
 
-        return math.ceil(last_ran)
+        return math.ceil(run_time)
 
     def last_ran(self):
         '''last ran datetime attribute'''
@@ -422,7 +422,7 @@ class IrrigationZone:
         else:
             water_adjust_value = 1
 
-        self._remaining_time = self.last_ran(repeats=self.repeat_value(), scheduled=scheduled, water_adjustment=water_adjust_value)
+        self._remaining_time = self.run_time(repeats=self.repeat_value(), scheduled=scheduled, water_adjustment=water_adjust_value)
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
         for i in range(self.repeat_value(), 0, -1):
@@ -460,7 +460,7 @@ class IrrigationZone:
                     volume_delivered += self.flow_sensor_value() / 60
                     volume_required = self.water_value() * water_adjust_value
                     volume_remaining = volume_required - volume_delivered
-                    self._remaining_time = self.last_ran(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
                     if self.check_switch_state() is False:
                         self._stop = True
@@ -479,7 +479,7 @@ class IrrigationZone:
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value()*60 * water_adjust_value) - seconds_run
-                    self._remaining_time = self.last_ran(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     await asyncio.sleep(1)
                     if self.check_switch_state() is False:
                         self._stop = True
@@ -496,7 +496,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value() * 60 - wait_seconds
-                    self._remaining_time = self.last_ran(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
+                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled, water_adjustment=water_adjust_value)
                     if self._stop:
                         break
                     await asyncio.sleep(1)
@@ -599,7 +599,7 @@ class IrrigationZone:
         _LOGGER.warning("Zone:                     %s", self._name)
         _LOGGER.warning("Should run:               %s", self.should_run(scheduled=scheduled))
         _LOGGER.warning("Last Run time:            %s", self._last_ran)
-        _LOGGER.warning("Run time:                 %s", self.last_ran(repeats=self.repeat_value()))
+        _LOGGER.warning("Run time:                 %s", self.run_time(repeats=self.repeat_value()))
         _LOGGER.warning("Water Value:              %s", self.water_value())
         _LOGGER.warning("Wait Value:               %s", self.wait_value())
         _LOGGER.warning("Repeat Value:             %s", self.repeat_value())
