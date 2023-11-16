@@ -83,7 +83,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     """FLow handler"""
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
-    VERSION = 3
+    VERSION = 4
 
     def __init__(self) -> None:
         self._errors = {}
@@ -206,7 +206,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     ''' option flow'''
-    VERSION = 3
+    VERSION = 4
     def __init__(self, config_entry) -> None:
         self.config_entry = config_entry
         self._name = self.config_entry.data.get(CONF_NAME)
@@ -233,6 +233,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 )
             ] = attr[2]
         return data_schema
+
+    async def async_step_user(self, user_input=None):
+        '''initial step? work around from HA v2023.11 '''
+        return
 
     async def async_step_init(self, user_input=None):
         '''initial step'''
