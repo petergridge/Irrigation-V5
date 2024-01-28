@@ -1,22 +1,17 @@
-"""Platform for recording current irrigation zone status"""
+"""Platform for recording current irrigation zone status."""
 import logging
+
 import voluptuous as vol
-from homeassistant.core import HomeAssistant
-from homeassistant.util import slugify
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorDeviceClass
-)
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_NAME
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
-from homeassistant.const import (
-    CONF_NAME,
-    )
-from .const import (
-    ATTR_ZONES,
-    ATTR_ZONE
-    )
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import slugify
+
+from .const import ATTR_ZONE, ATTR_ZONES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +35,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Initialize config entry. form config flow"""
+    """Initialize config entry. form config flow."""
     unique_id = config_entry.entry_id
     if config_entry.options != {}:
         config = config_entry.options
@@ -59,9 +54,9 @@ async def async_setup_entry(
     )
 
 class ZoneStatus(SensorEntity):
-    ''' Rain factor class defn'''
+    '''Rain factor class defn.'''
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         hass: HomeAssistant,
         program,
@@ -78,13 +73,13 @@ class ZoneStatus(SensorEntity):
         self._attr_translation_key = 'zonestatus'
 
     async def set_zone_status(self, status='off'):
-        '''function to set the runtime state value'''
+        '''Set the runtime state value.'''
         self._state = status
         self.async_schedule_update_ha_state()
 
     @property
     def options(self):
-        """Return the sensor state options"""
+        """Return the sensor state options."""
         return  [
             'on'
            ,'off'

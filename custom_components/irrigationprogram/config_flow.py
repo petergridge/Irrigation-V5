@@ -1,27 +1,31 @@
-""" Config flow """
+"""Config flow."""
 
 from __future__ import annotations
 
 import logging
 from typing import Any
 import uuid
+
 import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv, selector as sel
+
 from .const import (
     ATTR_DELAY,
+    ATTR_DEVICE_TYPE,
     ATTR_ENABLE_ZONE,
     ATTR_FLOW_SENSOR,
     ATTR_IGNORE_RAIN_SENSOR,
+    ATTR_INTERLOCK,
     ATTR_IRRIGATION_ON,
     ATTR_MONITOR_CONTROLLER,
     ATTR_PUMP,
     ATTR_RAIN_SENSOR,
     ATTR_REPEAT,
     ATTR_RUN_FREQ,
-    ATTR_DEVICE_TYPE,
     ATTR_START,
     ATTR_WAIT,
     ATTR_WATER,
@@ -29,7 +33,6 @@ from .const import (
     ATTR_ZONE,
     ATTR_ZONES,
     DOMAIN,
-    ATTR_INTERLOCK,
 )
 
 ATTR_TEMP = "temp"
@@ -62,7 +65,7 @@ PROGRAM_ATTR = [
 
 # Required,attribute,type
 ZONE_ATTR = [
-    [False, ATTR_ZONE, sel.EntitySelector({"domain": "switch"})],
+    [False, ATTR_ZONE, sel.EntitySelector({"domain": ["switch"]})],
     [False, ATTR_WATER, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],
@@ -80,18 +83,19 @@ _LOGGER = logging.getLogger(__name__)
 @config_entries.HANDLERS.register(DOMAIN)
 
 class IrrigationFlowHandler(config_entries.ConfigFlow):
-    """FLow handler"""
+    """FLow handler."""
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
     VERSION = 4
 
     def __init__(self) -> None:
+        """Initialise."""
         self._errors = {}
         self._data = {}
         self._data["unique_id"] = str(uuid.uuid4())
 
     def process_schema_row(self, data_schema, attr, default):
-        """process a row of the data schema"""
+        """Process a row of the data schema."""
         if attr[0] is True:
             data_schema[
                 vol.Required(
@@ -118,7 +122,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     async def async_step_user(
         self, user_input=None
     ):
-        """Invoked when a user initiates a flow via the user interface."""
+        """Initiate a flow via the user interface."""
         errors: dict[str, str] = {}
         if user_input is not None:
 
@@ -181,7 +185,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_menu(self, user_input=None):
-        '''Add or finalise the flow'''
+        '''Add or finalise the flow.'''
         xmenu_options = ["zones"]
         xmenu_options.extend(["finalise"])
 
@@ -201,13 +205,14 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 #--- Options Flow ----------------------------------------------
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry):  # noqa: D102
         return OptionsFlowHandler(config_entry)
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    ''' option flow'''
+    '''Option flow.'''
+
     VERSION = 4
-    def __init__(self, config_entry) -> None:
+    def __init__(self, config_entry) -> None:  # noqa: D107
         self.config_entry = config_entry
         self._name = self.config_entry.data.get(CONF_NAME)
         self.zoneselect = None
@@ -217,7 +222,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self._data = self.config_entry.options
 
     def process_schema_row(self, data_schema, attr, default):
-        """process a row of the data schema"""
+        """Process a row of the data schema."""
         if attr[0] is True:
             data_schema[
                 vol.Required(
@@ -235,11 +240,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return data_schema
 
     async def async_step_user(self, user_input=None):
-        '''initial step? work around from HA v2023.11 '''
+        '''Initial step? work around from HA v2023.11.'''  # noqa: D401
         return
 
     async def async_step_init(self, user_input=None):
-        '''initial step'''
+        '''Initial step.'''  # noqa: D401
         if self.config_entry.options == {}:
             data = self.config_entry.data
         else:
@@ -256,7 +261,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_finalise(self, user_input=None):
-        """create the program config"""
+        """Create the program config."""
         newdata = {}
         newdata.update(self._data)
 
@@ -272,7 +277,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_program(self, user_input=None):
-        """Invoked when a user initiates a flow via the user interface."""
+        """Invoked when a user initiates a flow via the user interface."""  # noqa: D401
         errors = {}
         newdata = {}
         newdata.update(self._data)
@@ -306,7 +311,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_delete_zone(self, user_input=None):
-        '''delete a zone'''
+        '''Delete a zone.'''
         errors = {}
         zones = []
         newdata = {}
@@ -324,7 +329,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if (friendlyname) == user_input.get(ATTR_ZONE):
                     # delete the zone from the list of zones
                     newdata[ATTR_ZONES].pop(zonenumber)
-                    delzone = zone[ATTR_ZONE]
+#                    delzone = zone[ATTR_ZONE]
                     break
 
             self._data = newdata
@@ -341,7 +346,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_zone(self, user_input=None):
-        '''update zone'''
+        '''Update zone.'''
         errors = {}
         zones = []
 
@@ -369,7 +374,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_zone_data(self, user_input=None):
-        '''update zone'''
+        '''Update zone.'''
         errors = {}
         data_schema = {}
         newdata = {}
@@ -433,7 +438,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_add_zone(self, user_input=None):
-        '''add zone'''
+        '''Add zone.'''
         errors = {}
         data_schema = {}
         newdata = {}

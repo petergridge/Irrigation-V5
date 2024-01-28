@@ -1,4 +1,6 @@
 class IrrigationCard extends HTMLElement {
+
+
   setConfig(config) {
     if (this.lastChild) this.removeChild(this.lastChild);
     const cardConfig = Object.assign({}, config);
@@ -144,6 +146,7 @@ class IrrigationCard extends HTMLElement {
               format: "relative",
               name: p_name,
               icon: p_icon,
+              state_color: false,
             },
           });
         }
@@ -198,28 +201,74 @@ class IrrigationCard extends HTMLElement {
           hass.states[config.program].attributes[zone_name + "_show_config"];
         addZoneRunConfigButtons(zone, showconfig);
 
-        // Show the remaining time
-        entities.push({
-          type: "conditional",
-          conditions: [
-            { entity: zonestatus, state_not: "off" },
-            { entity: zonestatus, state_not: "disabled" },
-          ],
-          row: {
-            type: "attribute",
-            entity: config.program,
-            attribute: zone_name + "_remaining",
-            name: " ",
-            icon: "mdi:timer-outline",
-          },
-        });
+        // var llocale = window.navigator.userLanguage || window.navigator.language;
+        // if (config.hass_lang_priority) {
+        //   llocale = this.myhass.language;
+        // }
+        // var translationJSONobj = null;
 
+        // var translationLocal = "/local/" + llocale.substring(0, 2) + ".json";
+        // var rawFile = new XMLHttpRequest();
+        // rawFile.overrideMimeType("application/json");
+        // rawFile.open("GET", translationLocal, false);
+        // rawFile.send(null);
+        // if (rawFile.status == 200) {
+        //   translationJSONobj = JSON.parse(rawFile.responseText);
+        // } else {
+        //   // if no language file found, default to en
+        //   translationLocal = "/local/en.json";
+        //   rawFile.open("GET", translationLocal, false);
+        //   rawFile.send(null);
+        //   if (rawFile.status == 200) {
+        //     translationJSONobj = JSON.parse(rawFile.responseText);
+        //   } else {
+        //     translationJSONobj = null;
+        //   }
+        // }
+
+        // var remaining_lable = "remaining"
+        // if (typeof translationJSONobj != null) {
+        //    remaining_lable = translationJSONobj.other['remaining'] + " ";
+        // }
+
+        // Show the remaining time when on/eco/pending
+        add_attribute(
+          zone_name + "_remaining",
+          config.remaining_label || "Remaining Time",
+          "mdi:timer-outline",
+          [
+            { entity: zonestatus, state: "on" },
+          ],
+          entities
+        );
+        add_attribute(
+          zone_name + "_remaining",
+          config.remaining_label || "Remaining Time",
+          "mdi:timer-outline",
+          [
+            { entity: zonestatus, state: "pending" },
+          ],
+          entities
+        );
+        add_attribute(
+          zone_name + "_remaining",
+          config.remaining_label || "Remaining Time",
+          "mdi:timer-outline",
+          [
+            { entity: zonestatus, state: "eco" },
+          ],
+          entities
+        );
         // Next/Last run details
         add_attribute(
           zone_name + "_next_run",
           config.next_run_label || "Next Run",
           "mdi:clock-start",
-          [],
+          [
+            { entity: zonestatus, state_not: "on" },
+            { entity: zonestatus, state_not: "eco" },
+            { entity: zonestatus, state_not: "pending" },
+          ],
           entities
         );
 
@@ -228,7 +277,9 @@ class IrrigationCard extends HTMLElement {
           config.last_ran_label || "Last Ran",
           "mdi:clock-end",
           [
-            { entity: config.program, state: "off" },
+            { entity: zonestatus, state_not: "on" },
+            { entity: zonestatus, state_not: "eco" },
+            { entity: zonestatus, state_not: "pending" },
             { entity: showconfig, state: "on" },
           ],
           entities
@@ -241,7 +292,7 @@ class IrrigationCard extends HTMLElement {
         add_entity([], "start_time", entities);
         add_attribute(
           "remaining",
-          " ",
+          config.remaining_label || "Remaining Time",
           "mdi:timer-outline",
           [{ entity: config.program, state: "on" }],
           entities
@@ -300,6 +351,7 @@ class IrrigationCard extends HTMLElement {
       show_program: true,
       next_run_label: "Next Run",
       last_ran_label: "Last Run",
+      remaining_label: "Remaining time",
     };
   }
 
@@ -351,6 +403,7 @@ class IrrigationCardEditor extends HTMLElement {
 			<div class="row"><label class="label" for="show_program">Show program:</label><input type="checkbox" id="show_program" checked></input></div>
 			<div class="row"><label class="label" for="last_ran_label">Last ran label:</label><input type="text" id="last_ran_label" defaultValue='Last Ran'></input></div>
 			<div class="row"><label class="label" for="next_run_label">Next run label:</label><input type="text" id="next_run_label" defaultValue='Next Run'></input></div>
+			<div class="row"><label class="label" for="remaining_label">Remaining label:</label><input type="text" id="remaining_label" defaultValue='Remaining time'></input></div>
 			`;
   }
 //<div class="row"><label class="label" for="debug">debug:</label><input type="text" id="debug"></input></div>
@@ -387,6 +440,8 @@ class IrrigationCardEditor extends HTMLElement {
       this._elements.editor.querySelector("#last_ran_label");
     this._elements.next_run_label =
       this._elements.editor.querySelector("#next_run_label");
+    this._elements.remaining_label =
+      this._elements.editor.querySelector("#remaining_label");
 
 //		this._elements.debug =
 //     this._elements.editor.querySelector("#debug");
@@ -410,6 +465,10 @@ class IrrigationCardEditor extends HTMLElement {
       this.onChanged.bind(this)
     );
     this._elements.next_run_label.addEventListener(
+      "change",
+      this.onChanged.bind(this)
+    );
+    this._elements.remaining_label.addEventListener(
       "change",
       this.onChanged.bind(this)
     );
@@ -479,6 +538,8 @@ class IrrigationCardEditor extends HTMLElement {
       this._config.last_ran_label || "Last Ran";
     this._elements.next_run_label.value =
       this._config.next_run_label || "Next Run";
+    this._elements.remaining_label.value =
+      this._config.remaining_label || "Remaining time";
     if (this._elements.program.value.split(".")[0] == "switch") {
       this._elements.entities.value = this._hass.config["entities"];
       this.doBuildEntityOptions(
@@ -520,6 +581,8 @@ class IrrigationCardEditor extends HTMLElement {
       newConfig.last_ran_label = changedEvent.target.value;
     } else if (changedEvent.target.id == "next_run_label") {
       newConfig.next_run_label = changedEvent.target.value;
+    } else if (changedEvent.target.id == "remaining_label") {
+      newConfig.remaining_label = changedEvent.target.value;
     }
 
     const event = new Event("config-changed", {

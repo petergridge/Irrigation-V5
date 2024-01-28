@@ -1,16 +1,17 @@
-"""Utils"""
+"""Utils."""
 import logging
+
 from aiohttp import web
+
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
 from homeassistant.core import HomeAssistant
-
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def register_static_path(app: web.Application, url_path: str, path):
-    """Register static path with CORS for Chromecast"""
+    """Register static path with CORS for Chromecast."""
 
     async def serve_file(request):
         return web.FileResponse(path)
@@ -25,8 +26,8 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     """Add extra JS module for lovelace mode YAML and new lovelace resource
     for mode GUI. It's better to add extra JS for all modes, because it has
     random url to avoid problems with the cache. But chromecast don't support
-    extra JS urls and can't load custom card.
-    """
+    extra JS urls and can't load custom card."""  # noqa: D205, D209
+
     resources: ResourceStorageCollection = hass.data["lovelace"]["resources"]
     # force load storage
     await resources.async_get_info()

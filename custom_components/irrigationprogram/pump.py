@@ -1,18 +1,20 @@
-'''pump classs'''
+'''pump classs.'''
 import asyncio
 import logging
-from homeassistant.core import HomeAssistant
-from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
 
-from .const import CONST_SWITCH, CONST_LATENCY
+from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
+from homeassistant.core import HomeAssistant
+
+from .const import CONST_LATENCY, CONST_SWITCH
 
 CONST_OFF_DELAY = 2
 
 _LOGGER = logging.getLogger(__name__)
 
 class PumpClass:
-    ''' pump class'''
-    def __init__(self, hass: HomeAssistant, pump, zones) -> None:
+    '''Pump class.'''
+
+    def __init__(self, hass: HomeAssistant, pump, zones) -> None:  # noqa: D107
         self.hass = hass
         self._pump = pump
         self._zones = zones
@@ -20,7 +22,7 @@ class PumpClass:
         self._off_delay = CONST_OFF_DELAY
 
     async def async_monitor(self, **kwargs):
-        '''monitor running zones to determine if pump is required'''
+        '''Monitor running zones to determine if pump is required.'''
         _LOGGER.debug("Pump Class Started monitoring zones %s", self._zones)
         step = 1
         pump = {ATTR_ENTITY_ID: self._pump}
@@ -69,16 +71,16 @@ class PumpClass:
         self._stop = False
 
     async def async_stop_monitoring(self, **kwargs):
-        '''flag turn off pump monitoring'''
+        '''Flag turn off pump monitoring.'''
         self._stop = True
 
     async def latency_check(self, check = 'off'):
-        '''Ensure switch has turned off and warn'''
+        '''Ensure switch has turned off and warn.'''
         if not (self.hass.states.is_state(self._pump, "on") or self.hass.states.is_state(self._pump, "off")):
             #switch is offline
             return True
 
-        for i in range(CONST_LATENCY):
+        for i in range(CONST_LATENCY):  # noqa: B007
             if check == 'off':
                 if self.check_switch_state() is False: #on
                     await asyncio.sleep(1)
@@ -94,7 +96,7 @@ class PumpClass:
         return
 
     def check_switch_state(self):
-        """ check the solenoid state if turned off stop this instance"""
+        """Check the solenoid state if turned off stop this instance."""
         if self.hass.states.is_state(self._pump, "off"):
             return False
         if self.hass.states.is_state(self._pump, "on"):

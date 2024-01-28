@@ -1,32 +1,35 @@
-''' __init__'''
+'''__init__.'''
 from __future__ import annotations
+
+import asyncio
+import contextlib
 from ctypes.wintypes import BOOL
 import logging
-from homeassistant.util import slugify
-import asyncio
-from . import utils
 from pathlib import Path
-from homeassistant.helpers import config_validation as cv
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_NAME,
-    SERVICE_TURN_OFF,
     CONF_NAME,
+    SERVICE_TURN_OFF,
     Platform,
 )
-from homeassistant.core import HomeAssistant,callback
-#from homeassistant import config_entries
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
+from homeassistant.util import slugify
 
+from . import utils
+
+#from homeassistant import config_entries
 from .const import (
+    ATTR_DEVICE_TYPE,
+    ATTR_GROUPS,
+    ATTR_SHOW_CONFIG,
+    CONST_SWITCH,
     DOMAIN,
     SWITCH_ID_FORMAT,
-    CONST_SWITCH,
-    ATTR_DEVICE_TYPE,
-    ATTR_SHOW_CONFIG,
-    ATTR_GROUPS
-    )
+)
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
@@ -76,20 +79,19 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return unload_ok
 
 async def async_setup(hass:HomeAssistant, config):
-    '''setup the irrigation'''
+    '''Irrigation object.'''
     hass.data.setdefault(DOMAIN, {})
 
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
     utils.register_static_path(hass.http.app, "/irrigationprogram/irrigation-card.js", path / "irrigation-card.js")
-
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/irrigationprogram/irrigation-card.js", str(version))
 
 
     async def async_stop_programs(call):
-        ''' stop all running programs'''
+        '''Stop all running programs.'''
 
         for data in hass.data[DOMAIN].values():
             if data.get(ATTR_NAME) == call.data.get("ignore", ""):
@@ -116,7 +118,7 @@ async def async_setup(hass:HomeAssistant, config):
 def _async_find_matching_config_entry(
     hass: HomeAssistant, name
 ) -> BOOL:
-    '''determine if a config has been imported from YAML'''
+    '''Determine if a config has been imported from YAML.'''
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.data.get(CONF_NAME) == name:
             return True
@@ -132,10 +134,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         else:
             new = {**config_entry.options} #config_entry.options
         new.update({ATTR_DEVICE_TYPE: 'generic'})
-        try:
+        with contextlib.suppress(KeyError):
             new.pop(ATTR_SHOW_CONFIG)
-        except KeyError:
-            pass
         config_entry.version = 3
         hass.config_entries.async_update_entry(config_entry, data=new)
 
