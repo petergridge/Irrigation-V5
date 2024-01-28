@@ -374,7 +374,6 @@ class IrrigationZone:
                 last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 today = last_ran.isoweekday()
                 next_run = last_ran + timedelta(days=100) #arbitary max
-                next_run = datetime.fromtimestamp(next_run).replace(tzinfo=UTC).astimezone(tz=localtimezone)
                 for day in string_freq :
                     try:
                         if self.get_weekday(day) == today and last_ran > datetime.now().astimezone(tz=localtimezone):
