@@ -150,6 +150,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_monitor_zone_enabled = []
         self._unsub_monitor_zone_frequency = []
         self._unsub_monitor_zone_rain = []
+        self._unsub_monitor_zone_ignore_rain = []
         self._unsub_monitor_zone_adjust = []
 
     async def async_will_remove_from_hass(self) -> None:
@@ -175,6 +176,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         for unsub in self._unsub_monitor_zone_rain:
             unsub()
         self._unsub_monitor_zone_rain = []
+        for unsub in self._unsub_monitor_zone_ignore_rain:
+            unsub()
+        self._unsub_monitor_zone_ignore_rain = []
         for unsub in self._unsub_monitor_zone_adjust:
             unsub()
         self._unsub_monitor_zone_adjust = []
@@ -322,6 +326,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self._unsub_monitor_zone_frequency.append(async_track_state_change(self.hass, zone.run_freq(), self.update_next_run))
                 if zone.rain_sensor():
                     self._unsub_monitor_zone_rain.append(async_track_state_change(self.hass, zone.rain_sensor(), self.update_next_run))
+                if zone.ignore_rain_sensor():
+                    self._unsub_monitor_zone_ignore_rain.append(async_track_state_change(self.hass, zone.ignore_rain_sensor(), self.update_next_run))
                 if zone.water_adjust():
                     self._unsub_monitor_zone_adjust.append(async_track_state_change(self.hass, zone.water_adjust(), self.update_next_run))
 

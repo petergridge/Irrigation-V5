@@ -1,4 +1,4 @@
-'''Constants'''
+'''Constants.'''
 
 TIME_STR_FORMAT = "%H:%M:00"
 
@@ -35,13 +35,15 @@ ATTR_MONITOR_CONTROLLER = "controller_monitor"
 ATTR_DISABLE_ZONE = "disable_zone"
 ATTR_ENABLE_ZONE = "enable_zone"
 ATTR_RESET = "reset"
-CONST_ENTITY = "entity_id"
-CONST_SWITCH = "switch"
 ATTR_GROUPS = "groups"
 ATTR_GROUP = "group"
 ATTR_GROUP_NAME = "group_name"
 ATTR_HISTORICAL_FLOW = "historical_flow"
 ATTR_INTERLOCK = "interlock"
 ATTR_SCHEDULED = "scheduled"
+
 CONST_LATENCY = 10
 CONST_ZERO_FLOW_DELAY = 5
+CONST_OFF_DELAY = 5
+CONST_ENTITY = "entity_id"
+CONST_SWITCH = "switch"

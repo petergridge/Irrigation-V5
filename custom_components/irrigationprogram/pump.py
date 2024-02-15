@@ -5,9 +5,7 @@ import logging
 from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
 from homeassistant.core import HomeAssistant
 
-from .const import CONST_LATENCY, CONST_SWITCH
-
-CONST_OFF_DELAY = 2
+from .const import CONST_LATENCY, CONST_OFF_DELAY, CONST_SWITCH
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +31,12 @@ class PumpClass:
                     return True
             return False
 
+        def pump_running():
+            if self.hass.states.get(self._pump).state == "on":
+                return True
+            return False
+
+
         #Monitor the required zones
         while not self._stop:
 
@@ -50,7 +54,7 @@ class PumpClass:
                             break
 
             #check if the zone is running, delay incase another zone starts
-            if not zone_running():
+            if not zone_running() and pump_running():
                 await asyncio.sleep(self._off_delay)
                 if (
                     self.hass.states.is_state(self._pump, "on")
