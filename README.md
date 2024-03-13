@@ -55,10 +55,9 @@ The program issues Home Assistant [events](#events) so you can undertake other a
 
 There is also support for a [pump or master solenoid](#pump-or-master-solenoid), running [programs](#interlock) or [zones](#zone-group) sequentially or concurrently.
 
-The [custom card](https://github.com/petergridge/Irrigation-Card) renders the program configuration as a card. It exposes in addition to the state of each of the configured helpers:
+The [custom card](https://github.com/petergridge/Irrigation-Card) renders the program configuration as a card ans is installed automatically. It exposes in addition to the state of each of the configured helpers:
 * the remaining run time for the program and zone
 * the last run and/or next run details
-Some configuration items (show config) of this control do not affect the watering, but impact the behaviour of the custom card.
 
 This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
 
