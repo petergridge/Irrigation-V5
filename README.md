@@ -116,6 +116,8 @@ The rain sensor is defined in each zone. You can:
 * Define the same sensor for each zone 
 * Have a different sensor for different areas
 
+If the rain sensor (or other sensor) prevents scheduled watering the program will retry the next day.
+
 ### Time or Volume based watering
 Watering is by default time based, that is, will run for the minutes set in the *water* entity.
 
