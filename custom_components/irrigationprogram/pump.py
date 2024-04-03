@@ -26,10 +26,11 @@ class PumpClass:
         pump = {ATTR_ENTITY_ID: self._pump}
 
         def zone_running():
-            for zone in self._zones:
-                if self.hass.states.get(zone).state == "on":
-                    return True
-            return False
+            # for zone in self._zones:
+            #     if self.hass.states.get(zone).state == "on":
+            #         return True
+            # return False
+            return any(self.hass.states.get(zone).state == "on" for zone in self._zones)
 
         def pump_running():
             if self.hass.states.get(self._pump).state == "on":
@@ -77,6 +78,10 @@ class PumpClass:
     async def async_stop_monitoring(self, **kwargs):
         '''Flag turn off pump monitoring.'''
         self._stop = True
+        if self.hass.states.is_state(self._pump, "on"):
+            await self.hass.services.async_call(
+                CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._pump}
+            )
 
     async def latency_check(self, check = 'off'):
         '''Ensure switch has turned off and warn.'''

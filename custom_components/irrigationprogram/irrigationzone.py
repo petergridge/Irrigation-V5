@@ -3,7 +3,7 @@
 import asyncio
 
 #from datetime import datetime, timedelta, timezone, UTC
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 import logging
 import math
 from zoneinfo import ZoneInfo
@@ -325,15 +325,12 @@ class IrrigationZone:
         if isinstance(self.last_ran(),datetime):
             last_ran = self.last_ran().replace(hour=starthour, minute=startmin, second=00, microsecond=00)
 
-        #frq is not defined run based on the start time
-        if self.run_freq_value() is None:
-            next_run = datetime.now() #+ timedelta(days=-10)
-            next_run = datetime.fromtimestamp(next_run).replace(tzinfo=UTC).astimezone(tz=localtimezone)
-            self._next_run = next_run
-            return self._next_run
-
         try: # Frq is numeric
-            frq = int(float(self.run_freq_value()))
+            if self.run_freq_value() is None:
+                #frq is not defined default to daily
+                frq = 1
+            else:
+                frq = int(float(self.run_freq_value()))
             _LOGGER.debug('numeric frequency %s', frq)
             today_start_time = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             today_begin = datetime.now().astimezone(tz=localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)

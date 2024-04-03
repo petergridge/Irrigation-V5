@@ -102,7 +102,7 @@ toggle:
   fields:
     entity_id:
       name: Entity ID
-      description: Sensor to toggle
+      description: Sensor to toggle config visibility in card
       required: true
       selector:
         entity:
