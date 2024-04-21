@@ -284,8 +284,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
         data_schema = {}
         if user_input is not None:
-            if user_input[CONF_NAME].strip() == '':
-                errors[CONF_NAME] = "Program name is required"
+
             if not errors:
                 if newdata.get(ATTR_RUN_FREQ):
                     newdata.pop(ATTR_RUN_FREQ)
