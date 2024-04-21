@@ -125,7 +125,8 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         """Initiate a flow via the user interface."""
         errors: dict[str, str] = {}
         if user_input is not None:
-
+            if user_input[CONF_NAME].strip() == '':
+                errors[CONF_NAME] = "Program name is required"
             if not errors:
                 # Input is valid, set data.
                 self._data = user_input
@@ -283,6 +284,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
         data_schema = {}
         if user_input is not None:
+            if user_input[CONF_NAME].strip() == '':
+                errors[CONF_NAME] = "Program name is required"
             if not errors:
                 if newdata.get(ATTR_RUN_FREQ):
                     newdata.pop(ATTR_RUN_FREQ)
