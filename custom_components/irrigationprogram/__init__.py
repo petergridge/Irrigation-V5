@@ -62,6 +62,10 @@ async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) 
     """Update listener, called when the config entry options are changed."""
     await hass.config_entries.async_reload(entry.entry_id)
 
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle removal of an entry."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     #clean up any related helpers
@@ -89,7 +93,6 @@ async def async_setup(hass:HomeAssistant, config):
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/irrigationprogram/irrigation-card.js", str(version))
 
-
     async def async_stop_programs(call):
         '''Stop all running programs.'''
 
@@ -97,7 +100,7 @@ async def async_setup(hass:HomeAssistant, config):
             if data.get(ATTR_NAME) == call.data.get("ignore", ""):
                 await asyncio.sleep(1)
                 continue
-            device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME)))
+            device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME,'unknown')))
             servicedata = {ATTR_ENTITY_ID: device}
 
             #warn if the program is terminated by a service call
@@ -111,6 +114,31 @@ async def async_setup(hass:HomeAssistant, config):
 
     # register the service
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
+
+    async def async_list_config(call):
+        '''Stop all running programs.'''
+        output = chr(10)
+        for number,entry in enumerate(hass.config_entries.async_entries(DOMAIN)):
+            if entry.options == {}:
+                data = entry.data
+            else:
+                data = entry.options
+            output += "Program " + str(number+1) + chr(10)
+            for attr in data.items():
+                if attr[0] == "xx":
+                    continue
+                if attr[0] == "zones":
+                    for number,zone in enumerate(attr[1]):
+                        output += "  Zone " + str(number+1) + chr(10)
+                        for zoneattr in zone.items():
+                            output += "    " + str(zoneattr[0]) + ":" + str(zoneattr[1]) + chr(10)
+                else:
+                    output += "  " + str(attr[0]) + ":" + str(attr[1]) + chr(10)
+        _LOGGER.warning(output)
+
+    # register the service
+    hass.services.async_register(DOMAIN, "list_config", async_list_config)
+
 
     return True
 

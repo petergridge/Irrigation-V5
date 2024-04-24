@@ -362,11 +362,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Return the form of the next step.
             return await self.async_step_update_zone_data()
 
-        zonenumber = 0
-        for zone in self._data.get(ATTR_ZONES):
+        #zonenumber = 0
+        for zonenumber,zone in enumerate(self._data.get(ATTR_ZONES)):
             friendlyname = zone.get(ATTR_ZONE)
-            zonenumber += 1
-            text = (str(zonenumber) + ': ' +friendlyname)
+            #zonenumber += 1
+            text = (str(zonenumber) + ': ' + friendlyname)
             zones.append(text)
 
         list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})

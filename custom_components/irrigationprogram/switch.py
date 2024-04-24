@@ -746,18 +746,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # how to determine if two programs have the same start time?
             data = {"ignore": self.name}
             await self.hass.services.async_call(DOMAIN, "stop_programs", data)
-        # start pump monitoring
-        loop = asyncio.get_event_loop()
-        background_tasks = set()
-        for thispump in self._pumps:
-            task = loop.create_task(thispump.async_monitor())
-            background_tasks.add(task)
-            task.add_done_callback(background_tasks.discard)
+
         # use time at start to set the last ran attribute of the zones
         # all zones will have the last ran of the program start
         p_last_ran = dt_util.now()
 
-#        zones = await self.build_run_script(False)
         if len(zones) > 0:
             # raise event when the program starts
             event_data = {
@@ -772,6 +765,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             _LOGGER.debug("No zones to run")
             return
         self._state = True
+
+        # start pump monitoring
+        loop = asyncio.get_event_loop()
+        background_tasks = set()
+        for thispump in self._pumps:
+            task = loop.create_task(thispump.async_monitor())
+            background_tasks.add(task)
+            task.add_done_callback(background_tasks.discard)
 
         for count, zone in enumerate(zones):
             if self._state is False:
@@ -894,3 +895,5 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._run_zone = []
             for zone in self._irrigationzones:
                 await zone.async_turn_off()
+                # run is complete stop pump monitoring
+

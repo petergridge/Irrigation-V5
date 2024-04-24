@@ -1,6 +1,9 @@
 stop_programs:
   description: Stop any running programs and zones.
 
+list_config:
+  description: List current configuration to the log.
+
 run_zone:
   description: run a specific zone.
   fields:

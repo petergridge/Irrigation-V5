@@ -20,14 +20,8 @@ async def _async_create_entities(hass: HomeAssistant, config, unique_id):
     sensors = []
     #append multiple sensors
     for zone in config.get(ATTR_ZONES):
-        sensors.append(
-            ZoneStatus(
-                hass,
-                config.get(CONF_NAME),
-                zone.get(ATTR_ZONE).split(".")[1],
-                unique_id
-            )
-        )
+        status =ZoneStatus(hass,config.get(CONF_NAME),zone.get(ATTR_ZONE).split(".")[1],unique_id)
+        sensors.append(status)
     return sensors
 
 async def async_setup_entry(

@@ -21,7 +21,7 @@ class PumpClass:
 
     async def async_monitor(self, **kwargs):
         '''Monitor running zones to determine if pump is required.'''
-        _LOGGER.warning("Pump Class Started monitoring zones %s", self._zones)
+        _LOGGER.debug("Pump Class Started monitoring zones %s", self._zones)
         step = 1
         pump = {ATTR_ENTITY_ID: self._pump}
 
@@ -59,7 +59,7 @@ class PumpClass:
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_OFF, pump
                     )
-                    _LOGGER.warning('Pump Class zone monitor has turned off pump')
+                    _LOGGER.debug('Pump Class zone monitor has turned off pump')
 
                     #handle latency
                     for _ in range(CONST_LATENCY):
@@ -74,7 +74,7 @@ class PumpClass:
 
     async def async_stop_monitoring(self, **kwargs):
         '''Flag turn off pump monitoring.'''
-        _LOGGER.warning('Pump Class zone monitoring has stopped')
+        _LOGGER.debug('Pump Class zone monitoring has stopped')
         self._stop = True
         if self.hass.states.is_state(self._pump, "on"):
             await self.hass.services.async_call(
