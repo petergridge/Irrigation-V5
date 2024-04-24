@@ -10,7 +10,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 * Add list_configurtion service to support debugging
 * Prevent blank names for a program
 * Correct issue where program update was not recognised unless a restart
-* update HA calls being depricated
+* update HA calls being deprecated
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
