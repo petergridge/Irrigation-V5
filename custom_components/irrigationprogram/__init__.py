@@ -55,6 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             entry, Platform.SWITCH
         )
     )
+
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
     return True
 
@@ -138,7 +139,6 @@ async def async_setup(hass:HomeAssistant, config):
 
     # register the service
     hass.services.async_register(DOMAIN, "list_config", async_list_config)
-
 
     return True
 

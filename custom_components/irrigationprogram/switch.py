@@ -22,7 +22,7 @@ from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
-    async_track_state_change,
+    async_track_state_change_event,
 )
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.start import async_at_start
@@ -202,8 +202,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         timestamp = dt_util.as_timestamp(now)
         interval = 60
         delta = interval - (timestamp % interval)
-        next_interval = now + timedelta(seconds=delta)
-        return next_interval
+        return now + timedelta(seconds=delta)
 
     def format_attr(self, part_a, part_b):
         """Format attribute names."""
@@ -351,45 +350,45 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 )
             self._irrigationzones = zonedict.values()
             # set up to monitor these entities
-            self._unsub_monitor_start_time = async_track_state_change(
+            self._unsub_monitor_start_time = async_track_state_change_event(
                 self.hass, self._start_time, self.update_next_run
             )
             if self._irrigation_on:
-                self._unsub_monitor_program_enabled = async_track_state_change(
+                self._unsub_monitor_program_enabled = async_track_state_change_event(
                     self.hass, self._irrigation_on, self.update_next_run
                 )
             if self._run_freq:
-                self._unsub_monitor_program_frequency = async_track_state_change(
+                self._unsub_monitor_program_frequency = async_track_state_change_event(
                     self.hass, self._run_freq, self.update_next_run
                 )
             for zone in self._irrigationzones:
                 if zone.enable_zone():
                     self._unsub_monitor_zone_enabled.append(
-                        async_track_state_change(
+                        async_track_state_change_event(
                             self.hass, zone.enable_zone(), self.update_next_run
                         )
                     )
                 if zone.run_freq():
                     self._unsub_monitor_zone_frequency.append(
-                        async_track_state_change(
+                        async_track_state_change_event(
                             self.hass, zone.run_freq(), self.update_next_run
                         )
                     )
                 if zone.rain_sensor():
                     self._unsub_monitor_zone_rain.append(
-                        async_track_state_change(
+                        async_track_state_change_event(
                             self.hass, zone.rain_sensor(), self.update_next_run
                         )
                     )
                 if zone.ignore_rain_sensor():
                     self._unsub_monitor_zone_ignore_rain.append(
-                        async_track_state_change(
+                        async_track_state_change_event(
                             self.hass, zone.ignore_rain_sensor(), self.update_next_run
                         )
                     )
                 if zone.water_adjust():
                     self._unsub_monitor_zone_adjust.append(
-                        async_track_state_change(
+                        async_track_state_change_event(
                             self.hass, zone.water_adjust(), self.update_next_run
                         )
                     )
@@ -689,7 +688,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         for thiszone in zones:
             attr_value = self._extra_attrs["{}{}".format(thiszone.name(), "_remaining")]
             attr_runtime = sum(
-                x * int(t) for x, t in zip([3600, 60, 1], attr_value.split(":"))
+                x * int(t) for x, t in zip([3600, 60, 1], attr_value.split(":"), strict=False)
             )
             self._program_remaining += attr_runtime
         self._extra_attrs[ATTR_REMAINING] = self.format_run_time(
