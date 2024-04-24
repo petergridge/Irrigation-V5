@@ -5,35 +5,12 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### Coming in V5.4.5, December 2023
-
-* **BREAKING CHANGE: Remove group functionality**.
-  * Grouping zones can now be achieved using a switch [group helper](https://www.home-assistant.io/integrations/group/) provided by Home Assistant to present multiple switches as a single switch that can be configured as a zone in this component.
-  * There is some loss of functionality, in this new model all switches will have the same parameters, you will no longer be able to have a goup of zones that have different watering times but run concurrently.
-  * The helper grouping model is supported already in the current version.
-* Correct numeric frequency problem
-* Fix issue introduced with V2023.11 of HomeAssistant
-### V5.4.2
-* Handle scenario where zone switch becomes unavailable mid run
-   * Add irrigation_event/zone_became_unavailable event see [Events](#events)
-### V5.4.1
-* Codify the behaviour when a zone or program is disabled see [Unscheduled execution of a zone or program](#unscheduled-execution-of-a-zone-or-program)
-* Remove warning messages
-### In V5.4
-* Support for multiple start times, e.g. allowing a program to start at 10:00:00, 14:30:00 and 18:30:00. see [start_time](#start-time)
-* Fix delay introduced when offline devices specified
-### In V5.3.5
-* Custom Card deployed with this component, no need to install separately.
-    * Remove the custom card from the dashboard.
-    * Uninstall the HACS Custom Card.
-    * Install V5.3 and restart
-    * There have been reports that an additional restart has been required for some users
-* Custom Card updated, program/zone setting can be expanded independently.
-    * Show Config option has been replaced with automatically created sensors.
-* Custom Card updated to add configuration form
-* Fixed issue with WeatherHistory Frequency and water adjustment.
-* Added support for RainBird controller 
-* Add scheduled/manual options for program simulation
+### V5.4.13
+* Stop pump monitoring starting when program is not required to run
+* Add list_configurtion service to support debugging
+* Prevent blank names for a program
+* Correct issue where program update was not recognised unless a restart
+* update HA calls being depricated
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
@@ -375,6 +352,19 @@ run_simulation:
             integration: irrigationprogram
 ```
 ## REVISION HISTORY
+### V5.4.13
+* Stop pump monitoring starting when program is not required to run
+* Add list_configurtion service to support debugging
+* Prevent blank names for a program
+* Correct issue where program update was not recognised unless a restart
+* update HA calls being depricated
+### V5.4.5
+* **BREAKING CHANGE: Remove group functionality**.
+  * Grouping zones can now be achieved using a switch [group helper](https://www.home-assistant.io/integrations/group/) provided by Home Assistant to present multiple switches as a single switch that can be configured as a zone in this component.
+  * There is some loss of functionality, in this new model all switches will have the same parameters, you will no longer be able to have a goup of zones that have different watering times but run concurrently.
+  * The helper grouping model is supported already in the current version.
+* Correct numeric frequency problem
+* Fix issue introduced with V2023.11 of HomeAssistant
 ### V5.4.2
 * Handle scenario where zone switch becomes unavailable mid run
    * Add irrigation_event/zone_became_unavailable event see [Events](#events)
