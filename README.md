@@ -358,6 +358,11 @@ run_simulation:
 * Prevent blank names for a program
 * Correct issue where program update was not recognised unless a restart
 * update HA calls being depricated
+### V5.4.10
+* Fix issue with pump monitoring
+* Fix issue when no frequency is specified
+* Fix issue when program manual run overlaps with scheduled run of the program
+* add icons.json
 ### V5.4.5
 * **BREAKING CHANGE: Remove group functionality**.
   * Grouping zones can now be achieved using a switch [group helper](https://www.home-assistant.io/integrations/group/) provided by Home Assistant to present multiple switches as a single switch that can be configured as a zone in this component.
