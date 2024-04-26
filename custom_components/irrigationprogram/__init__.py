@@ -5,8 +5,8 @@ import asyncio
 import contextlib
 from ctypes.wintypes import BOOL
 import logging
-from pathlib import Path
 
+#from pathlib import Path
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
@@ -19,8 +19,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import slugify
 
-from . import utils
-
+#from . import utils
 #from homeassistant import config_entries
 from .const import (
     ATTR_DEVICE_TYPE,
@@ -87,12 +86,12 @@ async def async_setup(hass:HomeAssistant, config):
     '''Irrigation object.'''
     hass.data.setdefault(DOMAIN, {})
 
-    # 1. Serve lovelace card
-    path = Path(__file__).parent / "www"
-    utils.register_static_path(hass.http.app, "/irrigationprogram/irrigation-card.js", path / "irrigation-card.js")
-    # 2. Add card to resources
-    version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
-    await utils.init_resource(hass, "/irrigationprogram/irrigation-card.js", str(version))
+    # # 1. Serve lovelace card
+    # path = Path(__file__).parent / "www"
+    # utils.register_static_path(hass.http.app, "/irrigationprogram/irrigation-card.js", path / "irrigation-card.js")
+    # # 2. Add card to resources
+    # version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
+    # await utils.init_resource(hass, "/irrigationprogram/irrigation-card.js", str(version))
 
     async def async_stop_programs(call):
         '''Stop all running programs.'''
@@ -105,12 +104,16 @@ async def async_setup(hass:HomeAssistant, config):
             servicedata = {ATTR_ENTITY_ID: device}
 
             #warn if the program is terminated by a service call
-            if hass.states.get(device).state == "on":
-                if call.data.get("ignore", ""):
-                    _LOGGER.warning("Irrigation Program '%s' terminated by '%s'", data.get(ATTR_NAME), call.data.get("ignore", "") )
-                else:
-                    _LOGGER.warning("Irrigation Program '%s' terminated ", data.get(ATTR_NAME))
-                await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
+            try:
+                if hass.states.get(device).state == "on":
+                    if call.data.get("ignore", ""):
+                        _LOGGER.warning("Irrigation Program '%s' terminated by '%s'", data.get(ATTR_NAME), call.data.get("ignore", "") )
+                    else:
+                        _LOGGER.warning("Irrigation Program '%s' terminated ", data.get(ATTR_NAME))
+                    await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
+            except AttributeError:
+                _LOGGER.warning('Could not find Program implementation %s, ignored', device)
+                continue
     # END async_stop_switches
 
     # register the service
