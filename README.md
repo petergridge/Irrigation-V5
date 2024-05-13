@@ -5,12 +5,9 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V5.4.13
-* Stop pump monitoring starting when program is not required to run
-* Add list_configurtion service to support debugging
-* Prevent blank names for a program
-* Correct issue where program update was not recognised unless a restart
-* update HA calls being deprecated
+### V5.4.15
+* Add water source montioring as an attribute of a zone.
+* Stop zone attempting to run when the run time is 0.
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
@@ -162,6 +159,11 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 ### Pump or master solenoid
 You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The pump will shut off a few seconds after a zone has completed alowing a smooth transition between zones. The pump is only started and monitored when water in started by the custom control.
 
+### Water source Monitoring
+You can define a binary sensor that monitors the availability of the water source. For example if your well can run low on water this will have the following impact:
+- If a zone is running the zone will be stopped.
+- A zone will not start until the sensor inticated (on) that water is available.
+
 ### Zone Group
 You can optionally configure zones to run concurrently. 
 Create a switch group, [group helper](https://www.home-assistant.io/integrations/group/). This feature allows you to group switches together to operate as a single switch.
@@ -297,6 +299,7 @@ The definition of the YAML configuration:
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[wait](#eco-feature)|input_number |Optional|Wait time,in minutes, of the water/wait/repeat ECO option. The effective irrigation time of a zone is water * repeat. Example : If 5 minutes is define in wait and repeat = 2, the final watering duration will be 10 minutes but the run time will be 15 minutes|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[repeat](#eco-feature)|input_number |Optional|The number of cycles to run water/wait/repeat|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[pump](#pump-or-master-solenoid)|switch|Optional|Define the switch that will turn on the pump or master soleniod|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[water_source_active](#water-source-monitoring)|binary_sensor|Optional|Sensore to monitor if the water source, e.g. well has water|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[flow_sensor](#time-or-volume-based-watering)|sensor|Optional|Provides flow rate per minute. The water value will now be assessed as volume|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[rain_sensor](#rain-sensor-feature)|binary_sensor|Optional|True or On will prevent the irrigation starting|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ignore_rain_sensor|input_boolean |Optional|Ignore rain sensor allows a zone to run even if the rain sensor is active|
@@ -350,8 +353,14 @@ run_simulation:
       selector:
         entity:
             integration: irrigationprogram
+
+list_config:
+  description: List current configuration to the log.
 ```
 ## REVISION HISTORY
+### V5.4.15
+* Add water source montioring as an attribute of a zone.
+* Stop zone attempting to run when the run time is 0.
 ### V5.4.13
 * Stop pump monitoring starting when program is not required to run
 * Add list_configurtion service to support debugging
