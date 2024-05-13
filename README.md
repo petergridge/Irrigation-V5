@@ -8,7 +8,8 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 ### V5.4.15 - coming soon
 * Add water source montioring as an attribute of a zone.
 * Stop zone attempting to run when the run time is 0.
-* Fix custom card deployment
+* Fix custom card deployment.
+* Improve treatment of unavailable zone switches.
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
@@ -363,6 +364,7 @@ list_config:
 * Add water source montioring as an attribute of a zone.
 * Stop zone attempting to run when the run time is 0.
 * Fix custom card deployment.
+* Improve treatment of unavailable zone switches.
 ### V5.4.13
 * Stop pump monitoring starting when program is not required to run
 * Add list_configurtion service to support debugging
