@@ -160,7 +160,7 @@ The ECO feature allows multiple short watering cycles to be configure for a zone
 ### Pump or master solenoid
 You can optionally define a pump/master soleniod to turn on concurrently with the zone. The pump class then monitors the zones that require it and will remain active during zone transitions. The pump will shut off a few seconds after a zone has completed alowing a smooth transition between zones. The pump is only started and monitored when water in started by the custom control.
 
-### Water source Monitoring
+### Water source monitoring
 You can define a binary sensor that monitors the availability of the water source. For example if your well can run low on water this will have the following impact:
 - If a zone is running the zone will be stopped.
 - A zone will not start until the sensor inticated (on) that water is available.
