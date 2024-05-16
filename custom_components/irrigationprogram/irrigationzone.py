@@ -25,6 +25,7 @@ from .const import (
     ATTR_WAIT,
     ATTR_WATER,
     ATTR_WATER_ADJUST,
+    ATTR_WATER_SOURCE,
     ATTR_ZONE,
     CONST_LATENCY,
     CONST_SWITCH,
@@ -71,6 +72,7 @@ class IrrigationZone:
         self._state = "off"
         self._next_run = "off"
         self._stop = False
+        self._water_source = zone.get(ATTR_WATER_SOURCE)
         self._device_type = device_type
 
     def name(self):
@@ -143,6 +145,18 @@ class IrrigationZone:
         if self._water_adjust is not None:
             water_adjust_value = float(self.hass.states.get(self._water_adjust).state)
         return water_adjust_value
+
+
+    def water_source(self):
+        '''Water adjustment entity attribute.'''
+        return self._water_source
+
+    def water_source_value(self):
+        '''Determine watering adjustment.'''
+        water_source_value = True
+        if self._water_source is not None:
+            water_source_value = self.hass.states.is_state(self._water_source, "on")
+        return water_source_value
 
     def flow_sensor(self):
         '''Flow sensor attribute.'''
@@ -304,6 +318,10 @@ class IrrigationZone:
             self._next_run = "disabled"
             _LOGGER.debug('disabled')
             return self._next_run
+        if self.water_value() == 0:
+            self._next_run = "disabled"
+            _LOGGER.debug('disabled')
+            return self._next_run
         if program_enabled is False:
             self._next_run =  "program disabled"
             _LOGGER.debug('program disabled')
@@ -317,6 +335,9 @@ class IrrigationZone:
             return self._next_run
         if self.water_adjust_value() <= 0:
             self._next_run = "adjusted off"
+            return self._next_run
+        if self.water_source_value() is False:
+            self._next_run = "No water source"
             return self._next_run
 
         localtimezone = ZoneInfo(self.hass.config.time_zone)
@@ -356,7 +377,7 @@ class IrrigationZone:
                 _LOGGER.debug('starthour %s, startmin %s, next run: %s', starthour, startmin,next_run)
 
             self._next_run =  next_run
-            return self._next_run
+            return self._next_run  # noqa: TRY300
 
         except ValueError:
             #Frq is Alpha
@@ -412,6 +433,14 @@ class IrrigationZone:
         if self._next_run in  ["disabled", "unavailable"]:
             _LOGGER.debug('should run false, disabled')
             return False
+        if self.water_source_value() is False:
+            _LOGGER.debug('should run false, water source')
+            return False
+
+        if self.water_value() == 0:
+            _LOGGER.debug('should run false, water source')
+            return False
+
 
         if scheduled is True:
             if self.water_adjust_value() == 0:
@@ -476,9 +505,11 @@ class IrrigationZone:
                     else:
                         break
                 else:
+                    _LOGGER.warning ("Significant latency has been detected, zone switch may not be updating state correctly, unexpected behaviour may occur, %s", self._switch)
                     continue
 
             #track the watering
+
             if self._flow_sensor is not None:
                 volume_remaining = self.water_value() * water_adjust_value
                 volume_delivered = 0
@@ -492,7 +523,7 @@ class IrrigationZone:
                         self._stop = True
                         break
                     #flow sensor has failed or no water is being provided
-                    if self.flow_sensor_value() == 0:
+                    if self.flow_sensor_value() == 0 or self.water_source_value() is False:
                         zeroflowcount += 1
                         self._stop = True
                         if zeroflowcount > CONST_ZERO_FLOW_DELAY:
@@ -510,6 +541,15 @@ class IrrigationZone:
                     if self.check_switch_state() is False:
                         self._stop = True
                         break
+                    #no water is being provided
+                    if self.water_source_value() is False:
+                        zeroflowcount += 1
+                        self._stop = True
+                        if zeroflowcount > CONST_ZERO_FLOW_DELAY:
+                            _LOGGER.warning("No water source detected for %s seconds, turning off solenoid to allow program to complete",CONST_ZERO_FLOW_DELAY)
+                            break
+                    else:
+                        zeroflowcount = 0
 
             if self._stop:
                 break

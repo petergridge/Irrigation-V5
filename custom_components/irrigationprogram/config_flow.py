@@ -30,6 +30,7 @@ from .const import (
     ATTR_WAIT,
     ATTR_WATER,
     ATTR_WATER_ADJUST,
+    ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONES,
     DOMAIN,
@@ -75,6 +76,7 @@ ZONE_ATTR = [
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": ["input_select","sensor"]})],
     [False, ATTR_RAIN_SENSOR, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
+    [False, ATTR_WATER_SOURCE, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
 ]
 

@@ -151,6 +151,7 @@
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
 					"enable_zone": "Schalter um Zone zu de-/aktivieren",
+					"water_source_active": "Water source entity",
 					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},
@@ -223,6 +224,7 @@
 					"repeat": "Entity für Wiederholungsanzahl",
 					"ignore_rain_sensor": "Entity um Regensensor zu ignorieren",
 					"enable_zone": "Entity um Zone zu aktivieren",
+					"water_source_active": "Water source entity",
 					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},
@@ -242,6 +244,7 @@
 					"repeat": "Entity für Wiederholungs-Anzahl",
 					"ignore_rain_sensor": "Entity zum Ignorieren des Regensensors",
 					"enable_zone": "Zonenschalter",
+					"water_source_active": "Water source entity",
 					"show_config": "Entity um Einstellungen anzuzeigen"
 				}
 			},

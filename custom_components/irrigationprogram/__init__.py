@@ -89,10 +89,11 @@ async def async_setup(hass:HomeAssistant, config):
 
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
-    utils.register_static_path(hass.http.app, "/irrigationprogram/irrigation-card.js", path / "irrigation-card.js")
+    utils.register_static_path(hass.http.app, "/irrigationprogram/www/irrigation-card.js", path / "irrigation-card.js")
+
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
-    await utils.init_resource(hass, "/irrigationprogram/irrigation-card.js", str(version))
+    await utils.init_resource(hass, "/irrigationprogram/www/irrigation-card.js", str(version))
 
     async def async_stop_programs(call):
         '''Stop all running programs.'''

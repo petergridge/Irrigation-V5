@@ -150,6 +150,7 @@
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
 					"enable_zone": "Enable zone entity",
+					"water_source_active": "Water source entity",
 					"show_config": "Show configuration entity"
 				}
 			},
@@ -222,6 +223,7 @@
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
 					"enable_zone": "Enable zone entity",
+					"water_source_active": "Water source entity",
 					"show_config": "Show configuration entity"
 				}
 			},
@@ -241,6 +243,7 @@
 					"repeat": "Repeat count entity",
 					"ignore_rain_sensor": "Ignore rain sensor entity",
 					"enable_zone": "Enable zone entity",
+					"water_source_active": "Water source entity",
 					"show_config": "Show configuration entity"
 				}
 			},

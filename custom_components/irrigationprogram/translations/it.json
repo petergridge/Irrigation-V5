@@ -151,6 +151,7 @@
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
 					"enable_zone": "Entità attivazione zona",
+					"water_source_active": "Water source entity",
 					"show_config": "Entità mostra configurazione"
 				}
 			},
@@ -223,6 +224,7 @@
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
 					"enable_zone": "Entità attivazione zona",
+					"water_source_active": "Water source entity",
 					"show_config": "Entità mostra configurazione"
 				}
 			},
@@ -242,6 +244,7 @@
 					"repeat": "Entità contatore ripetizioni",
 					"ignore_rain_sensor": "Entità ignora sensore pioggia",
 					"enable_zone": "Entità attivazione zona",
+					"water_source_active": "Water source entity",
 					"show_config": "Entità mostra configurazione"
 				}
 			},

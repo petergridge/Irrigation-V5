@@ -52,9 +52,10 @@ from .const import (
     ATTR_WAIT,
     ATTR_WATER,
     ATTR_WATER_ADJUST,
+    ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONES,
-    CONST_LATENCY,
+#    CONST_LATENCY,
     CONST_SWITCH,
     DOMAIN,
     TIME_STR_FORMAT,
@@ -151,15 +152,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._program_remaining = 0
         self._unsub_point_in_time = None
         self._unsub_start = None
-        self._unsub_monitor_program_enabled = None
-        self._unsub_monitor_program_frequency = None
-        self._unsub_monitor_start_time = None
-        self._unsub_monitor_zone_enabled = []
-        self._unsub_monitor_zone_frequency = []
-        self._unsub_monitor_zone_rain = []
-        self._unsub_monitor_zone_ignore_rain = []
-        self._unsub_monitor_zone_adjust = []
-
+        self._unsub_monitor = None
     async def async_will_remove_from_hass(self) -> None:
         """Cancel next update."""
         if self._unsub_point_in_time:
@@ -168,31 +161,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._unsub_start:
             self._unsub_start()
             self._unsub_start = None
-        if self._unsub_monitor_program_enabled:
-            self._unsub_monitor_program_enabled()
-            self._unsub_monitor_program_enabled = None
-        if self._unsub_monitor_program_frequency:
-            self._unsub_monitor_program_frequency()
-            self._unsub_monitor_program_frequency = None
-        for unsub in self._unsub_monitor_zone_enabled:
-            unsub()
-        self._unsub_monitor_zone_enabled = []
-        for unsub in self._unsub_monitor_zone_frequency:
-            unsub()
-        self._unsub_monitor_zone_frequency = []
-        for unsub in self._unsub_monitor_zone_rain:
-            unsub()
-        self._unsub_monitor_zone_rain = []
-        for unsub in self._unsub_monitor_zone_ignore_rain:
-            unsub()
-        self._unsub_monitor_zone_ignore_rain = []
-        for unsub in self._unsub_monitor_zone_adjust:
-            unsub()
-        self._unsub_monitor_zone_adjust = []
-
-        if self._unsub_monitor_start_time:
-            self._unsub_monitor_start_time()
-            self._unsub_monitor_start_time = None
+        #stop monitoring
+        self._unsub_monitor()
+        self._unsub_monitor = None
 
         await self.async_turn_off()
 
@@ -350,48 +321,30 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 )
             self._irrigationzones = zonedict.values()
             # set up to monitor these entities
-            self._unsub_monitor_start_time = async_track_state_change_event(
-                self.hass, self._start_time, self.update_next_run
-            )
+            monitor = [self._start_time]
             if self._irrigation_on:
-                self._unsub_monitor_program_enabled = async_track_state_change_event(
-                    self.hass, self._irrigation_on, self.update_next_run
-                )
+                monitor.append(self._irrigation_on)
             if self._run_freq:
-                self._unsub_monitor_program_frequency = async_track_state_change_event(
-                    self.hass, self._run_freq, self.update_next_run
-                )
+                monitor.append(self._run_freq)
             for zone in self._irrigationzones:
                 if zone.enable_zone():
-                    self._unsub_monitor_zone_enabled.append(
-                        async_track_state_change_event(
-                            self.hass, zone.enable_zone(), self.update_next_run
-                        )
-                    )
+                    monitor.append(zone.enable_zone())
                 if zone.run_freq():
-                    self._unsub_monitor_zone_frequency.append(
-                        async_track_state_change_event(
-                            self.hass, zone.run_freq(), self.update_next_run
-                        )
-                    )
+                    monitor.append(zone.run_freq())
                 if zone.rain_sensor():
-                    self._unsub_monitor_zone_rain.append(
-                        async_track_state_change_event(
-                            self.hass, zone.rain_sensor(), self.update_next_run
-                        )
-                    )
+                    monitor.append(zone.rain_sensor())
+                if zone.water_source():
+                    monitor.append(zone.water_source())
                 if zone.ignore_rain_sensor():
-                    self._unsub_monitor_zone_ignore_rain.append(
-                        async_track_state_change_event(
-                            self.hass, zone.ignore_rain_sensor(), self.update_next_run
-                        )
-                    )
+                    monitor.append(zone.ignore_rain_sensor())
                 if zone.water_adjust():
-                    self._unsub_monitor_zone_adjust.append(
-                        async_track_state_change_event(
-                            self.hass, zone.water_adjust(), self.update_next_run
-                        )
-                    )
+                    monitor.append(zone.water_adjust())
+                if zone.water():
+                    monitor.append(zone.water())
+
+            self._unsub_monitor = async_track_state_change_event(
+                self.hass, tuple(monitor), self.update_next_run
+            )
 
             # build attributes in run order
             zones = await self.build_run_script(True)
@@ -446,6 +399,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self._extra_attrs[self.format_attr(z_name, ATTR_WATER_ADJUST)] = (
                         zone.water_adjust()
                     )
+                if zone.water_source() is not None:
+                    self._extra_attrs[self.format_attr(z_name, ATTR_WATER_SOURCE)] = (
+                        zone.water_source()
+                    )
+
                 if zone.run_freq() is not None and self._run_freq != zone.run_freq():
                     self._extra_attrs[self.format_attr(z_name, ATTR_RUN_FREQ)] = (
                         zone.run_freq()
@@ -786,13 +744,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         await asyncio.sleep(self.inter_zone_delay())
             # start zone
             if self._state is True:
-                background_tasks = set()
-                loop = asyncio.get_event_loop()
-                task = loop.create_task(zone.async_turn_on(self.scheduled))
-                background_tasks.add(task)
-                task.add_done_callback(background_tasks.discard)
-                await asyncio.sleep(1)
-                # switch has gone off-line
+               # switch has gone off-line
                 if zone.check_switch_state() is None:
                     _LOGGER.warning("Switch %s has become unavailable", zone.name())
                     event_data = {
@@ -809,19 +761,39 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     self.hass.bus.async_fire("irrigation_event", event_data)
                     continue
 
+                background_tasks = set()
+                loop = asyncio.get_event_loop()
+                task = loop.create_task(zone.async_turn_on(self.scheduled))
+                background_tasks.add(task)
+                task.add_done_callback(background_tasks.discard)
+                await asyncio.sleep(1)
+
                 # latency issue loop a few times to see if the switch turns on
                 # otherwise give a warning and skip this switch
-                for _ in range(CONST_LATENCY):
-                    if zone.check_switch_state() is False:
-                        await asyncio.sleep(1)
-                    else:
-                        break
-                else:
-                    _LOGGER.warning(
-                        "Significant latency has been detected, unexpected behaviour may occur, %s",
-                        zone.switch(),
-                    )
-                    continue
+                # for _ in range(CONST_LATENCY):
+                #     if zone.check_switch_state() is False:
+                #         await asyncio.sleep(1)
+                #     else:
+                #         zone_running = True
+                #         break
+                # else:
+                #     zone_running = False
+                #     _LOGGER.warning(
+                #         "Significant latency has been detected, unexpected behaviour may occur, %s",
+                #         zone.switch(),
+                #     )
+                    # attr = self.format_attr(
+                    #     zone.name(),
+                    #     ATTR_REMAINING,
+                    # )
+                    # remaining_time = self.format_run_time(0)
+                    # self._extra_attrs[attr] = remaining_time
+
+                    # # calculate the remaining time for the program
+                    # await self.async_calculate_program_remaining(zones)
+                    # self.async_schedule_update_ha_state()
+
+                    #continue
 
                 event_data = {
                     "action": "zone_turned_on",

@@ -41,8 +41,9 @@ ATTR_GROUP_NAME = "group_name"
 ATTR_HISTORICAL_FLOW = "historical_flow"
 ATTR_INTERLOCK = "interlock"
 ATTR_SCHEDULED = "scheduled"
+ATTR_WATER_SOURCE = "water_source_active"
 
-CONST_LATENCY = 10
+CONST_LATENCY = 5
 CONST_ZERO_FLOW_DELAY = 5
 CONST_OFF_DELAY = 5
 CONST_ENTITY = "entity_id"
