@@ -6,7 +6,7 @@
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
 ### V5.4.15 - coming soon
-* Add water source montioring as an attribute of a zone.
+* Add water source monitoring as an attribute of a zone.
 * Stop zone attempting to run when the run time is 0.
 * Fix custom card deployment.
 * Improve treatment of unavailable zone switches.
