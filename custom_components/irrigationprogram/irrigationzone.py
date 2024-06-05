@@ -296,8 +296,8 @@ class IrrigationZone:
 
     def next_run(self,firststarttime, starttime, program_enabled = True):
         '''Determine when a zone will next attempt to run.'''
-        _LOGGER.debug(self.name())
-        _LOGGER.debug("firststarttime: %s, starttime %s",firststarttime,starttime)
+        #_LOGGER.debug("zone - next_run - " + self.name())
+        #_LOGGER.debug("zone - next_run - firststarttime: %s, starttime %s",firststarttime,starttime)
 
         #the next time to run in a multi start config
         if starttime:
@@ -316,19 +316,19 @@ class IrrigationZone:
 
         if self.enable_zone_value() is False:
             self._next_run = "disabled"
-            _LOGGER.debug('disabled')
+            #_LOGGER.debug('zone - next_run - disabled')
             return self._next_run
         if self.water_value() == 0:
             self._next_run = "disabled"
-            _LOGGER.debug('disabled')
+            #_LOGGER.debug('zone - next_run - disabled')
             return self._next_run
         if program_enabled is False:
             self._next_run =  "program disabled"
-            _LOGGER.debug('program disabled')
+            #_LOGGER.debug('zone - next_run - program disabled')
             return self._next_run
         if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
             self._next_run = "unavailable"
-            _LOGGER.debug('unavailable')
+            #_LOGGER.debug('zone - next_run - unavailable')
             return self._next_run
         if self.rain_sensor_value() is True and self.ignore_rain_sensor_value() is False:
             self._next_run = "raining"
@@ -352,29 +352,30 @@ class IrrigationZone:
                 frq = 1
             else:
                 frq = int(float(self.run_freq_value()))
-            _LOGGER.debug('numeric frequency %s', frq)
+            #_LOGGER.debug('zone - next_run - numeric frequency: %s', frq)
             today_start_time = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             today_begin = datetime.now().astimezone(tz=localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)
             last_ran_day_begin = last_ran.replace(hour=00, minute=00, second=00, microsecond=00)
             if today_start_time > datetime.now().astimezone(tz=localtimezone) and last_ran_day_begin == today_begin:
                 #time is in the future and it previously ran today, supports multiple start times
-                _LOGGER.debug('start_time > now, and last ran sometime today')
+                #_LOGGER.debug('zone - next_run - start_time > now, and last ran sometime today')
                 next_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             elif (today_start_time - last_ran).total_seconds()/86400 < frq:
                 #frequency has not been satisfied
                 #set last ran datetime to the first runtime of the series and add the frequency
                 next_run = last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
-                _LOGGER.debug('frequency has not been reached')
-                _LOGGER.debug('last ran: %s, frq: %s, next run: %s', last_ran,frq,next_run)
+                #_LOGGER.debug('zone - next_run - frequency has not been reached')
+                #_LOGGER.debug('zone - next_run - last ran: %s, frq: %s, next run: %s', last_ran,frq,next_run)
             else:
                 #it has been sometime since the zone ran
                 next_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 if today_start_time < datetime.now().astimezone(tz=localtimezone):
-                    _LOGGER.debug('it has been sometime since the zone ran, run tomorrow')
+                    #_LOGGER.debug('zone - next_run - it has been sometime since the zone ran, run tomorrow')
                     next_run += timedelta(days=1)
                 else:
-                    _LOGGER.debug('it has been sometime since the zone ran, run today')
-                _LOGGER.debug('starthour %s, startmin %s, next run: %s', starthour, startmin,next_run)
+                    #_LOGGER.debug('zone - next_run - it has been sometime since the zone ran, run today')
+                    pass
+                #_LOGGER.debug('zone - next_run - starthour %s, startmin %s, next run: %s', starthour, startmin,next_run)
 
             self._next_run =  next_run
             return self._next_run  # noqa: TRY300
@@ -431,25 +432,25 @@ class IrrigationZone:
         '''Determine if the zone should run.'''
         #zone has been turned off or is offline
         if self._next_run in  ["disabled", "unavailable"]:
-            _LOGGER.debug('should run false, disabled')
+            _LOGGER.debug('zone - should - run false, disabled')
             return False
         if self.water_source_value() is False:
-            _LOGGER.debug('should run false, water source')
+            _LOGGER.debug('zone - next_run - should run false, water source')
             return False
 
         if self.water_value() == 0:
-            _LOGGER.debug('should run false, water source')
+            _LOGGER.debug('zone - next_run - should run false, water source')
             return False
 
 
         if scheduled is True:
             if self.water_adjust_value() == 0:
-                _LOGGER.debug('should run false, adjusted')
+                _LOGGER.debug('zone - next_run - should run false, adjusted')
                 return False
 
             # Only stop the zone if it is a scheduled run
             if self.is_raining() is True:
-                _LOGGER.debug('should run false, raining')
+                _LOGGER.debug('zone - next_run - should run false, raining')
                 return False
 
             #not time to run yet

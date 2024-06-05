@@ -19,7 +19,7 @@ class PumpClass:
         self._stop = False
         self._off_delay = CONST_OFF_DELAY
 
-    async def async_monitor(self, **kwargs):
+    async def async_monitor(self):
         '''Monitor running zones to determine if pump is required.'''
         _LOGGER.debug("Pump Class Started monitoring zones %s", self._zones)
         step = 1
@@ -72,7 +72,7 @@ class PumpClass:
         # reset for next call
         self._stop = False
 
-    async def async_stop_monitoring(self, **kwargs):
+    async def async_stop_monitoring(self):
         '''Flag turn off pump monitoring.'''
         _LOGGER.debug('Pump Class zone monitoring has stopped')
         self._stop = True

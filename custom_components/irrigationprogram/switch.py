@@ -185,7 +185,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_point_in_time = async_track_point_in_utc_time(
             self.hass, self.point_in_time_listener, self.get_next_interval()
         )
-        time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
+#        time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
+        localtimezone = ZoneInfo(self.hass.config.time_zone)
+        time = datetime.now().astimezone(tz=localtimezone).strftime(TIME_STR_FORMAT)
         string_times = self.start_time_value()
         string_times = (
             string_times.replace(" ", "")
@@ -208,6 +210,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             task = loop.create_task(self.async_turn_on())
             background_tasks.add(task)
             task.add_done_callback(background_tasks.discard)
+            _LOGGER.debug('Scheduled run executed')
         self.async_write_ha_state()
 
     @callback
@@ -215,9 +218,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self, entity=None, old_status=None, new_status=None, single_zone=None
     ):
         """Update the next run callback."""
-        _LOGGER.debug("_____________________")
+        _LOGGER.debug("update_next_run - Something has changed update the next run time")
         # determine next run time
-        time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
+        #time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
+        localtimezone = ZoneInfo(self.hass.config.time_zone)
+        time = datetime.now().astimezone(tz=localtimezone).strftime(TIME_STR_FORMAT)
+
         string_times = self.start_time_value()
         string_times = (
             string_times.replace(" ", "")
@@ -229,13 +235,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         )
         string_times.sort()
         next_start_time = string_times[0]
-        _LOGGER.debug("next start time: %s", next_start_time)
+        #_LOGGER.debug("update_next_run - next start time: %s", next_start_time)
         for stime in string_times:
-            _LOGGER.debug("stime: %s", stime)
+            _LOGGER.debug("update_next_run - stime: %s", stime)
             if not re.search("^([0-2]?[0-9]:[0-5][0-9]:00)", stime):
                 continue
             if stime > time:
-                _LOGGER.debug("stime %s > time %s", stime, time)
+                #_LOGGER.debug("update_next_run - stime %s > time %s", stime, time)
                 x = string_times.index(stime)
                 next_start_time = string_times[x]
                 break
@@ -260,7 +266,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         next_run = zone.next_run(
             first_start_time, start_time, self.irrigation_on_value()
         )
-        _LOGGER.debug("post next_run %s", next_run)
+        #_LOGGER.debug("update_next_run - post next_run %s", next_run)
         self._extra_attrs[attr] = next_run
         if next_run in [
             "off",
@@ -357,10 +363,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     # create pump - zone list
                     if zone.pump() not in pumps:
                         pumps[zone.pump()] = [zone.switch()]
-                        _LOGGER.debug("creating pump %s", zone.pump())
+                        _LOGGER.debug("hass_started - creating pump %s", zone.pump())
                     else:
                         pumps[zone.pump()].append(zone.switch())
-                        _LOGGER.debug("Appending zone to pump %s", zone.pump())
+                        _LOGGER.debug("hass_started - Appending zone to pump %s", zone.pump())
                 # Build Zone Attributes to support the custom card
                 z_name = zone.name()
                 attr = self.format_attr("zone" + str(zonecount), CONF_NAME)
@@ -428,7 +434,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # create pump class to start/stop pumps
             for pump, zones in pumps.items():
                 # pass pump_switch, list of zones, off_delay
-                _LOGGER.debug("pump class added %s", pump)
+                _LOGGER.debug("hass_started - pump class added %s", pump)
                 self._pumps.append(PumpClass(self.hass, pump, zones))
 
             # turn off the underlying switches as a precaution
@@ -624,7 +630,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         continue
                 # auto_run where program started based on start time
                 if zone.should_run(self.scheduled) is False:
-                    _LOGGER.debug("should run false %s", zone.name())
+                    _LOGGER.debug("build_run_script - should run false %s", zone.name())
                     # calculate the next run
                     await self.update_next_run(single_zone=zone)
                     continue
@@ -664,7 +670,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # not manual run or aborted
             self._extra_attrs[zonelastran] = last_ran
             zone.set_last_ran(last_ran)
-            _LOGGER.debug("finalise run - last_ran %s", last_ran)
+            _LOGGER.debug("async_finalise_run - finalise run - last_ran %s", last_ran)
 
         # calculate the next run
         await self.update_next_run(single_zone=zone)
@@ -690,10 +696,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
-
+        _LOGGER.debug('async_turn_on')
         zones = await self.build_run_script(False)
         if self._state is True:
             # program is still running
+            _LOGGER.debug('async_turn_on - program is still running')
             p_last_ran = dt_util.now()
             for zone in zones:
                 await self.async_finalise_run(zone, p_last_ran)
@@ -719,7 +726,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self.hass.bus.async_fire("irrigation_event", event_data)
         else:
             # No zones to run
-            _LOGGER.debug("No zones to run")
+            _LOGGER.debug("async_turn_on - No zones to run")
             return
         self._state = True
 
@@ -767,33 +774,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 background_tasks.add(task)
                 task.add_done_callback(background_tasks.discard)
                 await asyncio.sleep(1)
-
-                # latency issue loop a few times to see if the switch turns on
-                # otherwise give a warning and skip this switch
-                # for _ in range(CONST_LATENCY):
-                #     if zone.check_switch_state() is False:
-                #         await asyncio.sleep(1)
-                #     else:
-                #         zone_running = True
-                #         break
-                # else:
-                #     zone_running = False
-                #     _LOGGER.warning(
-                #         "Significant latency has been detected, unexpected behaviour may occur, %s",
-                #         zone.switch(),
-                #     )
-                    # attr = self.format_attr(
-                    #     zone.name(),
-                    #     ATTR_REMAINING,
-                    # )
-                    # remaining_time = self.format_run_time(0)
-                    # self._extra_attrs[attr] = remaining_time
-
-                    # # calculate the remaining time for the program
-                    # await self.async_calculate_program_remaining(zones)
-                    # self.async_schedule_update_ha_state()
-
-                    #continue
 
                 event_data = {
                     "action": "zone_turned_on",
