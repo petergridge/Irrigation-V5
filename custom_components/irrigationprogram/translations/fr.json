@@ -1,0 +1,280 @@
+{
+    "services":{
+		"stop_programs":{
+			"name": "Arrêter les programmes",
+			"description": "Arrêter tous les programmes et zones en cours d'exécution."
+		},
+		"list_config":{
+			"name": "Lister la configuration",
+			"description": "Lister la configuration dans le fichier journal"
+		},
+		"run_zone":{
+			"name": "Exécuter la zone",
+			"description": "Exécuter une zone spécifique.",
+			"fields": {
+				"entity_id": {
+					"name": "Programme d'irrigation",
+					"description": "Le programme d'irrigation à exécuter"
+				},
+				"zone": {
+					"name": "Zone",
+					"description": "Zones à exécuter"
+				}
+			}
+		},
+		"toggle_zone":{
+			"name": "Basculer la zone",
+			"description": "Exécuter une zone spécifique.",
+			"fields": {
+				"entity_id": {
+					"name": "Programme d'irrigation",
+					"description": "Le programme d'irrigation à exécuter"
+				},
+				"zone": {
+					"name": "Zone",
+					"description": "Zones à exécuter"
+				}
+			}
+		},
+		"reset_runtime":{
+			"name": "Réinitialiser les temps d'exécution",
+			"description": "Réinitialiser le temps d'exécution à zéro pour le programme, supporte les tests.",
+			"fields": {
+				"entity_id": {
+					"name": "Programme d'irrigation",
+					"description": "Le programme d'irrigation à exécuter"
+				}
+			}
+		},
+		"run_simulation":{
+			"name": "Exécuter la simulation",
+			"description": "Simuler l'exécution d'un programme. Les résultats sont affichés dans le journal.",
+			"fields": {
+				"entity_id": {
+					"name": "Programme d'irrigation",
+					"description": "Le programme d'irrigation à exécuter"
+				},
+				"scheduled": {
+					"name": "Programmé",
+					"description": "Exécution simulée programmée (true) ou manuelle (false)"
+				}
+			}
+		},
+		"set_zone_status":{
+			"name": "Définir le statut de la zone",
+			"description": "Définir le statut de la zone",
+			"fields": {
+				"entity_id": {
+					"name": "Capteur de statut de la zone d'irrigation",
+					"description": "Le capteur de zone à définir"
+				}
+			}
+		},
+		"toggle":{
+			"name": "Basculer le capteur de configuration",
+			"description": "Basculer la configuration",
+			"fields": {
+				"entity_id": {
+					"name": "Capteur de configuration de zone d'irrigation",
+					"description": "Le capteur de configuration de zone à basculer"
+				}
+			}
+		}
+    },
+	"selector": {
+		"status": {
+			"options": {
+				"off": "Arrêté",
+				"on": "Allumé",
+				"disable": "Désactivé",
+				"pending": "En attente",
+				"eco": "ÉCO",
+				"onhold": "En pause"
+			}
+		},
+		"device_type": {
+			"options": {
+				"generic": "Générique",
+				"rainbird": "RainBird"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zonestatus": {
+				"state": {
+					"off": "Arrêté",
+					"on": "Allumé",
+					"disable": "Désactivé",
+					"pending": "En attente",
+					"eco": "ÉCO"
+				}
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Le commutateur de zone sélectionné est déjà défini dans ce programme d'irrigation",
+			"mandatory": "Champ obligatoire non rempli",
+			"zone_required": "Au moins une zone doit être définie"
+		},
+		"step": {
+			"user": {
+				"title": "Données du programme",
+				"description": "Définit le programme",
+				"data": {
+					"name": "Nom",
+					"run_freq": "Entité de fréquence",
+					"controller_monitor": "Surveiller l'entité du contrôleur",
+					"start_time": "Entité de l'heure de début",
+					"irrigation_on": "Activer l'entité d'irrigation",
+					"show_config": "Afficher l'entité de configuration",
+					"device_type": "Type de contrôleur",
+					"inter_zone_delay": "Entité de délai entre les zones",
+					"interlock": "Empêcher les programmes de s'exécuter simultanément"
+				}
+			},
+			"zones": {
+				"title": "Zones du programme",
+				"description": "Configuration de la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"run_freq": "Entité de fréquence",
+					"rain_sensor": "Entité de capteur de pluie",
+					"group": "Entité de groupe de zones",
+					"water": "Entité d'exécution",
+					"wait": "Entité de temps d'attente",
+					"repeat": "Entité de nombre de répétitions",
+					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
+					"enable_zone": "Activer l'entité de zone",
+					"water_source_active": "Entité de source d'eau",
+					"show_config": "Afficher l'entité de configuration"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"add_group": "Ajouter un groupe de zones",
+					"zones": "Ajouter une zone",
+					"finalise": "Appliquer"
+				}
+			},
+			"add_group": {
+				"title": "Configuration du groupe",
+				"description": "Ajouter un groupe",
+				"data": {
+					"zones": "Sélectionner les zones"
+				}
+			}
+		}
+	},
+
+ 	"options": {
+		"error": {
+			"zone_defined": "Le commutateur de zone est déjà défini dans ce programme d'irrigation",
+			"group_define": "Le nom de groupe sélectionné est déjà utilisé",
+			"two_zones_required": "Au moins deux zones sont nécessaires pour créer un groupe",
+			"mandatory": "Champ obligatoire non rempli",
+			"zone_required": "Au moins une zone doit être définie"
+		},
+		"step": {
+			"user": {
+				"description": "Si une zone est supprimée ou si le commutateur de zone est modifié, tout groupe associé sera supprimé",
+				"menu_options": {
+					"update_program": "Mettre à jour le programme",
+					"update_zone": "Mettre à jour la zone",
+					"delete_zone": "Supprimer la zone",
+					"add_zone": "Ajouter une zone",
+					"add_group": "Ajouter un groupe de zones",
+					"delete_group": "Supprimer le groupe",
+					"finalise": "Appliquer"
+				}
+			},
+			"update_program": {
+				"title": "Données du programme",
+				"description": "Mettre à jour le programme",
+				"data": {
+					"run_freq": "Entité de fréquence d'exécution",
+					"controller_monitor": "Surveiller l'entité du contrôleur",
+					"start_time": "Entité de l'heure de début",
+					"irrigation_on": "Activer l'entité d'irrigation",
+					"show_config": "Afficher l'entité de configuration",
+					"device_type": "Type de contrôleur",
+					"inter_zone_delay": "Entité de délai entre les zones",
+					"interlock": "Empêcher les programmes de s'exécuter simultanément"
+				}
+			},
+			"add_zone": {
+				"title": "Configuration de la zone",
+				"description": "Définir la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"run_freq": "Entité de fréquence",
+					"rain_sensor": "Entité de capteur de pluie",
+					"group": "Entité de groupe de zones",
+					"water": "Entité d'exécution",
+					"wait": "Entité de temps d'attente",
+					"repeat": "Entité de nombre de répétitions",
+					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
+					"enable_zone": "Activer l'entité de zone",
+					"water_source_active": "Entité de source d'eau",
+					"show_config": "Afficher l'entité de configuration"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"run_freq": "Entité de fréquence",
+					"rain_sensor": "Entité de capteur de pluie",
+					"group": "Entité de groupe de zones",
+					"water": "Entité d'exécution",
+					"wait": "Entité de temps d'attente",
+					"repeat": "Entité de nombre de répétitions",
+					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
+					"enable_zone": "Activer l'entité de zone",
+					"water_source_active": "Entité de source d'eau",
+					"show_config": "Afficher l'entité de configuration"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuration de la zone",
+				"description": "Supprimer la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"update_zone": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"add_group": {
+				"title": "Configuration du groupe",
+				"description": "Ajouter un groupe",
+				"data": {
+					"zones": "Sélectionner les zones"
+				}
+			},
+			"delete_group": {
+				"title": "Configuration du groupe",
+				"description": "Supprimer le groupe",
+				"data": {
+					"group": "Sélectionner le groupe"
+				}
+			}
+		}
+	}
+}
