@@ -5,11 +5,8 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V5.4.15
-* Add water source monitoring as an attribute of a zone.
-* Stop zone attempting to run when the run time is 0.
-* Fix custom card deployment.
-* Improve treatment of unavailable zone switches.
+### V5.4.16 - coming soon
+* Add French translation.
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
