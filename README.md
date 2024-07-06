@@ -7,6 +7,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 ### V5.4.16 - coming soon
 * Add French translation.
+* Update to hass.config_entries.async_forward_entry_setups
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
