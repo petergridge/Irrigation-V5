@@ -5,7 +5,7 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V5.4.16 - coming soon
+### V5.4.16 - Beta Release!
 * Add French translation.
 * Update to hass.config_entries.async_forward_entry_setups
 
