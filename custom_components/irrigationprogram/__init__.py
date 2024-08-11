@@ -1,4 +1,5 @@
-'''__init__.'''
+"""__init__."""
+
 from __future__ import annotations
 
 import asyncio
@@ -39,22 +40,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up irrigtest from a config entry."""
     # store an object for your platforms to access
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME:entry.data.get(ATTR_NAME)}
-
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(
-            entry, Platform.SENSOR
-            )
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(
-            entry, Platform.BINARY_SENSOR
-            )
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(
-            entry, Platform.SWITCH
-        )
-    )
+    PLATFORMS: list[str] = ["binary_sensor", "sensor", "switch"]
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
     return True

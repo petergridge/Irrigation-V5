@@ -55,7 +55,6 @@ from .const import (
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONES,
-#    CONST_LATENCY,
     CONST_SWITCH,
     DOMAIN,
     TIME_STR_FORMAT,
@@ -185,7 +184,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_point_in_time = async_track_point_in_utc_time(
             self.hass, self.point_in_time_listener, self.get_next_interval()
         )
-#        time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
         localtimezone = ZoneInfo(self.hass.config.time_zone)
         time = datetime.now().astimezone(tz=localtimezone).strftime(TIME_STR_FORMAT)
         string_times = self.start_time_value()
@@ -218,9 +216,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self, entity=None, old_status=None, new_status=None, single_zone=None
     ):
         """Update the next run callback."""
-        _LOGGER.debug("update_next_run - Something has changed update the next run time")
+        _LOGGER.debug("update_next_run - Recalculate the next run time")
         # determine next run time
-        #time = dt_util.as_local(dt_util.utcnow()).strftime(TIME_STR_FORMAT)
         localtimezone = ZoneInfo(self.hass.config.time_zone)
         time = datetime.now().astimezone(tz=localtimezone).strftime(TIME_STR_FORMAT)
 
@@ -696,7 +693,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
-        _LOGGER.debug('async_turn_on')
+        _LOGGER.debug('async_turn_on %s',self._name)
         zones = await self.build_run_script(False)
         if self._state is True:
             # program is still running
@@ -774,7 +771,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 background_tasks.add(task)
                 task.add_done_callback(background_tasks.discard)
                 await asyncio.sleep(1)
-
+                _LOGGER.debug("Switch async_turn_on %s turn on, runtime: %s", zone.name(),zone.run_time(zone.repeat_value()))
                 event_data = {
                     "action": "zone_turned_on",
                     "device_id": self._device_id,
@@ -811,7 +808,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 await asyncio.sleep(1)
                 if not zone_running:
                     break
-
+            _LOGGER.debug("Switch async_turn_on %s turned off", zone.name())
             # clean up after the run
             await self.async_finalise_run(zone, p_last_ran)
 
