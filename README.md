@@ -4,7 +4,10 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
-
+### V5.4.16 - Beta Release!
+* support for Valve objects - Open/Close only, Position not supported
+* Refactor datetime usage for a more consistent approach
+* Fix system monitor notification
 ### V5.4.16 - Beta Release!
 * Add French translation.
 * Update to hass.config_entries.async_forward_entry_setups
