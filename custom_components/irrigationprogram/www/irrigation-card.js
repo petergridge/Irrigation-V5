@@ -62,8 +62,8 @@ class IrrigationCard extends HTMLElement {
 
     function cardentities(hass, program) {
       function addZoneRunConfigButtons(p_zone, p_config) {
-//        var zone_name = hass.states[p_zone].attributes["friendly_name"];
-        var zone_name = "test";
+        var zone_name = hass.states[p_zone].attributes["friendly_name"];
+//        var zone_name = "test";
         var buttons = [];
         buttons[0] = {
           entity: p_zone,
