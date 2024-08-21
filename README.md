@@ -204,6 +204,10 @@ With interlock disabled:
 * If Program 1 and 2 overlap both programs will continue to run.
 * If a running zone is started by the second program a warning is logged.
 
+### Rainbird
+Uses the rainbird.start_irrigation action to run for a specific period
+see: https://www.home-assistant.io/integrations/rainbird/
+
 ### Events
 The *program_turned_on* event provides the following:
 - scheduled: false indicates the program was run manually
