@@ -4,7 +4,7 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
-### V5.4.16 - Beta Release!
+### V5.4.18 - Beta Release!
 * support for Valve objects - Open/Close only, Position not supported
 * Refactor datetime usage for a more consistent approach
 * Fix system monitor notification
