@@ -62,8 +62,8 @@ class IrrigationCard extends HTMLElement {
 
     function cardentities(hass, program) {
       function addZoneRunConfigButtons(p_zone, p_config) {
-        var zone_name = hass.states[p_zone].attributes["friendly_name"];
-
+//        var zone_name = hass.states[p_zone].attributes["friendly_name"];
+        var zone_name = "test";
         var buttons = [];
         buttons[0] = {
           entity: p_zone,
@@ -190,7 +190,7 @@ class IrrigationCard extends HTMLElement {
         let name = zone.split(".")[1];
         // process zone/zonegroup main section
         let zonestatus =
-          hass.states[config.program].attributes[name + "_status"];
+          hass.states[config.program].attributes[zone_name + "_status"];
         if (config.show_program === false && first_zone && !config.title) {
           //do nothing
         } else {
@@ -309,18 +309,21 @@ class IrrigationCard extends HTMLElement {
       //add the zone level configuration
       let first_zone = true;
       for (let i = 1; i < zones + 1; i++) {
-        let zone_name =
-          hass.states[config.program].attributes["zone" + String(i) + "_name"];
+        let _zone_name =
+          hass.states[config.program].attributes["zone_" + String(i) + "_name"];
+        let _zone_type =
+          hass.states[config.program].attributes[_zone_name + "_type"];
+
         if (config.entities) {
           if (config.entities.length > 0) {
-            if (config.entities.indexOf("switch." + zone_name) == -1) {
+            if (config.entities.indexOf(_zone_type + "." + _zone_name) == -1) {
               continue;
             }
           }
         }
 
-        let zone = "switch." + zone_name;
-        ZoneHeader(zone, zone_name, first_zone);
+        let zone = _zone_type + "." + _zone_name;
+        ZoneHeader(zone, _zone_name, first_zone);
         let zone_attrs = [];
         ProcessZone(zone, zone_attrs);
         const newentities = entities.concat(zone_attrs);
@@ -519,9 +522,13 @@ class IrrigationCardEditor extends HTMLElement {
     }
     //rebuild the options
     for (i = 1; i < zones + 1; i++) {
-      var zone_name =
-        "switch." +
-        this._hass.states[program].attributes["zone" + String(i) + "_name"];
+
+      let _zone_name =
+      hass.states[config.program].attributes["zone_" + String(i) + "_name"];
+      let _zone_type =
+      hass.states[config.program].attributes["zone_" + String(i) + "_type"];
+
+      var zone_name = _zone_type + "." + _zone_name;
       let newOption = new Option(zone_name, zone_name);
       if (entities.includes(zone_name)) {
         newOption.selected = true;

@@ -66,7 +66,7 @@ PROGRAM_ATTR = [
 
 # Required,attribute,type
 ZONE_ATTR = [
-    [False, ATTR_ZONE, sel.EntitySelector({"domain": ["switch"]})],
+    [False, ATTR_ZONE, sel.EntitySelector({"domain": ["switch","valve"]})],
     [False, ATTR_WATER, sel.EntitySelector({"domain": ["sensor","input_number"]})],
     [False, ATTR_WAIT, sel.EntitySelector({"domain": "input_number"})],
     [False, ATTR_REPEAT, sel.EntitySelector({"domain": "input_number"})],

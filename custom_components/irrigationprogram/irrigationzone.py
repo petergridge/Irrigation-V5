@@ -2,17 +2,14 @@
 #from datetime import datetime
 import asyncio
 
-#from datetime import datetime, timedelta, timezone, UTC
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import math
 from zoneinfo import ZoneInfo
 
-#import pytz
-from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON
+from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON,SERVICE_CLOSE_VALVE,SERVICE_OPEN_VALVE
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
-import homeassistant.util.dt as dt_util
 
 from .const import (
     ATTR_ENABLE_ZONE,
@@ -54,6 +51,7 @@ class IrrigationZone:
         self.hass = hass
         self._program_name = program_name
         self._name = zone.get(ATTR_ZONE).split(".")[1]
+        self._type = zone.get(ATTR_ZONE).split(".")[0]
         self._switch = zone.get(ATTR_ZONE)
         self._pump = zone.get(ATTR_PUMP)
         self._run_freq = run_freq
@@ -82,6 +80,10 @@ class IrrigationZone:
     def switch(self):
         """Return the name of the variable."""
         return self._switch
+
+    def type(self):
+        """Return the name of the variable."""
+        return self._type
 
     def pump(self):
         '''Pump entity attribute.'''
@@ -145,7 +147,6 @@ class IrrigationZone:
         if self._water_adjust is not None:
             water_adjust_value = float(self.hass.states.get(self._water_adjust).state)
         return water_adjust_value
-
 
     def water_source(self):
         '''Water adjustment entity attribute.'''
@@ -287,15 +288,18 @@ class IrrigationZone:
     def last_ran(self):
         '''Last ran datetime attribute.'''
         localtimezone = ZoneInfo(self.hass.config.time_zone)
+
         if self._last_ran is None:
             #default to today and start time
-            last_ran = datetime.now().astimezone(tz=localtimezone)
+            last_ran = datetime.now(localtimezone)
             last_ran = last_ran - timedelta(days=10)
             self._last_ran = last_ran
         return self._last_ran
 
-    def next_run(self,firststarttime, starttime, program_enabled = True):
+    def next_run(self,firststarttime, starttime, program_enabled = True, monitor_controller = True):
         '''Determine when a zone will next attempt to run.'''
+
+        _LOGGER.debug('program enabled:%s, controller enabled: %s', program_enabled,monitor_controller)
         #_LOGGER.debug("zone - next_run - " + self.name())
         #_LOGGER.debug("zone - next_run - firststarttime: %s, starttime %s",firststarttime,starttime)
 
@@ -324,11 +328,15 @@ class IrrigationZone:
             return self._next_run
         if program_enabled is False:
             self._next_run =  "program disabled"
-            #_LOGGER.debug('zone - next_run - program disabled')
+            _LOGGER.debug('program disabled')
             return self._next_run
-        if not (self.hass.states.is_state(self._switch, "on") or self.hass.states.is_state(self._switch, "off")):
+        if monitor_controller is False:
+            self._next_run =  "controller disabled"
+            _LOGGER.debug('controller disabled')
+            return self._next_run
+
+        if self.check_switch_state() is None:
             self._next_run = "unavailable"
-            #_LOGGER.debug('zone - next_run - unavailable')
             return self._next_run
         if self.rain_sensor_value() is True and self.ignore_rain_sensor_value() is False:
             self._next_run = "raining"
@@ -342,8 +350,11 @@ class IrrigationZone:
 
         localtimezone = ZoneInfo(self.hass.config.time_zone)
         if isinstance(self.last_ran(),str):
+            _LOGGER.debug('irrigationzone.nextrun str %s',self.last_ran() )
+            #2024-08-21T02:05:00.010448
             last_ran = datetime.strptime(self.last_ran(),"%Y-%m-%dT%H:%M:%S.%f%z").replace(hour=starthour, minute=startmin, second=00, microsecond=00)
         if isinstance(self.last_ran(),datetime):
+            _LOGGER.debug('irrigationzone.nextrun datetime %s',self.last_ran() )
             last_ran = self.last_ran().replace(hour=starthour, minute=startmin, second=00, microsecond=00)
 
         try: # Frq is numeric
@@ -352,24 +363,20 @@ class IrrigationZone:
                 frq = 1
             else:
                 frq = int(float(self.run_freq_value()))
-            #_LOGGER.debug('zone - next_run - numeric frequency: %s', frq)
-            today_start_time = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            today_begin = datetime.now().astimezone(tz=localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)
+            today_start_time = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            today_begin = datetime.now(localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)
             last_ran_day_begin = last_ran.replace(hour=00, minute=00, second=00, microsecond=00)
-            if today_start_time > datetime.now().astimezone(tz=localtimezone) and last_ran_day_begin == today_begin:
+            if today_start_time > datetime.now(localtimezone) and last_ran_day_begin == today_begin:
                 #time is in the future and it previously ran today, supports multiple start times
-                #_LOGGER.debug('zone - next_run - start_time > now, and last ran sometime today')
-                next_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                next_run = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             elif (today_start_time - last_ran).total_seconds()/86400 < frq:
                 #frequency has not been satisfied
                 #set last ran datetime to the first runtime of the series and add the frequency
                 next_run = last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
-                #_LOGGER.debug('zone - next_run - frequency has not been reached')
-                #_LOGGER.debug('zone - next_run - last ran: %s, frq: %s, next run: %s', last_ran,frq,next_run)
             else:
                 #it has been sometime since the zone ran
-                next_run = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-                if today_start_time < datetime.now().astimezone(tz=localtimezone):
+                next_run = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                if today_start_time < datetime.now(localtimezone):
                     #_LOGGER.debug('zone - next_run - it has been sometime since the zone ran, run tomorrow')
                     next_run += timedelta(days=1)
                 else:
@@ -390,12 +397,12 @@ class IrrigationZone:
             valid_freq = any(item in string_freq for item in valid_days)
             if valid_freq is True:
                 #default to today and start time for day based running
-                last_ran = datetime.now().astimezone(tz=localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                last_ran = datetime.now(timezone.utc).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 today = last_ran.isoweekday()
                 next_run = last_ran + timedelta(days=100) #arbitary max
                 for day in string_freq :
                     try:
-                        if self.get_weekday(day) == today and last_ran > datetime.now().astimezone(tz=localtimezone):
+                        if self.get_weekday(day) == today and last_ran > datetime.now(localtimezone):
                             next_run = last_ran
                         else:
                             next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
@@ -431,31 +438,28 @@ class IrrigationZone:
     def should_run(self, scheduled=False):
         '''Determine if the zone should run.'''
         #zone has been turned off or is offline
-        if self._next_run in  ["disabled", "unavailable"]:
+        if self._next_run in  ["disabled","program disabled", "unavailable","controller disabled"]:
             _LOGGER.debug('zone - should - run false, disabled')
             return False
-        if self.water_source_value() is False:
-            _LOGGER.debug('zone - next_run - should run false, water source')
+        if self._next_run in  ["No water source"]:
+            _LOGGER.debug('zone - should - run false, no water source')
             return False
-
-        if self.water_value() == 0:
-            _LOGGER.debug('zone - next_run - should run false, water source')
-            return False
-
 
         if scheduled is True:
-            if self.water_adjust_value() == 0:
-                _LOGGER.debug('zone - next_run - should run false, adjusted')
+            if self._next_run in  ["raining"]:
+                _LOGGER.debug('zone - should - run false, raining')
                 return False
-
-            # Only stop the zone if it is a scheduled run
-            if self.is_raining() is True:
-                _LOGGER.debug('zone - next_run - should run false, raining')
+            if self._next_run in  ["adjusted off"]:
+                _LOGGER.debug('zone - should - run false, adjusted off')
                 return False
 
             #not time to run yet
-            if dt_util.as_timestamp(self._next_run) > dt_util.as_timestamp(dt_util.now()):
-                return False
+            try:
+
+                if datetime.timestamp(self._next_run) >  datetime.timestamp(datetime.now()):
+                    return False
+            except ValueError:
+                _LOGGER.error('excption processing start time: %s', self._next_run)
 
         return True
     # end should_run
@@ -466,9 +470,46 @@ class IrrigationZone:
             return False
         if self.hass.states.is_state(self._switch, "on"):
             return True
+        if self.hass.states.is_state(self._switch, "open"):
+            return True
+        if self.hass.states.is_state(self._switch, "closed"):
+            return False
         return None
 
-    async def async_turn_on(self, scheduled=False):
+    async def async_turn_on(self):
+
+        if self.check_switch_state() is False and self._stop is False:
+            if self._device_type == 'rainbird':
+                # RAINBIRD controller requires a different service call
+                await self.hass.services.async_call(
+                    RAINBIRD, RAINBIRD_TURN_ON, {ATTR_ENTITY_ID: self._switch, RAINBIRD_DURATION: self.water_value()}
+                )
+            else:
+                #is it a valve or a switch
+                valve = self._switch.startswith('valve.')
+                if valve:
+                    await self.hass.services.async_call(
+                        'valve', SERVICE_OPEN_VALVE, {ATTR_ENTITY_ID: self._switch}
+                    )
+                else:
+                    await self.hass.services.async_call(
+                        CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
+                    )
+
+    async def async_turn_off(self):
+        #is it a valve or a switch
+        valve = self._switch.startswith('valve.')
+        if valve:
+            #postion entity defined get the value
+            await self.hass.services.async_call(
+                'valve', SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self._switch}
+            )
+        else:
+            await self.hass.services.async_call(
+                CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+            )
+
+    async def async_turn_on_cycle(self, scheduled=False):
         """Start the watering cycle."""
         self._stop = False
         self._state = "on"
@@ -490,16 +531,7 @@ class IrrigationZone:
             await self.set_state_sensor(self._state, self._program_name, self._name)
             await asyncio.sleep(1)
             if self.check_switch_state() is False and self._stop is False:
-                if self._device_type == 'rainbird':
-                   # RAINBIRD controller requires a different service call
-                    await self.hass.services.async_call(
-                        RAINBIRD, RAINBIRD_TURN_ON, {ATTR_ENTITY_ID: self._switch, RAINBIRD_DURATION: self.water_value()}
-                    )
-                else:
-                    await self.hass.services.async_call(
-                        CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._switch}
-                    )
-
+                await self.async_turn_on()
                 for _ in range(CONST_LATENCY):
                     if self.check_switch_state() is False:
                         await asyncio.sleep(1)
@@ -571,13 +603,14 @@ class IrrigationZone:
             if self._stop:
                 break
         # End of repeat loop
-        await self.async_turn_off()
+        await self.async_turn_zone_off()
 
     async def async_eco_off(self, **kwargs):
         '''Signal the zone to stop.'''
-        await self.hass.services.async_call(
-            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-        )
+#        await self.hass.services.async_call(
+#            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+#        )
+        await self.async_turn_off()
         latency = await self.latency_check()
         #raise an event
         event_data = {
@@ -592,7 +625,7 @@ class IrrigationZone:
         await self.set_state_sensor(self._state, self._program_name, self._name)
 
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_zone_off(self, **kwargs):
         '''Signal the zone to stop.'''
         self._state = "off"
         self._stop = True
@@ -600,10 +633,10 @@ class IrrigationZone:
         if  self.hass.states.is_state(self._switch, "off"):
             #switch is already off
             return
-
-        await self.hass.services.async_call(
-            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-        )
+        await self.async_turn_off()
+#        await self.hass.services.async_call(
+#            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
+#        )
         #raise an event
         latency = await self.latency_check()
         event_data = {
