@@ -299,19 +299,23 @@ class IrrigationZone:
         '''Determine when a zone will next attempt to run.'''
 
         #the next time to run in a multi start config
-        if starttime:
-            starthour = int(starttime.split(':')[0])
-            startmin = int(starttime.split(':')[1])
-        else:
-            starthour = 8
-            startmin = 0
-        #first run time in a multi start config
-        if firststarttime:
-            firststarthour = int(firststarttime.split(':')[0])
-            firststartmin = int(firststarttime.split(':')[1])
-        else:
-            firststarthour = 8
-            firststarthour = 0
+        try:
+            if starttime:
+                starthour = int(starttime.split(':')[0])
+                startmin = int(starttime.split(':')[1])
+            else:
+                starthour = 8
+                startmin = 0
+            #first run time in a multi start config
+            if firststarttime:
+                firststarthour = int(firststarttime.split(':')[0])
+                firststartmin = int(firststarttime.split(':')[1])
+            else:
+                firststarthour = 8
+                firststarthour = 0
+        except ValueError:
+            self._next_run = "disabled"
+            return self._next_run
 
         if self.enable_zone_value() is False:
             self._next_run = "disabled"
@@ -427,29 +431,14 @@ class IrrigationZone:
     def should_run(self, scheduled=False):
         '''Determine if the zone should run.'''
         #zone has been turned off or is offline
-        if self._next_run in  ["disabled","program disabled", "unavailable","controller disabled"]:
-            _LOGGER.debug('zone - should - run false, disabled')
+        if self._next_run in  ["disabled","program disabled", "unavailable","controller disabled","No water source"]:
+            _LOGGER.debug('zone - should run: false')
             return False
-        if self._next_run in  ["No water source"]:
-            _LOGGER.debug('zone - should - run false, no water source')
-            return False
-
+        #zone should still run when manually started
         if scheduled is True:
-            if self._next_run in  ["raining"]:
-                _LOGGER.debug('zone - should - run false, raining')
+            if self._next_run in  ["raining","adjusted off","off"]:
+                _LOGGER.debug('zone - should - run false, when scheduled')
                 return False
-            if self._next_run in  ["adjusted off"]:
-                _LOGGER.debug('zone - should - run false, adjusted off')
-                return False
-
-            # #not time to run yet
-            # try:
-            #     if self._next_run >  datetime.now(self._localtimezone):
-            #         return False
-            # except ValueError:
-            #     _LOGGER.error('exception processing start time: %s', self._next_run)
-            #     return False
-
         return True
     # end should_run
 
