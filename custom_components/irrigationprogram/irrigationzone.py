@@ -1,13 +1,12 @@
 '''Irrigation zone class.'''
-#from datetime import datetime
 import asyncio
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
 import math
 from zoneinfo import ZoneInfo
 
-from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON,SERVICE_CLOSE_VALVE,SERVICE_OPEN_VALVE
+from homeassistant.const import ATTR_ENTITY_ID, SERVICE_TURN_OFF, SERVICE_TURN_ON, SERVICE_CLOSE_VALVE, SERVICE_OPEN_VALVE
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
@@ -72,6 +71,7 @@ class IrrigationZone:
         self._stop = False
         self._water_source = zone.get(ATTR_WATER_SOURCE)
         self._device_type = device_type
+        self._localtimezone = ZoneInfo(self.hass.config.time_zone)
 
     def name(self):
         """Return the name of the variable."""
@@ -287,21 +287,16 @@ class IrrigationZone:
 
     def last_ran(self):
         '''Last ran datetime attribute.'''
-        localtimezone = ZoneInfo(self.hass.config.time_zone)
 
         if self._last_ran is None:
             #default to today and start time
-            last_ran = datetime.now(localtimezone)
+            last_ran = datetime.now(self._localtimezone)
             last_ran = last_ran - timedelta(days=10)
             self._last_ran = last_ran
         return self._last_ran
 
     def next_run(self,firststarttime, starttime, program_enabled = True, monitor_controller = True):
         '''Determine when a zone will next attempt to run.'''
-
-        _LOGGER.debug('program enabled:%s, controller enabled: %s', program_enabled,monitor_controller)
-        #_LOGGER.debug("zone - next_run - " + self.name())
-        #_LOGGER.debug("zone - next_run - firststarttime: %s, starttime %s",firststarttime,starttime)
 
         #the next time to run in a multi start config
         if starttime:
@@ -320,11 +315,9 @@ class IrrigationZone:
 
         if self.enable_zone_value() is False:
             self._next_run = "disabled"
-            #_LOGGER.debug('zone - next_run - disabled')
             return self._next_run
         if self.water_value() == 0:
             self._next_run = "disabled"
-            #_LOGGER.debug('zone - next_run - disabled')
             return self._next_run
         if program_enabled is False:
             self._next_run =  "program disabled"
@@ -348,7 +341,6 @@ class IrrigationZone:
             self._next_run = "No water source"
             return self._next_run
 
-        localtimezone = ZoneInfo(self.hass.config.time_zone)
         if isinstance(self.last_ran(),str):
             _LOGGER.debug('irrigationzone.nextrun str %s',self.last_ran() )
             #2024-08-21T02:05:00.010448
@@ -363,26 +355,23 @@ class IrrigationZone:
                 frq = 1
             else:
                 frq = int(float(self.run_freq_value()))
-            today_start_time = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-            today_begin = datetime.now(localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)
+            today_start_time = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+            today_begin = datetime.now(self._localtimezone).replace(hour=00, minute=00, second=00, microsecond=00)
             last_ran_day_begin = last_ran.replace(hour=00, minute=00, second=00, microsecond=00)
-            if today_start_time > datetime.now(localtimezone) and last_ran_day_begin == today_begin:
+            if today_start_time > datetime.now(self._localtimezone) and last_ran_day_begin == today_begin:
                 #time is in the future and it previously ran today, supports multiple start times
-                next_run = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
             elif (today_start_time - last_ran).total_seconds()/86400 < frq:
                 #frequency has not been satisfied
                 #set last ran datetime to the first runtime of the series and add the frequency
                 next_run = last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
             else:
                 #it has been sometime since the zone ran
-                next_run = datetime.now(localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
-                if today_start_time < datetime.now(localtimezone):
-                    #_LOGGER.debug('zone - next_run - it has been sometime since the zone ran, run tomorrow')
+                next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                if today_start_time < datetime.now(self._localtimezone):
                     next_run += timedelta(days=1)
                 else:
-                    #_LOGGER.debug('zone - next_run - it has been sometime since the zone ran, run today')
                     pass
-                #_LOGGER.debug('zone - next_run - starthour %s, startmin %s, next run: %s', starthour, startmin,next_run)
 
             self._next_run =  next_run
             return self._next_run  # noqa: TRY300
@@ -397,12 +386,12 @@ class IrrigationZone:
             valid_freq = any(item in string_freq for item in valid_days)
             if valid_freq is True:
                 #default to today and start time for day based running
-                last_ran = datetime.now(timezone.utc).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
+                last_ran = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 today = last_ran.isoweekday()
                 next_run = last_ran + timedelta(days=100) #arbitary max
                 for day in string_freq :
                     try:
-                        if self.get_weekday(day) == today and last_ran > datetime.now(localtimezone):
+                        if self.get_weekday(day) == today and last_ran > datetime.now(self._localtimezone):
                             next_run = last_ran
                         else:
                             next_run = min(self.get_next_dayofweek_datetime(last_ran, day), next_run)
@@ -453,13 +442,13 @@ class IrrigationZone:
                 _LOGGER.debug('zone - should - run false, adjusted off')
                 return False
 
-            #not time to run yet
-            try:
-
-                if datetime.timestamp(self._next_run) >  datetime.timestamp(datetime.now()):
-                    return False
-            except ValueError:
-                _LOGGER.error('excption processing start time: %s', self._next_run)
+            # #not time to run yet
+            # try:
+            #     if self._next_run >  datetime.now(self._localtimezone):
+            #         return False
+            # except ValueError:
+            #     _LOGGER.error('exception processing start time: %s', self._next_run)
+            #     return False
 
         return True
     # end should_run
@@ -607,9 +596,6 @@ class IrrigationZone:
 
     async def async_eco_off(self, **kwargs):
         '''Signal the zone to stop.'''
-#        await self.hass.services.async_call(
-#            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-#        )
         await self.async_turn_off()
         latency = await self.latency_check()
         #raise an event
@@ -634,9 +620,6 @@ class IrrigationZone:
             #switch is already off
             return
         await self.async_turn_off()
-#        await self.hass.services.async_call(
-#            CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._switch}
-#        )
         #raise an event
         latency = await self.latency_check()
         event_data = {
