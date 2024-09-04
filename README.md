@@ -5,7 +5,8 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 ### V5.4.21 coming soon
 * Reorder zones in the config flow
-* modify the list config service to include values
+* Modify the list config service to include values
+* Support sensor for start time, for example the sun sensor to start a program at dawn.
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
