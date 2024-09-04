@@ -2,12 +2,10 @@
 
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
-### V5.4.20
-* support for Valve objects - Open/Close only, Position not supported
-* Refactor datetime usage for a more consistent approach
-* Fix system monitor notification
-* Add French translation.
-* Update to hass.config_entries.async_forward_entry_setups
+
+### V5.4.21 coming soon
+* Reorder zones in the config flow
+* modify the list config service to include values
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
