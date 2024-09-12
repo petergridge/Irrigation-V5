@@ -3,7 +3,7 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V5.4.21 coming soon
+### V2024.09.01 coming soon
 * Reorder zones in the config flow
 * Modify the list config service to include values
 * Support sensor for start time, for example the sun sensor to start a program at dawn.
@@ -110,6 +110,15 @@ You can define the start time using two methods.
    * If no valid time is supplied the start time will be defaulted to 08:00:00
 
 ![image](https://github.com/petergridge/Irrigation-V5/assets/40281772/65dc4606-43e3-43a8-9151-2ea67cab38ed)
+
+* as a sensor
+   * create a template sensor
+   * providing the custom timestamp 'hh:mm:00' presents better in the card
+   * Sample to start one hour prior to sunrise, 
+     ```
+     {{ as_timestamp(states.sensor.sun_next_rising.state | as_datetime  - timedelta(minutes=60))| int | timestamp_custom("%H:%M:00",true) }}
+     ```
+     ![image](https://github.com/user-attachments/assets/e86957d7-2c40-422c-9ab7-9277023620d3)
 
 ### Run Days and Run Frequency
 Run frequency allows the definition of when the program will run. This can be provided as dropdown helper or a sensor, see [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
