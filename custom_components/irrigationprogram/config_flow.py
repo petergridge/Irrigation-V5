@@ -32,6 +32,7 @@ from .const import (
     ATTR_WATER_ADJUST,
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
+    ATTR_ZONE_ORDER,
     ATTR_ZONES,
     DOMAIN,
 )
@@ -42,7 +43,7 @@ ATTR_FREQ = "freq"
 PROGRAM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): str,
-        vol.Required(ATTR_START): sel.EntitySelector({"domain": ["input_datetime", "input_text"]}),
+        vol.Required(ATTR_START): sel.EntitySelector({"domain": ["input_datetime", "input_text","sensor"]}),
         vol.Optional(ATTR_RUN_FREQ): sel.EntitySelector({"domain": "input_select"}),
         vol.Optional(ATTR_MONITOR_CONTROLLER): sel.EntitySelector(
             {"domain": "binary_sensor"}
@@ -55,7 +56,7 @@ PROGRAM_SCHEMA = vol.Schema(
 )
 
 PROGRAM_ATTR = [
-    [True,  ATTR_START, sel.EntitySelector({"domain": ["input_datetime", "input_text"]})],
+    [True,  ATTR_START, sel.EntitySelector({"domain": ["input_datetime", "input_text","sensor"]})],
     [False, ATTR_RUN_FREQ, sel.EntitySelector({"domain": ["input_select","sensor"]})],
     [False, ATTR_MONITOR_CONTROLLER, sel.EntitySelector({"domain": "binary_sensor"})],
     [False, ATTR_IRRIGATION_ON, sel.EntitySelector({"domain": "input_boolean"})],
@@ -78,6 +79,7 @@ ZONE_ATTR = [
     [False, ATTR_IGNORE_RAIN_SENSOR, sel.EntitySelector({"domain": "input_boolean"})],
     [False, ATTR_WATER_SOURCE, sel.EntitySelector({"domain": ["binary_sensor","input_boolean"]})],
     [False, ATTR_ENABLE_ZONE, sel.EntitySelector({"domain": "input_boolean"})],
+    [False, ATTR_ZONE_ORDER, int],
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -204,18 +206,19 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             title=self._data.get(CONF_NAME), data=self._data
         )
 
-
 #--- Options Flow ----------------------------------------------
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):  # noqa: D102
+    def async_get_options_flow(config_entry):
+        """Create option flow handler."""
         return OptionsFlowHandler(config_entry)
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     '''Option flow.'''
 
     VERSION = 4
-    def __init__(self, config_entry) -> None:  # noqa: D107
+    def __init__(self, config_entry) -> None:
+        """Initialise option flow."""
         self.config_entry = config_entry
         self._name = self.config_entry.data.get(CONF_NAME)
         self.zoneselect = None
@@ -243,11 +246,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return data_schema
 
     async def async_step_user(self, user_input=None):
-        '''Initial step? work around from HA v2023.11.'''  # noqa: D401
+        '''Initialise step? work around from HA v2023.11.'''
+        #does nothing but must be there, go figure
         return
 
     async def async_step_init(self, user_input=None):
-        '''Initial step.'''  # noqa: D401
+        '''Initialise step.'''
         if self.config_entry.options == {}:
             data = self.config_entry.data
         else:
@@ -267,20 +271,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Create the program config."""
         newdata = {}
         newdata.update(self._data)
-
-        #the top level of the dictionary needs to change
-        #for HA update to trigger, bug?
-        if newdata.get('xx') == 'x':
-            newdata.update({'xx': 'y'})
-        else:
-            newdata.update({'xx': 'x'})
         # User is done adding, create the config entry.
         return self.async_create_entry(
             title=self._data.get(CONF_NAME), data=newdata
         )
 
     async def async_step_update_program(self, user_input=None):
-        """Invoked when a user initiates a flow via the user interface."""  # noqa: D401
+        """Invoke when a user initiates a flow via the user interface."""
         errors = {}
         newdata = {}
         newdata.update(self._data)
@@ -333,7 +330,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if (friendlyname) == user_input.get(ATTR_ZONE):
                     # delete the zone from the list of zones
                     newdata[ATTR_ZONES].pop(zonenumber)
-#                    delzone = zone[ATTR_ZONE]
                     break
 
             self._data = newdata
@@ -364,10 +360,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Return the form of the next step.
             return await self.async_step_update_zone_data()
 
-        #zonenumber = 0
         for zonenumber,zone in enumerate(self._data.get(ATTR_ZONES)):
             friendlyname = zone.get(ATTR_ZONE)
-            #zonenumber += 1
             text = (str(zonenumber) + ': ' + friendlyname)
             zones.append(text)
 

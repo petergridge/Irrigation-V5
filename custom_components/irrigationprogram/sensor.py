@@ -85,3 +85,4 @@ class ZoneStatus(SensorEntity):
     def native_value(self):
         """Return the state."""
         return self._state
+

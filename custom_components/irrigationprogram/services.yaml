@@ -42,7 +42,7 @@ toggle_zone:
       selector:
           entity:
             domain: switch
-            multiple: true
+            multiple: false
 
 reset_runtime:
   description: Reset the runtime back to none for the program supports testing.

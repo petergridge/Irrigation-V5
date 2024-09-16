@@ -52,23 +52,20 @@ async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle removal of an entry."""
-    await hass.config_entries.async_reload(entry.entry_id)
+    _LOGGER.warning('%s removed from %s configuration',entry.title, entry.domain)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     #clean up any related helpers
-
     await hass.config_entries.async_unload_platforms(
         entry, (Platform.SENSOR,)
         )
     await hass.config_entries.async_unload_platforms(
         entry, (Platform.BINARY_SENSOR,)
         )
-    if unload_ok := await hass.config_entries.async_unload_platforms(
+    return await hass.config_entries.async_unload_platforms(
         entry, (Platform.SWITCH,)
-    ):
-
-        return unload_ok
+    )
 
 async def async_setup(hass:HomeAssistant, config):
     '''Irrigation object.'''
@@ -109,7 +106,7 @@ async def async_setup(hass:HomeAssistant, config):
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
 
     async def async_list_config(call):
-        '''Stop all running programs.'''
+        '''List programs in a yaml like structure.'''
         output = chr(10)
         for number,entry in enumerate(hass.config_entries.async_entries(DOMAIN)):
             if entry.options == {}:
@@ -124,9 +121,15 @@ async def async_setup(hass:HomeAssistant, config):
                     for number,zone in enumerate(attr[1]):
                         output += "  Zone " + str(number+1) + chr(10)
                         for zoneattr in zone.items():
-                            output += "    " + str(zoneattr[0]) + ":" + str(zoneattr[1]) + chr(10)
+                            attrvalue = hass.states.get(zoneattr[1]).state
+                            output += "    " + str(zoneattr[0]) + ": " + str(zoneattr[1]) + ": "+ attrvalue + chr(10)
                 else:
-                    output += "  " + str(attr[0]) + ":" + str(attr[1]) + chr(10)
+                    try:
+                        attrvalue = hass.states.get(attr[1]).state
+                        output += "  " + str(attr[0]) + ": " + str(attr[1]) + ": "+ attrvalue + chr(10)
+                    except:
+                        output += "  " + str(attr[0]) + ": " + str(attr[1]) + chr(10)
+
         _LOGGER.warning(output)
 
     # register the service

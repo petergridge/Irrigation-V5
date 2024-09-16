@@ -35,7 +35,6 @@ class PumpClass:
 
         #Monitor the required zones
         while not self._stop:
-
             #check if any of the zones are running
             if zone_running():
                 if self.hass.states.is_state(self._pump, "off"):
