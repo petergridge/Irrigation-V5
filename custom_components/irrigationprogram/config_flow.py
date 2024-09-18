@@ -271,10 +271,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Create the program config."""
         newdata = {}
         newdata.update(self._data)
+        sortedzones = self.bubble_sort(self._data.get(ATTR_ZONES))
+        newdata.update({ATTR_ZONES:sortedzones})
+        #the top level of the dictionary needs to change
+        #for HA update to trigger, bug?
+        if newdata.get('xx') == 'x':
+            newdata.update({'xx': 'y'})
+        else:
+            newdata.update({'xx': 'x'})
         # User is done adding, create the config entry.
         return self.async_create_entry(
             title=self._data.get(CONF_NAME), data=newdata
         )
+
 
     async def async_step_update_program(self, user_input=None):
         """Invoke when a user initiates a flow via the user interface."""
@@ -311,20 +320,32 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             errors=errors,
         )
 
+    def bubble_sort(self,zones):
+        """Sort an array of data."""
+        # Outer loop to iterate through the list n times
+        for n in range(len(zones) - 1, 0, -1):
+            # Inner loop to compare adjacent elements
+            for i in range(n):
+                if zones[i].get('order',99999) > zones[i + 1].get('order',9999):
+                    # Swap elements if they are in the wrong order
+                    zones[i], zones[i + 1] = zones[i + 1], zones[i]
+        return zones
+
+
     async def async_step_delete_zone(self, user_input=None):
         '''Delete a zone.'''
         errors = {}
         zones = []
         newdata = {}
         newdata.update(self._data)
-
+        # _LOGGER.warning(self.bubble_sort(newdata[ATTR_ZONES]))
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
                 return await self.async_step_init()
 
             # find the position of the zone in the zones.
-            zones = newdata[ATTR_ZONES]
+            zones = self.bubble_sort(newdata[ATTR_ZONES]) #newdata[ATTR_ZONES]
             for zonenumber, zone in enumerate(zones):
                 friendlyname = zone.get(ATTR_ZONE).split(".")[1]
                 if (friendlyname) == user_input.get(ATTR_ZONE):
@@ -346,10 +367,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_zone(self, user_input=None):
-        '''Update zone.'''
+        '''List zones for Update.'''
         errors = {}
         zones = []
-
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
@@ -360,7 +380,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Return the form of the next step.
             return await self.async_step_update_zone_data()
 
-        for zonenumber,zone in enumerate(self._data.get(ATTR_ZONES)):
+        sortedzones = self.bubble_sort(self._data.get(ATTR_ZONES))
+
+#        for zonenumber,zone in enumerate(self._data.get(ATTR_ZONES)):
+        for zonenumber,zone in enumerate(sortedzones):
             friendlyname = zone.get(ATTR_ZONE)
             text = (str(zonenumber) + ': ' + friendlyname)
             zones.append(text)

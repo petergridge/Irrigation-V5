@@ -30,6 +30,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Initialize config entry. form config flow."""
+
     unique_id = config_entry.entry_id
     if config_entry.options != {}:
         config = config_entry.options
@@ -37,7 +38,6 @@ async def async_setup_entry(
         config = config_entry.data
 
     async_add_entities(await _async_create_entities(hass, config, unique_id))
-
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
         "set_zone_status",

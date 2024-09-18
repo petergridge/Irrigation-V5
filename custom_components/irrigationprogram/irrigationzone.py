@@ -329,6 +329,7 @@ class IrrigationZone:
         return False
 
     async def next_run_validation(self):
+        """Validate the object readyness."""
         if self.enable_zone_value is False or self.water_value == 0:
             return "disabled"
         if self._program.irrigation_on_value is False:
@@ -428,9 +429,9 @@ class IrrigationZone:
                 v_next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 if today_start_time < datetime.now(self._localtimezone):
                     v_next_run += timedelta(days=1)
-            elif "sensor." in self._program.start_time:
+#            elif "sensor." in self._program.start_time:
                 #time provided by a sensor always assume it will run after last run
-                v_next_run = v_last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
+#                v_next_run = v_last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
             elif today_start_time >= datetime.now(self._localtimezone) and last_ran_day_begin == today_begin:
                 #time is in the future and it previously ran today, supports multiple start times
                 v_next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)

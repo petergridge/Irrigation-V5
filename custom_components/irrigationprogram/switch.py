@@ -623,16 +623,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def build_run_script(self, config=False):
         """Build the run script based on each zones data."""
-        def bubble_sort(arr):
-            # Outer loop to iterate through the list n times
-            for n in range(len(arr) - 1, 0, -1):
-                # Inner loop to compare adjacent elements
-                for i in range(n):
-                    if arr[i].order > arr[i + 1].order:
-                        # Swap elements if they are in the wrong order
-                        arr[i], arr[i + 1] = arr[i + 1], arr[i]
-            return arr
-
         zones = []
         for zone in self._irrigationzones:
             if not config:
@@ -649,7 +639,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
                 await zone.prepare_to_run(scheduled=self.scheduled)
             zones.append(zone)
-        bubble_sort(zones)
         return zones
 
     async def calculate_program_remaining(self, zones):

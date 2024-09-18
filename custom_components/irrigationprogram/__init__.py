@@ -42,7 +42,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME:entry.data.get(ATTR_NAME)}
     PLATFORMS: list[str] = ["binary_sensor", "sensor", "switch"]
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
     return True
 
@@ -100,7 +99,7 @@ async def async_setup(hass:HomeAssistant, config):
             except AttributeError:
                 _LOGGER.warning('Could not find Program implementation %s, ignored', device)
                 continue
-    # END async_stop_switches
+    # END async_stop_programs
 
     # register the service
     hass.services.async_register(DOMAIN, "stop_programs", async_stop_programs)
