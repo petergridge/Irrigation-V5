@@ -98,7 +98,7 @@ Watering is by default time based, that is, will run for the minutes set in the 
 You can define a *flow sensor* on a zone that provides a volume/minute rate. eg litres per minute. Once defined the *water* attribute will be read as volume eg 15 litres not 15 minutes. 
 
 ### Start time
-You can define the start time using two methods.
+You can define the start time using three methods.
 * As an input_datetime
    * This supports selecting the start time
 
