@@ -170,7 +170,6 @@ class IrrigationCard extends HTMLElement {
       function ProcessZone(zone, zone_attrs) {
         let pname = zone.split(".")[1];
         let showconfig = hass.states[config.program].attributes[pname + "_show_config"];
-
         // list of other in order
         add_attr_value(pname + "_enable_zone", zone_attrs,showconfig);
         add_attr_value(pname + "_run_freq", zone_attrs, showconfig);
@@ -186,7 +185,6 @@ class IrrigationCard extends HTMLElement {
 
       function ZoneHeader(zone, zone_name, first_zone) {
 
-        let name = zone.split(".")[1];
         // process zone/zonegroup main section
         let zonestatus =
           hass.states[config.program].attributes[zone_name + "_status"];
@@ -199,6 +197,16 @@ class IrrigationCard extends HTMLElement {
         let showconfig =
           hass.states[config.program].attributes[zone_name + "_show_config"];
         addZoneRunConfigButtons(zone, showconfig);
+        // Next/Last run details
+        add_attribute(
+          zone_name + "_next_run",
+          config.next_run_label || "Next Run",
+          "mdi:clock-start",
+          [
+            { entity: zonestatus, state: "off" },
+          ],
+          entities
+        );
         // Show the remaining time when on/eco/pending
         add_attribute(
           zone_name + "_remaining",
@@ -206,7 +214,7 @@ class IrrigationCard extends HTMLElement {
           "mdi:timer-outline",
           [
             { entity: zonestatus, state: "on" },
-          ],
+          ],  
           entities
         );
         add_attribute(
@@ -224,18 +232,6 @@ class IrrigationCard extends HTMLElement {
           "mdi:timer-outline",
           [
             { entity: zonestatus, state: "eco" },
-          ],
-          entities
-        );
-        // Next/Last run details
-        add_attribute(
-          zone_name + "_next_run",
-          config.next_run_label || "Next Run",
-          "mdi:clock-start",
-          [
-            { entity: zonestatus, state_not: "on" },
-            { entity: zonestatus, state_not: "eco" },
-            { entity: zonestatus, state_not: "pending" },
           ],
           entities
         );

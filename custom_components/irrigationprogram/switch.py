@@ -3,7 +3,6 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
 import logging
-import re
 from zoneinfo import ZoneInfo
 
 import voluptuous as vol
@@ -25,7 +24,7 @@ from homeassistant.helpers.event import (
     async_track_state_change_event,
 )
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.start import async_at_start
+from homeassistant.helpers.start import async_at_started
 from homeassistant.util import slugify
 
 from .const import (
@@ -218,77 +217,19 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self, entity=None, old_status=None, new_status=None, single_zone=None
     ):
         """Update the next run callback."""
-        #single_zone used when normal run
-        #single_zone=none to support the startup
-        _LOGGER.debug("update_next_run - Recalculate the next run time")
+        for zone in self._irrigationzones:
+            await zone.next_run()
 
-        time = datetime.now(self._localtimezone).strftime(TIME_STR_FORMAT)
-        # determine next run time
-        if "sensor." in self.start_time:
-            try:
-                #a datetime sensor like sun sensor.dawn
-                string_times =datetime.strptime(self.start_time_value,"%Y-%m-%dT%H:%M:%S%z").replace(second=00, microsecond=00).astimezone(self._localtimezone).strftime("%H:%M:%S")
-            except ValueError:
-                #custom time only sensor - present better in the card
-                string_times =datetime.strptime(self.start_time_value,"%H:%M:%S").replace(second=00).strftime("%H:%M:%S")
-        else:
-            string_times = self.start_time_value
-
-        string_times = (
-            string_times.replace(" ", "")
-            .replace("\n", "")
-            .replace("'", "")
-            .replace('"', "")
-            .strip("[]'")
-            .split(",")
-        )
-        string_times.sort()
-        next_start_time = string_times[0]
-        for stime in string_times:
-            if not re.search("^([0-2]?[0-9]:[0-5][0-9]:00)", stime):
-                continue
-            if stime > time:
-                x = string_times.index(stime)
-                next_start_time = string_times[x]
-                break
-
-        # starttime is not valid or missing
-        if not next_start_time:
-            #no start time set to 8am
-            await self.hass.services.async_call(
-                "input_text",
-                "set_value",
-                {ATTR_ENTITY_ID: self._start_time, "value": "08:00:00"},
-            )
-        if single_zone:
-            await self.set_zone_next_run(single_zone, string_times[0], next_start_time)
-        else:
-            #called during startup to preset all zones
-            for zone in self._irrigationzones:
-                await self.set_zone_next_run(zone, string_times[0], next_start_time)
-
-        self.async_schedule_update_ha_state()
-
-    async def set_zone_next_run(self, zone, first_start_time, start_time):
-        """Set next start time for the zone."""
-        attr = self.format_attr(zone.name, ATTR_NEXT_RUN)
-        v_next_run = zone.next_run(
-            first_start_time, start_time
-        )
-        self._extra_attrs[attr] = v_next_run
-
-
-
-    async def async_added_to_hass(self):  # noqa: C901
+    async def async_added_to_hass(self):
         """Add listener."""
         self._unsub_point_in_time = async_track_point_in_utc_time(
             self.hass, self.point_in_time_listener, self.get_next_interval()
         )
 
         @callback
-        async def hass_started(event):  # noqa: C901
+        async def hass_started(event):
+            """HA has started."""
             last_state = await self.async_get_last_state()
-
             # create the zone class
             zonedict = {}
             pumps = {}
@@ -318,7 +259,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # set up to monitor these entities
             await self.set_up_entity_monitoring()
 
-            # # build attributes in run order
+            # build attributes in run order
             zones = await self.build_run_script(config=True)
 
             for zone in zones:
@@ -372,8 +313,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         # setup the callback to kick in when HASS has started
         # listen for config_flow change and apply the updates
-        self._unsub_start = async_at_start(self.hass, hass_started)
-
+        self._unsub_start = async_at_started(self.hass, hass_started)
 
         @callback
         async def hass_shutdown(event):
@@ -387,7 +327,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         await super().async_added_to_hass()
 
-
     async def set_up_entity_monitoring(self):
         """Set up to monitor these entities to change the next run data."""
         monitor = [self._start_time]
@@ -398,6 +337,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._run_freq:
             monitor.append(self._run_freq)
         for zone in self._irrigationzones:
+            monitor.append(zone.switch)
             if zone.enable_zone:
                 monitor.append(zone.enable_zone)
             if zone.run_freq:
@@ -670,6 +610,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._extra_attrs[zoneremaining] = fruntime
         self.async_schedule_update_ha_state()
 
+    async def set_zone_next_run_attr(self,zone_name,next_run):
+        """Set the runtime attributes for zones that will run."""
+        self._extra_attrs[self.format_attr(zone_name, ATTR_NEXT_RUN)] = next_run
+        self.async_schedule_update_ha_state()
+
     async def set_sensor_status(self, state, program, zone):
         """Set the runtime on the relevant sensor."""
         device = f"sensor.{slugify(program)}_{slugify(zone)}_status"
@@ -700,7 +645,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 if zone.should_run(self.scheduled) is False:
                     _LOGGER.debug("build_run_script - should run false %s", zone.name)
                     # calculate the next run
-                    await self.update_next_run(single_zone=zone)
                     continue
 
                 await zone.prepare_to_run(scheduled=self.scheduled)
@@ -736,9 +680,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._extra_attrs[zonelastran] = last_ran
             zone.set_last_ran(last_ran)
             _LOGGER.debug("async_finalise_run - finalise run - last_ran %s", last_ran)
-
-        # calculate the next run
-        await self.update_next_run(single_zone=zone)
 
         # update the historical flow rate, better information for next run
         if zone.flow_sensor:
@@ -784,6 +725,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 await self.zone_turn_on(start_zone)
                 if zone.state == 'off':
                     running_zones.pop(i)
+            self.async_schedule_update_ha_state()
+
         await asyncio.sleep(1)
         return running_zones
 
@@ -895,7 +838,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self.scheduled = False
             self._running_zone = []
             self._run_zones = []
+            self.async_schedule_update_ha_state()
             for zone in self._irrigationzones:
                 await zone.async_turn_zone_off()
+                self.async_schedule_update_ha_state()
                 # run is complete stop pump monitoring
 

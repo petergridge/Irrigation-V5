@@ -1,6 +1,6 @@
 '''Constants.'''
 
-TIME_STR_FORMAT = "%H:%M:00"
+TIME_STR_FORMAT = "%H:%M:%S"
 
 RAINBIRD_TURN_ON = 'start_irrigation'
 RAINBIRD = 'rainbird'
