@@ -76,10 +76,16 @@ class ZoneStatus(SensorEntity):
         """Return the sensor state options."""
         return  [
             'on'
-           ,'off'
            ,'pending'
            ,'eco'
-           ,'disabled']
+           ,'off'
+           ,'disabled'
+           ,'program_disabled'
+           ,"controller_disabled"
+           ,"unavailable"
+           ,"raining"
+           ,"adjusted_off"
+           ,"no_water_source"]
 
     @property
     def native_value(self):

@@ -84,13 +84,18 @@
 	"selector": {
 		"status": {
 			"options": {
-				"off": "Off",
-				"on": "On",
-				"disable": "Disabled",
-				"pending": "Pending",
+				"off": "Aus",
+				"on": "An",
+				"disabled": "Deaktiviert",
+				"pending": "Wartend",
 				"eco": "ECO",
-				"onhold": "On-hold"
-			}
+				"program_disabled": "Programm deaktiviert",
+				"controller_disabled": "Controller deaktiviert",
+				"unavailable": "Nicht verfügbar",
+				"raining": "Regnet",
+				"adjusted_off": "Eingestellt aus",
+				"no_water_source": "Keine Wasserquelle gefunden"
+		}
 		},
 		"device_type": {
 			"options": {
@@ -104,11 +109,17 @@
 		"sensor": {
 			"zonestatus": {
 				"state": {
-					"off": "Off",
-					"on": "On",
-					"disable": "Disabled",
-					"pending": "Pending",
-					"eco": "ECO"
+					"off": "Aus",
+					"on": "An",
+					"disabled": "Deaktiviert",
+					"pending": "Wartend",
+					"eco": "ECO",
+					"program_disabled": "Programm deaktiviert",
+					"controller_disabled": "Controller deaktiviert",
+					"unavailable": "Nicht verfügbar",
+					"raining": "Regnet",
+					"adjusted_off": "Eingestellt aus",
+					"no_water_source": "Keine Wasserquelle gefunden"
 				}
 			}
 		}

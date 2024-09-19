@@ -36,6 +36,8 @@ class IrrigationCard extends HTMLElement {
 
     let zones = Number(hass.states[config.program].attributes["zone_count"]);
 
+    console.log("editor:constructor()");
+
     const x = hass.states[config.program];
     if (!x) {
       config.card.title = "ERR";
@@ -186,52 +188,50 @@ class IrrigationCard extends HTMLElement {
       function ZoneHeader(zone, zone_name, first_zone) {
 
         // process zone/zonegroup main section
-        let zonestatus =
-          hass.states[config.program].attributes[zone_name + "_status"];
+        let showconfig =
+          hass.states[config.program].attributes[zone_name + "_show_config"];
+
         if (config.show_program === false && first_zone && !config.title) {
           //do nothing
         } else {
           entities.push({ type: "section", label: "" });
         }
 
-        let showconfig =
-          hass.states[config.program].attributes[zone_name + "_show_config"];
         addZoneRunConfigButtons(zone, showconfig);
         // Next/Last run details
+        let zonestatus =
+          hass.states[config.program].attributes[zone_name + "_status"];
+
+        entities.push({
+          type: "conditional",
+          conditions: [
+            { entity: zonestatus, state_not: ["off", "on", "pending", "eco"] }
+          ],
+          row: {
+            entity: zonestatus,
+            name: config.next_run_label || "Next Run",
+            icon: "mdi:alert-outline"
+          },
+        });
+
         add_attribute(
           zone_name + "_next_run",
           config.next_run_label || "Next Run",
           "mdi:clock-start",
           [
-            { entity: zonestatus, state: "off" },
+            { entity: zonestatus, state: ["off"]
+            },
           ],
           entities
         );
+
         // Show the remaining time when on/eco/pending
         add_attribute(
           zone_name + "_remaining",
           config.remaining_label || "Remaining Time",
           "mdi:timer-outline",
           [
-            { entity: zonestatus, state: "on" },
-          ],  
-          entities
-        );
-        add_attribute(
-          zone_name + "_remaining",
-          config.remaining_label || "Remaining Time",
-          "mdi:timer-outline",
-          [
-            { entity: zonestatus, state: "pending" },
-          ],
-          entities
-        );
-        add_attribute(
-          zone_name + "_remaining",
-          config.remaining_label || "Remaining Time",
-          "mdi:timer-outline",
-          [
-            { entity: zonestatus, state: "eco" },
+            { entity: zonestatus, state: ["on","eco","pending"]},
           ],
           entities
         );
@@ -241,9 +241,7 @@ class IrrigationCard extends HTMLElement {
           config.last_ran_label || "Last Ran",
           "mdi:clock-end",
           [
-            { entity: zonestatus, state_not: "on" },
-            { entity: zonestatus, state_not: "eco" },
-            { entity: zonestatus, state_not: "pending" },
+            { entity: zonestatus, state_not: ["on","eco","pending"] },
             { entity: showconfig, state: "on" },
           ],
           entities

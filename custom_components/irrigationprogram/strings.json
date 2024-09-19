@@ -106,9 +106,15 @@
 				"state": {
 					"off": "Off",
 					"on": "On",
-					"disable": "Disabled",
+					"disabled": "Disabled",
 					"pending": "Pending",
-					"eco": "ECO"
+					"eco": "ECO",
+					"program_disabled": "Program disabled",
+					"controller_disabled": "Controller disabled",
+					"unavailable": "Unavailable",
+					"raining": "Raining",
+					"adjusted_off": "Addjusted off",
+					"no_water_source": "No water source detected"
 				}
 			}
 		}

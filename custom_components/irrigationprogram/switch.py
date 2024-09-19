@@ -214,7 +214,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     @callback
     async def update_next_run(
-        self, entity=None, old_status=None, new_status=None, single_zone=None
+        self, entity=None, old_status=None, new_status=None
     ):
         """Update the next run callback."""
         for zone in self._irrigationzones:
