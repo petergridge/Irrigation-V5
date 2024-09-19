@@ -84,13 +84,18 @@
 	"selector": {
 		"status": {
 			"options": {
-				"off": "Arrêté",
-				"on": "Allumé",
-				"disable": "Désactivé",
+				"off": "Arrêt",
+				"on": "Marche",
+				"disabled": "Désactivé",
 				"pending": "En attente",
-				"eco": "ÉCO",
-				"onhold": "En pause"
-			}
+				"eco": "ECO",
+				"program_disabled": "Programme désactivé",
+				"controller_disabled": "Contrôleur désactivé",
+				"unavailable": "Indisponible",
+				"raining": "Pluie",
+				"adjusted_off": "Aucun ajustement",
+				"no_water_source": "Source d'eau non détectée"
+		}
 		},
 		"device_type": {
 			"options": {
@@ -103,11 +108,17 @@
 		"sensor": {
 			"zonestatus": {
 				"state": {
-					"off": "Arrêté",
-					"on": "Allumé",
-					"disable": "Désactivé",
+					"off": "Arrêt",
+					"on": "Marche",
+					"disabled": "Désactivé",
 					"pending": "En attente",
-					"eco": "ÉCO"
+					"eco": "ECO",
+					"program_disabled": "Programme désactivé",
+					"controller_disabled": "Contrôleur désactivé",
+					"unavailable": "Indisponible",
+					"raining": "Pluie",
+					"adjusted_off": "Aucun ajustement",
+					"no_water_source": "Source d'eau non détectée"
 				}
 			}
 		}
