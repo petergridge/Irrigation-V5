@@ -8,7 +8,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 * Modify the listing config action to include values of the items
 * Support sensor for start time, for example the sun sensor to start a program at dawn.
 * Support +/- inter zone delay (delay between zone/overlap of zones)
-* Improve start/stop processing of zones while a program is running
+* Improve start/stop processing of zones while a program is running, if a zone is started while a program is running it will be appended to the run.
 * Add translation for status values in the card
 * Add French translation
 
