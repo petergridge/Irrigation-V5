@@ -31,8 +31,21 @@ from .const import (
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONE_ORDER,
+    CONST_ADJUSTED_OFF,
+    CONST_CLOSED,
+    CONST_CONTROLLER_DISABLED,
+    CONST_DISABLED,
+    CONST_ECO,
     CONST_LATENCY,
+    CONST_NO_WATER_SOURCE,
+    CONST_OFF,
+    CONST_ON,
+    CONST_OPEN,
+    CONST_PENDING,
+    CONST_PROGRAM_DISABLED,
+    CONST_RAINING,
     CONST_SWITCH,
+    CONST_UNAVAILABLE,
     CONST_ZERO_FLOW_DELAY,
     DOMAIN,
     RAINBIRD,
@@ -73,12 +86,14 @@ class IrrigationZone:
         self._order = zone.get(ATTR_ZONE_ORDER,999) #the attribute set to reorder zones 0 is the first
         self._last_ran = last_ran
         self._remaining_time = 0
-        self._state = "off"
-        self._next_run = "off"
-        self._stop = False
+        self._water_adjust_prior = 0
+        self._state = CONST_OFF
+        self._next_run = CONST_OFF
+        self._stop = True
         self._water_source = zone.get(ATTR_WATER_SOURCE)
         self._localtimezone = ZoneInfo(self.hass.config.time_zone)
         self._default_time = abs(program.inter_zone_delay)
+        self._scheduled = False
 
     @property
     def name(self):
@@ -132,7 +147,7 @@ class IrrigationZone:
                 )
             else:
                 rain_sensor_value = self.hass.states.is_state(
-                    self.rain_sensor, "on"
+                    self.rain_sensor, CONST_ON
                 )
         return rain_sensor_value
     @property
@@ -145,7 +160,7 @@ class IrrigationZone:
         ignore_rain_sensor_value = False
         if self.ignore_rain_sensor is not None:
             ignore_rain_sensor_value = self.hass.states.is_state(
-                self.ignore_rain_sensor, "on"
+                self.ignore_rain_sensor, CONST_ON
             )
         return ignore_rain_sensor_value
     @property
@@ -171,7 +186,7 @@ class IrrigationZone:
         '''Determine watering adjustment.'''
         water_source_value = True
         if self._water_source is not None:
-            water_source_value = self.hass.states.is_state(self._water_source, "on")
+            water_source_value = self.hass.states.is_state(self._water_source, CONST_ON)
         return water_source_value
     @property
     def flow_sensor(self):
@@ -237,7 +252,7 @@ class IrrigationZone:
         '''Enable zone entity value.'''
         zone_value = True
         if self.enable_zone is not None:
-            zone_value = self.hass.states.is_state(self.enable_zone, "on")
+            zone_value = self.hass.states.is_state(self.enable_zone, CONST_ON)
         return zone_value
     @property
     def remaining_time(self):
@@ -269,23 +284,39 @@ class IrrigationZone:
         servicedata = {ATTR_ENTITY_ID: device, 'status': state}
         await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
 
+    async def set_zone_next_run_sensor(self, state):
+        '''Set the state sensor.'''
+        if isinstance(state,datetime):
+            program = slugify(self._program.name)
+            zone = slugify(self.name)
+            device = f'sensor.{program}_{zone}_next_run'
+            servicedata = {ATTR_ENTITY_ID: device, 'status': state}
+            await self.hass.services.async_call(DOMAIN, 'set_zone_next_run', servicedata)
+
+
     async def prepare_to_run(self,scheduled=False):
         """Initialise the remaining time when the program is started."""
-        self._remaining_time = self.run_time(repeats=self.repeat_value,scheduled=scheduled)
+        self._remaining_time = await self.run_time(repeats=self.repeat_value,scheduled=scheduled)
         await self._program.set_zone_run_time_attr(self.name, self._remaining_time)
-        self._state = 'pending'
+        self._state = CONST_PENDING
         await self.set_state_sensor(self._state)
 
-    def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False):
+    async def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False):
         """Update the run time component."""
+
+        if self.state != 'on':
+            self._water_adjust_prior = self.water_adjust_value
+
+        if not self._scheduled and self._state not in (CONST_PENDING, CONST_ON, CONST_ECO):
+            await self.set_state_sensor(self._state)
 
         wait = self.wait_value*60
         #if run manually do not adjust the time
         if scheduled:
-            adjust = self.water_adjust_value
+            adjust = self._water_adjust_prior
         else:
             adjust = 1
-            adjust = self.water_adjust_value
+#            adjust = self._water_adjust_prior
 
         if self.flow_sensor is None:
             #time based
@@ -311,19 +342,16 @@ class IrrigationZone:
     @property
     def last_ran(self):
         '''Last ran datetime attribute.'''
-
         if self._last_ran is None:
             #default to today and start time
             self._last_ran = datetime.now(self._localtimezone) - timedelta(days=10)
         if isinstance(self._last_ran,str):
-            self._last_ran = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z")
+             self._last_ran = datetime.strptime(self._last_ran,"%Y-%m-%dT%H:%M:%S.%f%z")
         return self._last_ran
 
     @property
     def next_run_dt(self):
         """Present next run as a datetime."""
-        if isinstance(self._next_run,str):
-            return datetime.strptime(self._next_run,"%Y-%m-%dT%H:%M:%S%z")
         if isinstance(self._next_run,datetime):
             return self._next_run
         return False
@@ -331,19 +359,19 @@ class IrrigationZone:
     async def next_run_validation(self):
         """Validate the object readyness."""
         if self.enable_zone_value is False or self.water_value == 0:
-            return "disabled"
+            return CONST_DISABLED
         if self._program.irrigation_on_value is False:
-            return  "program_disabled"
+            return  CONST_PROGRAM_DISABLED
         if self._program.monitor_controller_value is False:
-            return  "controller_disabled"
+            return  CONST_CONTROLLER_DISABLED
         if await self.check_switch_state() is None:
-            return "unavailable"
+            return CONST_UNAVAILABLE
         if self.rain_sensor_value is True and self.ignore_rain_sensor_value is False:
-            return "raining"
+            return CONST_RAINING
         if self.water_adjust_value <= 0:
-            return "adjusted_off"
+            return CONST_ADJUSTED_OFF
         if self.water_source_value is False:
-            return "no_water_source"
+            return CONST_NO_WATER_SOURCE
         return False
 
 
@@ -352,6 +380,9 @@ class IrrigationZone:
         #is called when anything changes that will impact the
         #the next run date, frequency change, rain ...
         time = datetime.now(self._localtimezone).strftime(TIME_STR_FORMAT)
+
+        if self._state in (CONST_ON, CONST_PENDING, CONST_ECO):
+           return
         # determine next run time
         if "sensor." in self._program.start_time:
             try:
@@ -406,17 +437,16 @@ class IrrigationZone:
                 firststarthour = 8
                 firststarthour = 0
         except ValueError:
-            self._state = "disabled"
+            self._state = CONST_DISABLED
             await self.set_state_sensor(self._next_run)
-            return #self._state
+            return
 
         v_error = await self.next_run_validation()
         if v_error:
             #a validation error was returned
             self._state = v_error
             await self.set_state_sensor(self._state)
-            return #v_error
-
+            return
         v_last_ran  = self.last_ran.replace(hour=starthour, minute=startmin, second=00, microsecond=00)
 
         try: # Frq is numeric
@@ -435,9 +465,6 @@ class IrrigationZone:
                 v_next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
                 if today_start_time < datetime.now(self._localtimezone):
                     v_next_run += timedelta(days=1)
-#            elif "sensor." in self._program.start_time:
-                #time provided by a sensor always assume it will run after last run
-#                v_next_run = v_last_ran.replace(hour=firststarthour, minute=firststartmin, second=00, microsecond=00) + timedelta(days=frq)
             elif today_start_time >= datetime.now(self._localtimezone) and last_ran_day_begin == today_begin:
                 #time is in the future and it previously ran today, supports multiple start times
                 v_next_run = datetime.now(self._localtimezone).replace(hour=starthour, minute=startmin, second=00, microsecond=00)
@@ -470,18 +497,17 @@ class IrrigationZone:
                 self._next_run =  v_next_run
             #zone is marked as off
             else:
-                self._next_run =  "disabled"
-                self._state = 'disabled'
-                await self.set_state_sensor("disabled")
-                return # self._next_run
+                self._next_run =  CONST_DISABLED
+                self._state = CONST_DISABLED
+                await self.set_state_sensor(self._state)
+                return
 
         #if we got this far there is a valid run time
-        await self._program.set_zone_next_run_attr(self.name,self._next_run)
-        if self._state  not in ('pending','on','eco','off'):
-            self._state = 'off'
-            await self.set_state_sensor('off')
-
-        return # self._next_run
+        await self.set_zone_next_run_sensor(self._next_run)
+        if self._state  not in (CONST_PENDING,CONST_ON,CONST_ECO,CONST_OFF):
+            self._state = CONST_OFF
+            await self.set_state_sensor(self._state)
+        return
 
     def get_weekday(self,day):
         '''Determine weekday num.'''
@@ -498,18 +524,20 @@ class IrrigationZone:
             day_diff = 7 - (start_time_w - target_w)
         return date_time + timedelta(days=day_diff)
 
-    def should_run(self, scheduled=False):
+    async def should_run(self, scheduled=False):
         '''Determine if the zone should run.'''
         #determine the default time used when the runtime LT zone delay
-        self._default_time = self.run_time(repeats=self.repeat_value,scheduled=True)
+        self._default_time = await self.run_time(repeats=self.repeat_value,scheduled=True)
 
         #zone has been turned off or is offline
-        if self._next_run in  ["disabled","program_disabled", "unavailable","controller_disabled","no_water_source"]:
+        if self._next_run in [CONST_DISABLED, CONST_PROGRAM_DISABLED,
+                              CONST_UNAVAILABLE, CONST_CONTROLLER_DISABLED,
+                              CONST_NO_WATER_SOURCE]:
             _LOGGER.debug('zone - should run: false')
             return False
         #zone should still run when manually started
         if scheduled is True:
-            if self._next_run in  ["raining","adjusted off","off"]:
+            if self._next_run in [CONST_RAINING, CONST_ADJUSTED_OFF, CONST_OFF]:
                 _LOGGER.debug('zone - should - run false, when scheduled')
                 return False
             #next run time is in the future
@@ -526,9 +554,9 @@ class IrrigationZone:
         """Check the solenoid state if turned off stop this instance."""
         #wait a few seconds if offline it may come back
         for _ in range(CONST_LATENCY):
-            if self.hass.states.get(self.switch).state in ["off","closed"]:
+            if self.hass.states.get(self.switch).state in [CONST_OFF,CONST_CLOSED]:
                 return False
-            if self.hass.states.get(self.switch).state in ["on","open"]:
+            if self.hass.states.get(self.switch).state in [CONST_ON,CONST_OPEN]:
                 return True
             await asyncio.sleep(1)
         return None
@@ -569,7 +597,7 @@ class IrrigationZone:
     async def async_turn_on_cycle(self, scheduled=False):
         """Start the zone watering cycle."""
         self._stop = False
-        self._state = "on"
+        self._state = CONST_ON
         #initalise the reamining time for display
         if scheduled is True:
             water_adjust_value = self.water_adjust_value
@@ -586,11 +614,11 @@ class IrrigationZone:
             #run time adjusted to 0 skip this zone
             if self.remaining_time <= 0:
                 continue
-            self._state = "on"
+            self._state = CONST_ON
             await self.set_state_sensor(self._state)
             if await self.check_switch_state() is False and self._stop is False:
                 await self.async_turn_on()
-                if not await self.latency_check(True):
+                if await self.latency_check(True):
                     self._stop = True
 
             #track the watering
@@ -601,7 +629,7 @@ class IrrigationZone:
                     volume_delivered += self.flow_sensor_value / 60
                     volume_required = self.water_value * water_adjust_value
                     volume_remaining = volume_required - volume_delivered
-                    self._remaining_time = self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled)
+                    self._remaining_time = await self.run_time(volume_delivered=volume_delivered, repeats=i, scheduled=scheduled)
                     await self._program.set_zone_run_time_attr(self.name,self.remaining_time)
                     await asyncio.sleep(1)
                     if await self.check_switch_state() is False:
@@ -621,7 +649,7 @@ class IrrigationZone:
                 while watertime > 0:
                     seconds_run += 1
                     watertime = math.ceil(self.water_value*60 * water_adjust_value) - seconds_run
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled)
+                    self._remaining_time = await self.run_time(seconds_run, repeats=i, scheduled=scheduled)
                     await self._program.set_zone_run_time_attr(self.name,self.remaining_time)
                     await asyncio.sleep(1)
                     if await self.check_switch_state() is False:
@@ -648,7 +676,7 @@ class IrrigationZone:
                     seconds_run += 1
                     wait_seconds += 1
                     waittime = self.wait_value * 60 - wait_seconds
-                    self._remaining_time = self.run_time(seconds_run, repeats=i, scheduled=scheduled)
+                    self._remaining_time = await self.run_time(seconds_run, repeats=i, scheduled=scheduled)
                     await self._program.set_zone_run_time_attr(self.name,self.remaining_time)
                     if self._stop:
                         break
@@ -656,7 +684,10 @@ class IrrigationZone:
 
             if self._stop:
                 break
+
         # End of repeat loop
+        self._scheduled = False
+
         await self.async_turn_zone_off()
 
     async def async_eco_off(self):
@@ -668,22 +699,23 @@ class IrrigationZone:
             "action": "zone_turned_off",
             "device_id": self.switch,
             "zone": self.name,
-            "state":"eco",
+            "state":CONST_ECO,
             "latency": latency
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
-        self._state = "eco"
+        self._state = CONST_ECO
         await self.set_state_sensor(self._state)
 
     async def async_turn_zone_off(self):
         '''Signal the zone to stop.'''
 
-        self._state = "off"
+        self._state = CONST_OFF
         self._stop = True
         self._remaining_time = 0
         await self._program.set_zone_run_time_attr(self.name,self.remaining_time)
         await self.set_state_sensor(self._state)
-        if  self.hass.states.is_state(self.switch, "off"):
+        await self.next_run()
+        if  self.hass.states.is_state(self.switch, CONST_OFF):
             #switch is already off
             return
         await self.async_turn_off()
@@ -694,17 +726,18 @@ class IrrigationZone:
             "action": "zone_turned_off",
             "device_id": self.switch,
             "zone": self.name,
-            "state":"off",
+            "state":CONST_OFF,
             "latency": latency
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
 
+
     async def latency_check(self,state):
         '''Ensure switch has turned off and warn.'''
         #state: true = on false = off
-        if not (self.hass.states.is_state(self.switch, "on") or self.hass.states.is_state(self.switch, "off")
-             or self.hass.states.is_state(self.switch, "open") or self.hass.states.is_state(self.switch, "closed")):
-            #switch is offline
+        if not (self.hass.states.is_state(self.switch, CONST_ON) or self.hass.states.is_state(self.switch, CONST_OFF)
+             or self.hass.states.is_state(self.switch, CONST_OPEN) or self.hass.states.is_state(self.switch, CONST_CLOSED)):
+
             return False
         for _ in range(CONST_LATENCY):
             if await self.check_switch_state() is not state: #on
@@ -749,9 +782,9 @@ class IrrigationZone:
         '''Show simulation results.'''
         _LOGGER.warning("----------------------------")
         _LOGGER.warning("Zone:                     %s", self.name)
-        _LOGGER.warning("Should run:               %s", self.should_run(scheduled=scheduled))
+        _LOGGER.warning("Should run:               %s", await self.should_run(scheduled=scheduled))
         _LOGGER.warning("Last Run time:            %s", self._last_ran)
-        _LOGGER.warning("Run time:                 %s", self.run_time(repeats=self.repeat_value))
+        _LOGGER.warning("Run time:                 %s", await self.run_time(repeats=self.repeat_value))
         _LOGGER.warning("Water Value:              %s", self.water_value)
         _LOGGER.warning("Wait Value:               %s", self.wait_value)
         _LOGGER.warning("Repeat Value:             %s", self.repeat_value)

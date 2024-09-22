@@ -1,4 +1,5 @@
 """Platform for recording current irrigation zone status."""
+from datetime import datetime
 import logging
 
 import voluptuous as vol
@@ -11,7 +12,23 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .const import ATTR_ZONE, ATTR_ZONES
+from .const import (
+    ATTR_ZONE,
+    ATTR_ZONES,
+    CONST_ADJUSTED_OFF,
+    CONST_CLOSED,
+    CONST_CONTROLLER_DISABLED,
+    CONST_DISABLED,
+    CONST_ECO,
+    CONST_NO_WATER_SOURCE,
+    CONST_OFF,
+    CONST_ON,
+    CONST_OPEN,
+    CONST_PENDING,
+    CONST_PROGRAM_DISABLED,
+    CONST_RAINING,
+    CONST_UNAVAILABLE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,8 +37,10 @@ async def _async_create_entities(hass: HomeAssistant, config, unique_id):
     sensors = []
     #append multiple sensors
     for zone in config.get(ATTR_ZONES):
-        status =ZoneStatus(hass,config.get(CONF_NAME),zone.get(ATTR_ZONE).split(".")[1],unique_id)
+        status = ZoneStatus(hass,config.get(CONF_NAME),zone.get(ATTR_ZONE).split(".")[1],unique_id)
         sensors.append(status)
+        nextrun = ZoneNextRun(hass,config.get(CONF_NAME),zone.get(ATTR_ZONE).split(".")[1],unique_id)
+        sensors.append(nextrun)
     return sensors
 
 async def async_setup_entry(
@@ -45,6 +64,13 @@ async def async_setup_entry(
             vol.Required('status'): str,
         },
         "set_zone_status",
+    )
+    platform.async_register_entity_service(
+        "set_zone_next_run",
+        {
+            vol.Required('status'): datetime,
+        },
+        "set_zone_next_run",
     )
 
 class ZoneStatus(SensorEntity):
@@ -75,20 +101,51 @@ class ZoneStatus(SensorEntity):
     def options(self):
         """Return the sensor state options."""
         return  [
-            'on'
-           ,'pending'
-           ,'eco'
-           ,'off'
-           ,'disabled'
-           ,'program_disabled'
-           ,"controller_disabled"
-           ,"unavailable"
-           ,"raining"
-           ,"adjusted_off"
-           ,"no_water_source"]
+            CONST_ADJUSTED_OFF,
+            CONST_CLOSED,
+            CONST_CONTROLLER_DISABLED,
+            CONST_DISABLED,
+            CONST_ECO,
+            CONST_NO_WATER_SOURCE,
+            CONST_OFF,
+            CONST_ON,
+            CONST_OPEN,
+            CONST_PENDING,
+            CONST_PROGRAM_DISABLED,
+            CONST_RAINING,
+            CONST_UNAVAILABLE
+            ]
 
     @property
     def native_value(self):
         """Return the state."""
         return self._state
 
+class ZoneNextRun(SensorEntity):
+    '''Next zone run date time class defn.'''
+
+    def __init__(  # noqa: D107
+        self,
+        hass: HomeAssistant,
+        program,
+        zone,
+        unique_id
+    ) -> None:
+
+        self._state          = None #datetime.now()
+        self._attr_unique_id = slugify(f'{unique_id}_{zone}_next_run')
+        self._attr_device_class = SensorDeviceClass.TIMESTAMP
+        self._attr_has_entity_name = True
+        self._attr_name = slugify(f'{program}_{zone}_next_run')
+        self._attr_should_poll = False
+
+    async def set_zone_next_run(self, status=None):
+        '''Set the runtime state value.'''
+        self._state = status #.strftime("%c")
+        self.async_schedule_update_ha_state()
+
+
+    @property
+    def native_value(self):
+        """Return the state."""
+        return self._state

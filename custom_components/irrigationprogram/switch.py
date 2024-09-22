@@ -38,14 +38,12 @@ from .const import (
     ATTR_IRRIGATION_ON,
     ATTR_LAST_RAN,
     ATTR_MONITOR_CONTROLLER,
-    ATTR_NEXT_RUN,
     ATTR_PUMP,
     ATTR_RAIN_SENSOR,
     ATTR_REMAINING,
     ATTR_REPEAT,
     ATTR_RUN_FREQ,
     ATTR_SCHEDULED,
-    ATTR_SHOW_CONFIG,
     ATTR_START,
     ATTR_WAIT,
     ATTR_WATER,
@@ -53,6 +51,9 @@ from .const import (
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONES,
+    CONST_ECO,
+    CONST_ON,
+    CONST_PENDING,
     CONST_SWITCH,
     DOMAIN,
     TIME_STR_FORMAT,
@@ -219,6 +220,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Update the next run callback."""
         for zone in self._irrigationzones:
             await zone.next_run()
+        self.async_schedule_update_ha_state()
 
     async def async_added_to_hass(self):
         """Add listener."""
@@ -320,6 +322,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             """Make sure everything is shut down."""
             for zone in self._irrigationzones:
                 await zone.async_turn_zone_off()
+            self.async_schedule_update_ha_state()
             await asyncio.sleep(1)
 
         # setup the callback to listen for the shut down
@@ -369,9 +372,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._extra_attrs[ATTR_MONITOR_CONTROLLER] = self._monitor_controller
         if self._irrigation_on is not None:
             self._extra_attrs[ATTR_IRRIGATION_ON] = self._irrigation_on
-        self._extra_attrs[ATTR_SHOW_CONFIG] = (
-            f"binary_sensor.{slugify(self._name)}_config"
-        )
         if self._inter_zone_delay is not None:
             self._extra_attrs[ATTR_DELAY] = self._inter_zone_delay
         self._extra_attrs[ATTR_REMAINING] = "%d:%02d:%02d" % (0, 0, 0)
@@ -397,14 +397,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # zone remaining time
             attr = self.format_attr(z_name, ATTR_REMAINING)
             self._extra_attrs[attr] = "%d:%02d:%02d" % (0, 0, 0)
-            #zone status sensor
-            self._extra_attrs[self.format_attr(z_name, "status")] = (
-                f"sensor.{slugify(self._name)}_{slugify(z_name)}_status"
-            )
-            #zone config sensor
-            self._extra_attrs[self.format_attr(z_name, ATTR_SHOW_CONFIG)] = (
-                f"binary_sensor.{slugify(self._name)}_{slugify(z_name)}_config"
-            )
             if zone.switch is not None:
                 self._extra_attrs[self.format_attr(z_name, ATTR_ZONE)] = (
                     zone.switch
@@ -433,7 +425,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self._extra_attrs[self.format_attr(z_name, ATTR_WATER_SOURCE)] = (
                     zone.water_source
                 )
-
             if zone.run_freq is not None and self._run_freq != zone.run_freq:
                 self._extra_attrs[self.format_attr(z_name, ATTR_RUN_FREQ)] = (
                     zone.run_freq
@@ -457,7 +448,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Run a specific zone."""
         for stopzone in self._irrigationzones:
             await stopzone.async_turn_zone_off()
-
+        self.async_schedule_update_ha_state()
         self._running_zone = zone
         self.scheduled = False
         background_tasks = set()
@@ -475,6 +466,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 for checkzone in self._irrigationzones:
                     if checkzone.switch == togglezone:
                         await checkzone.async_turn_zone_off()
+                        if checkzone.state == "pending":
+                            self._run_zones.remove(checkzone)
+                        self.async_schedule_update_ha_state()
                         continue
             elif self._run_zones == []:
                 self._running_zone = zone
@@ -488,8 +482,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 #add the zone to the list to run
                 for checkzone in self._irrigationzones:
                     if checkzone.switch == togglezone:
-                        self._run_zones.append(checkzone)
-                        await checkzone.prepare_to_run(scheduled=False)
+                        if self._run_zones.count(checkzone) == 0:
+                            self._run_zones.append(checkzone)
+                            await checkzone.prepare_to_run(scheduled=False)
+                        else:
+                            await checkzone.async_turn_zone_off()
+                            if checkzone.state == "pending":
+                                self._run_zones.remove(checkzone)
+        self.async_schedule_update_ha_state()
 
     async def async_simulate_program(self, scheduled) -> None:
         """Execute a simulation tests."""
@@ -515,7 +515,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 ATTR_LAST_RAN,
             )
             self._extra_attrs[attr] = last_ran
-            self.async_schedule_update_ha_state()
+        self.async_schedule_update_ha_state()
         await self.update_next_run()
 
     @property
@@ -610,11 +610,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._extra_attrs[zoneremaining] = fruntime
         self.async_schedule_update_ha_state()
 
-    async def set_zone_next_run_attr(self,zone_name,next_run):
-        """Set the runtime attributes for zones that will run."""
-        self._extra_attrs[self.format_attr(zone_name, ATTR_NEXT_RUN)] = next_run
-        self.async_schedule_update_ha_state()
-
     async def set_sensor_status(self, state, program, zone):
         """Set the runtime on the relevant sensor."""
         device = f"sensor.{slugify(program)}_{slugify(zone)}_status"
@@ -632,7 +627,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     if zone.switch not in self._running_zone:
                         continue
                 # auto_run where program started based on start time
-                if zone.should_run(self.scheduled) is False:
+                if await zone.should_run(self.scheduled) is False:
                     _LOGGER.debug("build_run_script - should run false %s", zone.name)
                     # calculate the next run
                     continue
@@ -645,7 +640,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Calculate the remaining time for the program."""
         self._program_remaining = 0
         for program_postion, zone in enumerate(zones,1):
-            if zone.state != 'off':
+            if zone.state in  (CONST_ON, CONST_PENDING, CONST_ECO):
                 self._program_remaining += zone.remaining_time
                 if program_postion < len(zones):
                     self._program_remaining += self.inter_zone_delay
@@ -655,7 +650,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         )
         self.async_schedule_update_ha_state()
         return self._program_remaining
-
 
     async def async_finalise_run(self, zone, last_ran):
         """Clean up once it has run."""
@@ -682,7 +676,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     async def run_monitor_zones(self, running_zones, zones):
         """Monitor zones to start based on inter zone delay."""
         if running_zones == []:
-            #start first zone
+            # #start first zone
             for i, zone in enumerate(zones,1):
                 running_zones.append([zone,i])
                 await self.zone_turn_on(zone)
@@ -693,11 +687,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         #monitor the running zones
         rzones = running_zones
         for i, running_zone in enumerate(rzones):
-            zone = running_zone[0]
+            rzone = running_zone[0]
             if self.inter_zone_delay <= 0 and running_zone[0].remaining_time <= abs(self.inter_zone_delay):
                 #start the next zone if there is one
                 if running_zone[1] < len(zones):
                     #not the last zone
+                    _LOGGER.warning (zones[running_zone[1]].name)
                     start_zone = zones[running_zone[1]]
                     zone_postion = running_zone[1]
                     running_zones.append([start_zone,zone_postion+1])
@@ -705,14 +700,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     #remove the current zone from monitoring
                     running_zones.pop(i)
 
-            if self.inter_zone_delay > 0 and zone.remaining_time == 0 and running_zone[1] < len(zones):
+            if self.inter_zone_delay > 0 and rzone.remaining_time == 0 and running_zone[1] < len(zones):
                 #there is a + IZD and there is a zone to follow
                 await asyncio.sleep(self.inter_zone_delay)
                 start_zone = zones[running_zone[1]]
                 zone_postion = running_zone[1]
                 running_zones.append([start_zone,zone_postion+1])
                 await self.zone_turn_on(start_zone)
-                if zone.state == 'off':
+                if rzone.state not in (CONST_ON, CONST_PENDING, CONST_ECO):
+                    #zone has turned off remove from the running zones
                     running_zones.pop(i)
             self.async_schedule_update_ha_state()
 
@@ -734,7 +730,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             "scheduled": self.scheduled,
             "zone": zone.name,
             "pump": zone.pump,
-            "runtime": zone.run_time(),
+            "runtime": await zone.run_time(),
             "water": zone.water_value,
             "wait": zone.wait_value,
             "repeat": zone.repeat_value,
@@ -790,14 +786,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         running_zones = []
         running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
-
         while self._program_remaining > 0:
             running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
+            self.async_schedule_update_ha_state()
         # clean up after the run
         for zone in self._run_zones:
             await self.async_finalise_run(zone, p_last_ran)
-
         self.async_schedule_update_ha_state()
+
         # run is complete stop pump monitoring
         background_tasks = set()
         for pump in self._pumps:
@@ -816,9 +812,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self.scheduled = False
         self._running_zone = []
         self._run_zones = []
-        await self.async_turn_off()
-        # program finished
         self.async_schedule_update_ha_state()
+        # program finished
 
     async def async_turn_off(self, **kwargs):
         """Stop the switch/program."""
@@ -827,9 +822,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self.scheduled = False
             self._running_zone = []
             self._run_zones = []
-            self.async_schedule_update_ha_state()
             for zone in self._irrigationzones:
                 await zone.async_turn_zone_off()
-                self.async_schedule_update_ha_state()
-                # run is complete stop pump monitoring
-
+        self.async_schedule_update_ha_state()

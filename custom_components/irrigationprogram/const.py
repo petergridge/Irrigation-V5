@@ -49,3 +49,17 @@ CONST_ZERO_FLOW_DELAY = 5
 CONST_OFF_DELAY = 5
 CONST_ENTITY = "entity_id"
 CONST_SWITCH = "switch"
+# valid sensor values
+CONST_ON =  'on'
+CONST_PENDING =  'pending'
+CONST_OPEN =  'open'
+CONST_CLOSED =  'closed'
+CONST_ECO =  'eco'
+CONST_OFF =  'off'
+CONST_DISABLED =  'disabled'
+CONST_PROGRAM_DISABLED =  'program_disabled'
+CONST_CONTROLLER_DISABLED =  "controller_disabled"
+CONST_UNAVAILABLE =  "unavailable"
+CONST_RAINING =  "raining"
+CONST_ADJUSTED_OFF =  "adjusted_off"
+CONST_NO_WATER_SOURCE =  "no_water_source"

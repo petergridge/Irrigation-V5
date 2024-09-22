@@ -100,7 +100,9 @@ class IrrigationCard extends HTMLElement {
 
       function addProgramRunConfigButtons() {
         var buttons = [];
-        let showconfig = hass.states[config.program].attributes["show_config"];
+
+        let showconfig = "binary_sensor." + config.program.split(".")[1] +  "_config";
+
         buttons[0] = {
           entity: config.program,
           show_name: true,
@@ -171,7 +173,8 @@ class IrrigationCard extends HTMLElement {
 
       function ProcessZone(zone, zone_attrs) {
         let pname = zone.split(".")[1];
-        let showconfig = hass.states[config.program].attributes[pname + "_show_config"];
+        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_" + pname + "_config";
+
         // list of other in order
         add_attr_value(pname + "_enable_zone", zone_attrs,showconfig);
         add_attr_value(pname + "_run_freq", zone_attrs, showconfig);
@@ -188,8 +191,7 @@ class IrrigationCard extends HTMLElement {
       function ZoneHeader(zone, zone_name, first_zone) {
 
         // process zone/zonegroup main section
-        let showconfig =
-          hass.states[config.program].attributes[zone_name + "_show_config"];
+        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_" + zone_name + "_config";
 
         if (config.show_program === false && first_zone && !config.title) {
           //do nothing
@@ -200,7 +202,22 @@ class IrrigationCard extends HTMLElement {
         addZoneRunConfigButtons(zone, showconfig);
         // Next/Last run details
         let zonestatus =
-          hass.states[config.program].attributes[zone_name + "_status"];
+          "sensor." + config.program.split(".")[1] + "_" + zone_name + "_status";
+        let zonenextrun =
+          "sensor." + config.program.split(".")[1] + "_" + zone_name + "_next_run";
+
+        entities.push({
+          type: "conditional",
+          conditions: [
+            { entity: zonestatus, state: ["off"] }
+          ],
+          row: {
+            entity: zonenextrun,
+            name: config.next_run_label || "Next Run",
+            icon: "mdi:clock-start",
+            format: "relative",
+          },
+        });
 
         entities.push({
           type: "conditional",
@@ -213,17 +230,6 @@ class IrrigationCard extends HTMLElement {
             icon: "mdi:alert-outline"
           },
         });
-
-        add_attribute(
-          zone_name + "_next_run",
-          config.next_run_label || "Next Run",
-          "mdi:clock-start",
-          [
-            { entity: zonestatus, state: ["off"]
-            },
-          ],
-          entities
-        );
 
         // Show the remaining time when on/eco/pending
         add_attribute(
@@ -261,7 +267,8 @@ class IrrigationCard extends HTMLElement {
         );
 
         //add the program level configuration
-        let showconfig = hass.states[config.program].attributes["show_config"];
+        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_config";
+
         add_attr_value("irrigation_on", entities, showconfig);
         add_attr_value("run_freq", entities, showconfig);
         add_attr_value("controller_monitor", entities, showconfig);
