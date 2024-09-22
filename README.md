@@ -193,6 +193,7 @@ Additionaly, zone switches that are not in a known (on, off) state will not be e
 As an alternative to the rain sensor you can use the watering adjustment feature. With this feature the integrator is responsible to provide a multiplier value using a input_number or sensor component. I imagine that this would be based on weather data or a moisture sensor.
 
 If a program or zone is run manually the adjustment is ignored and executed with the adjuster value of 1.
+The adjustment is static once the zone has started.
 
 See the **https://github.com/petergridge/openweathermaphistory** for a companion custom sensor that may be useful.
 
