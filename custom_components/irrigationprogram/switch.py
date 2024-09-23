@@ -113,7 +113,6 @@ async def async_setup_entry(
         "async_simulate_program",
     )
 
-
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
 
@@ -459,36 +458,32 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def entity_toggle_zone(self, zone) -> None:
         """Toggle a specific zone."""
-        for togglezone in zone:
-            # check if the zone is running turn it off
-            if self.hass.states.get(togglezone).state in ("on","open"):
-                # turn off the zone
-                for checkzone in self._irrigationzones:
-                    if checkzone.switch == togglezone:
-                        await checkzone.async_turn_zone_off()
-                        if checkzone.state == "pending":
-                            self._run_zones.remove(checkzone)
-                        self.async_schedule_update_ha_state()
-                        continue
-            elif self._run_zones == []:
-                self._running_zone = zone
-                self.scheduled = False
-                background_tasks = set()
-                loop = asyncio.get_event_loop()
-                task = loop.create_task(self.async_turn_on())
-                background_tasks.add(task)
-                task.add_done_callback(background_tasks.discard)
-            else:
-                #add the zone to the list to run
-                for checkzone in self._irrigationzones:
-                    if checkzone.switch == togglezone:
-                        if self._run_zones.count(checkzone) == 0:
-                            self._run_zones.append(checkzone)
-                            await checkzone.prepare_to_run(scheduled=False)
-                        else:
-                            await checkzone.async_turn_zone_off()
-                            if checkzone.state == "pending":
-                                self._run_zones.remove(checkzone)
+        #built to handle a list but only one
+        checkzone = None
+        togglezone = zone[0]
+
+        for czone in self._irrigationzones:
+            if czone.switch == togglezone:
+                checkzone = czone
+                break
+        if self._run_zones == []:
+            self._running_zone = zone
+            self.scheduled = False
+            background_tasks = set()
+            loop = asyncio.get_event_loop()
+            task = loop.create_task(self.async_turn_on())
+            background_tasks.add(task)
+            task.add_done_callback(background_tasks.discard)
+        elif self._run_zones.count(checkzone) == 0:
+            #add the zone to the list to run
+                self._run_zones.append(checkzone)
+                await checkzone.prepare_to_run(scheduled=False)
+        else:
+            # zone is running/queued turn it off
+            await checkzone.async_turn_zone_off()
+            if self._run_zones.count(checkzone) > 0:
+                self._run_zones.remove(checkzone)
+
         self.async_schedule_update_ha_state()
 
     async def async_simulate_program(self, scheduled) -> None:
@@ -658,10 +653,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             zone.name,
             ATTR_LAST_RAN,
         )
+
         if not self._running_zone and self._state is True and last_ran is not None:
             # not manual run or aborted
             self._extra_attrs[zonelastran] = last_ran
             zone.set_last_ran(last_ran)
+            self.async_schedule_update_ha_state()
             _LOGGER.debug("async_finalise_run - finalise run - last_ran %s", last_ran)
 
         # update the historical flow rate, better information for next run
@@ -677,41 +674,45 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Monitor zones to start based on inter zone delay."""
         if running_zones == []:
             # #start first zone
-            for i, zone in enumerate(zones,1):
-                running_zones.append([zone,i])
+            for zone in zones:
+                running_zones.append(zone)
                 await self.zone_turn_on(zone)
                 break
         await self.calculate_program_remaining(zones)
-        self.async_schedule_update_ha_state()
 
         #monitor the running zones
         rzones = running_zones
-        for i, running_zone in enumerate(rzones):
-            rzone = running_zone[0]
-            if self.inter_zone_delay <= 0 and running_zone[0].remaining_time <= abs(self.inter_zone_delay):
+        for running_zone in rzones:
+            if self.inter_zone_delay <= 0 and running_zone.remaining_time <= abs(self.inter_zone_delay):
+                #zone has turned off remove from the running zones
+                running_zones.remove(running_zone)
+                if self._run_zones.count(running_zone) > 0:
+                    self._run_zones.remove(running_zone)
                 #start the next zone if there is one
-                if running_zone[1] < len(zones):
-                    #not the last zone
-                    _LOGGER.warning (zones[running_zone[1]].name)
-                    start_zone = zones[running_zone[1]]
-                    zone_postion = running_zone[1]
-                    running_zones.append([start_zone,zone_postion+1])
-                    await self.zone_turn_on(start_zone)
-                    #remove the current zone from monitoring
-                    running_zones.pop(i)
+                for zone in zones:
+                    if zone.state in (CONST_PENDING):
+                        #start the next zone
+                        await self.zone_turn_on(zone)
+                        running_zones.append(zone)
+                        break
 
-            if self.inter_zone_delay > 0 and rzone.remaining_time == 0 and running_zone[1] < len(zones):
+            if self.inter_zone_delay > 0 and running_zone.remaining_time == 0:
                 #there is a + IZD and there is a zone to follow
-                await asyncio.sleep(self.inter_zone_delay)
-                start_zone = zones[running_zone[1]]
-                zone_postion = running_zone[1]
-                running_zones.append([start_zone,zone_postion+1])
-                await self.zone_turn_on(start_zone)
-                if rzone.state not in (CONST_ON, CONST_PENDING, CONST_ECO):
-                    #zone has turned off remove from the running zones
-                    running_zones.pop(i)
-            self.async_schedule_update_ha_state()
+                for zone in zones:
+                    if zone.state in (CONST_PENDING):
+                        #start the next zone
+                        await asyncio.sleep(self.inter_zone_delay)
+                        await self.zone_turn_on(zone)
+                        running_zones.append(zone)
+                        break
 
+            if running_zone.remaining_time == 0:
+                if running_zones.count(running_zone) > 0:
+                    running_zones.remove(running_zone)
+                if self._run_zones.count(running_zone) > 0:
+                    self._run_zones.remove(running_zone)
+
+        self.async_schedule_update_ha_state()
         await asyncio.sleep(1)
         return running_zones
 
@@ -744,6 +745,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # all zones will have the last ran of the program start
         p_last_ran = datetime.now(self._localtimezone)
         self._run_zones = await self.build_run_script(config=False)
+        #take a copy
+        scheduled_zones = self._run_zones.copy()
         if self._state is True:
             # program is still running
             for zone in self._run_zones:
@@ -778,19 +781,19 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             background_tasks.add(task)
             task.add_done_callback(background_tasks.discard)
 
-        #now start the program
+        # now start the program
         # calculate the remaining time for the program
         await self.calculate_program_remaining(self._run_zones)
         self.async_schedule_update_ha_state()
         await asyncio.sleep(1)
-
+        # Monitor and start the zone with lead/lag time
         running_zones = []
         running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
         while self._program_remaining > 0:
             running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
             self.async_schedule_update_ha_state()
         # clean up after the run
-        for zone in self._run_zones:
+        for zone in scheduled_zones:
             await self.async_finalise_run(zone, p_last_ran)
         self.async_schedule_update_ha_state()
 

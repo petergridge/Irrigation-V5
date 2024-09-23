@@ -304,19 +304,21 @@ class IrrigationZone:
     async def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False):
         """Update the run time component."""
 
-        if self.state != 'on':
-            self._water_adjust_prior = self.water_adjust_value
 
         if not self._scheduled and self._state not in (CONST_PENDING, CONST_ON, CONST_ECO):
             await self.set_state_sensor(self._state)
 
         wait = self.wait_value*60
         #if run manually do not adjust the time
+        if self.state != 'on':
+            self._water_adjust_prior = self.water_adjust_value
         if scheduled:
-            adjust = self._water_adjust_prior
+            if self.state != 'on':
+                adjust = self._water_adjust_prior
+            else:
+                adjust = self.water_adjust_value
         else:
             adjust = 1
-#            adjust = self._water_adjust_prior
 
         if self.flow_sensor is None:
             #time based
@@ -599,12 +601,16 @@ class IrrigationZone:
         self._stop = False
         self._state = CONST_ON
         #initalise the reamining time for display
-        if scheduled is True:
-            water_adjust_value = self.water_adjust_value
+        #if run manually do not adjust the time
+        if self.state != 'on':
+            self._water_adjust_prior = self.water_adjust_value
+        if scheduled:
+            if self.state != 'on':
+                water_adjust_value = self._water_adjust_prior
+            else:
+                water_adjust_value = self.water_adjust_value
         else:
             water_adjust_value = 1
-            water_adjust_value = self.water_adjust_value
-
         await self.next_run()
 
         # run the watering cycle, water/wait/repeat
