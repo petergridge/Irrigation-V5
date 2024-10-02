@@ -114,7 +114,8 @@
 					"unavailable": "Unavailable",
 					"raining": "Raining",
 					"adjusted_off": "Addjusted off",
-					"no_water_source": "No water source detected"
+					"no_water_source": "No water source detected",
+					"zone_disabled" : "Disabled"
 				}
 			}
 		}

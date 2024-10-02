@@ -47,6 +47,7 @@ from .const import (
     CONST_SWITCH,
     CONST_UNAVAILABLE,
     CONST_ZERO_FLOW_DELAY,
+    CONST_ZONE_DISABLED,
     DOMAIN,
     RAINBIRD,
     RAINBIRD_DURATION,
@@ -284,6 +285,15 @@ class IrrigationZone:
         servicedata = {ATTR_ENTITY_ID: device, 'status': state}
         await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
 
+    async def get_state_sensor(self):
+        '''Set the state sensor.'''
+        program = slugify(self._program.name)
+        zone = slugify(self.name)
+        device = f'sensor.{program}_{zone}_status'
+        # servicedata = {ATTR_ENTITY_ID: device, 'status': state}
+        # await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
+        return self.hass.states.get(device).state
+
     async def set_zone_next_run_sensor(self, state):
         '''Set the state sensor.'''
         if isinstance(state,datetime):
@@ -296,6 +306,7 @@ class IrrigationZone:
 
     async def prepare_to_run(self,scheduled=False):
         """Initialise the remaining time when the program is started."""
+        self._scheduled = scheduled
         self._remaining_time = await self.run_time(repeats=self.repeat_value,scheduled=scheduled)
         await self._program.set_zone_run_time_attr(self.name, self._remaining_time)
         self._state = CONST_PENDING
@@ -304,20 +315,23 @@ class IrrigationZone:
     async def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False):
         """Update the run time component."""
 
-
-        if not self._scheduled and self._state not in (CONST_PENDING, CONST_ON, CONST_ECO):
-            await self.set_state_sensor(self._state)
+        # if not self._scheduled and self._state not in (CONST_PENDING, CONST_ON, CONST_ECO):
+        #     _LOGGER.error("code called")
+        #     await self.set_state_sensor(self._state)
 
         wait = self.wait_value*60
-        #if run manually do not adjust the time
-        if self.state != 'on':
+        #make the water adjustment static once the program starts
+        if self.state not in (CONST_ECO,CONST_ON):
             self._water_adjust_prior = self.water_adjust_value
+            #_LOGGER.warning('state is off')
         if scheduled:
-            if self.state != 'on':
+            if self.state in (CONST_ECO,CONST_ON):
                 adjust = self._water_adjust_prior
+                #_LOGGER.warning('state is on')
             else:
                 adjust = self.water_adjust_value
         else:
+            #if run manually do not adjust the time
             adjust = 1
 
         if self.flow_sensor is None:
@@ -360,7 +374,7 @@ class IrrigationZone:
 
     async def next_run_validation(self):
         """Validate the object readyness."""
-        if self.enable_zone_value is False or self.water_value == 0:
+        if self.water_value == 0:
             return CONST_DISABLED
         if self._program.irrigation_on_value is False:
             return  CONST_PROGRAM_DISABLED
@@ -368,17 +382,22 @@ class IrrigationZone:
             return  CONST_CONTROLLER_DISABLED
         if await self.check_switch_state() is None:
             return CONST_UNAVAILABLE
+        if self.water_source_value is False:
+            return CONST_NO_WATER_SOURCE
+        if self.enable_zone_value is False :
+            return CONST_ZONE_DISABLED
         if self.rain_sensor_value is True and self.ignore_rain_sensor_value is False:
             return CONST_RAINING
         if self.water_adjust_value <= 0:
             return CONST_ADJUSTED_OFF
-        if self.water_source_value is False:
-            return CONST_NO_WATER_SOURCE
         return False
-
 
     async def next_run(self):
         '''Determine when a zone will next attempt to run.'''
+        #something has changed recacl the run time
+        if self._state == CONST_PENDING:
+            await self.prepare_to_run(scheduled=self._scheduled)
+
         #is called when anything changes that will impact the
         #the next run date, frequency change, rain ...
         time = datetime.now(self._localtimezone).strftime(TIME_STR_FORMAT)
@@ -530,24 +549,22 @@ class IrrigationZone:
         '''Determine if the zone should run.'''
         #determine the default time used when the runtime LT zone delay
         self._default_time = await self.run_time(repeats=self.repeat_value,scheduled=True)
+        state = await self.get_state_sensor()
+        _LOGGER.debug('SHould run: zone  %s, State %s, Scheduled %s',self.name, state, scheduled)
 
         #zone has been turned off or is offline
-        if self._next_run in [CONST_DISABLED, CONST_PROGRAM_DISABLED,
-                              CONST_UNAVAILABLE, CONST_CONTROLLER_DISABLED,
-                              CONST_NO_WATER_SOURCE]:
-            _LOGGER.debug('zone - should run: false')
+        if state in [CONST_DISABLED, CONST_PROGRAM_DISABLED,
+                    CONST_UNAVAILABLE, CONST_CONTROLLER_DISABLED,
+                    CONST_NO_WATER_SOURCE]:
             return False
         #zone should still run when manually started
         if scheduled is True:
-            if self._next_run in [CONST_RAINING, CONST_ADJUSTED_OFF, CONST_OFF]:
-                _LOGGER.debug('zone - should - run false, when scheduled')
+            if state in [CONST_RAINING, CONST_ADJUSTED_OFF,CONST_ZONE_DISABLED]:
                 return False
             #next run time is in the future
             if self.next_run_dt > datetime.now(self._localtimezone):
-                _LOGGER.debug('next run is in the future')
                 return False
         #should run
-        _LOGGER.debug('should run')
         return True
     # end should_run
 
@@ -600,12 +617,14 @@ class IrrigationZone:
         """Start the zone watering cycle."""
         self._stop = False
         self._state = CONST_ON
+        self._scheduled = scheduled
         #initalise the reamining time for display
         #if run manually do not adjust the time
-        if self.state != 'on':
+        if self.state not in (CONST_ECO,CONST_ON):
+            #record the adjusted time prior to the zone starting
             self._water_adjust_prior = self.water_adjust_value
         if scheduled:
-            if self.state != 'on':
+            if self.state in (CONST_ECO,CONST_ON):
                 water_adjust_value = self._water_adjust_prior
             else:
                 water_adjust_value = self.water_adjust_value
@@ -717,6 +736,7 @@ class IrrigationZone:
 
         self._state = CONST_OFF
         self._stop = True
+        self._scheduled = False
         self._remaining_time = 0
         await self._program.set_zone_run_time_attr(self.name,self.remaining_time)
         await self.set_state_sensor(self._state)

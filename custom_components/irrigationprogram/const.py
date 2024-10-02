@@ -63,3 +63,4 @@ CONST_UNAVAILABLE =  "unavailable"
 CONST_RAINING =  "raining"
 CONST_ADJUSTED_OFF =  "adjusted_off"
 CONST_NO_WATER_SOURCE =  "no_water_source"
+CONST_ZONE_DISABLED =  'zone_disabled'

@@ -94,7 +94,9 @@
 				"unavailable": "Nicht verfügbar",
 				"raining": "Regnet",
 				"adjusted_off": "Eingestellt aus",
-				"no_water_source": "Keine Wasserquelle gefunden"
+				"no_water_source": "Keine Wasserquelle gefunden",
+				"zone_disabled": "Deaktiviert"
+
 		}
 		},
 		"device_type": {

@@ -26,7 +26,7 @@ class PumpClass:
         pump = {ATTR_ENTITY_ID: self._pump}
 
         def zone_running():
-            return any(self.hass.states.get(zone).state == "on" for zone in self._zones)
+            return any(self.hass.states.get(zone).state in ("on","open") for zone in self._zones)
 
         def pump_running():
             if self.hass.states.get(self._pump).state == "on":
@@ -37,7 +37,7 @@ class PumpClass:
         while not self._stop:
             #check if any of the zones are running
             if zone_running():
-                if self.hass.states.is_state(self._pump, "off"):
+                if self.hass.states.get(self._pump).state in ("off","closed"):
                     await self.hass.services.async_call(
                         CONST_SWITCH, SERVICE_TURN_ON, pump
                     )
@@ -52,7 +52,7 @@ class PumpClass:
             if not zone_running() and pump_running():
                 await asyncio.sleep(self._off_delay)
                 if (
-                    self.hass.states.is_state(self._pump, "on")
+                    self.hass.states.get(self._pump).state in ("on","open")
                     and not zone_running()
                 ):
                     await self.hass.services.async_call(
@@ -75,15 +75,15 @@ class PumpClass:
         '''Flag turn off pump monitoring.'''
         _LOGGER.debug('Pump Class zone monitoring has stopped')
         self._stop = True
-        if self.hass.states.is_state(self._pump, "on"):
+        if self.hass.states.get(self._pump).state in ("on","open"):
             await self.hass.services.async_call(
                 CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._pump}
             )
 
     def check_switch_state(self):
         """Check the solenoid state if turned off stop this instance."""
-        if self.hass.states.is_state(self._pump, "off"):
+        if self.hass.states.get(self._pump).state in ("off","closed"):
             return False
-        if self.hass.states.is_state(self._pump, "on"):
+        if self.hass.states.get(self._pump).state in ("on","open"):
             return True
         return None

@@ -89,7 +89,13 @@
 				"disabled": "Disabled",
 				"pending": "Pending",
 				"eco": "ECO",
-				"onhold": "On-hold"
+				"program_disabled": "Program disabled",
+				"controller_disabled": "Controller disabled",
+				"unavailable": "Unavailable",
+				"raining": "Raining",
+				"adjusted_off": "Adjusted off",
+				"no_water_source": "No water source detected",
+				"zone_disabled": "Disabled"
 			}
 		},
 		"device_type": {
@@ -113,7 +119,8 @@
 					"unavailable": "Unavailable",
 					"raining": "Raining",
 					"adjusted_off": "Adjusted off",
-					"no_water_source": "No water source detected"
+					"no_water_source": "No water source detected",
+					"zone_disabled": "Disabled"
 				}
 			}
 		}

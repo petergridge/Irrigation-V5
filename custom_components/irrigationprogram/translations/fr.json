@@ -94,7 +94,8 @@
 				"unavailable": "Indisponible",
 				"raining": "Pluie",
 				"adjusted_off": "Aucun ajustement",
-				"no_water_source": "Source d'eau non détectée"
+				"no_water_source": "Source d'eau non détectée",
+				"zone_disabled": "Désactivé"
 		}
 		},
 		"device_type": {
@@ -118,7 +119,8 @@
 					"unavailable": "Indisponible",
 					"raining": "Pluie",
 					"adjusted_off": "Aucun ajustement",
-					"no_water_source": "Source d'eau non détectée"
+					"no_water_source": "Source d'eau non détectée",
+					"zone_disabled": "Désactivé"
 				}
 			}
 		}

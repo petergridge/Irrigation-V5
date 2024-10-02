@@ -28,6 +28,7 @@ from .const import (
     CONST_PROGRAM_DISABLED,
     CONST_RAINING,
     CONST_UNAVAILABLE,
+    CONST_ZONE_DISABLED,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -113,7 +114,8 @@ class ZoneStatus(SensorEntity):
             CONST_PENDING,
             CONST_PROGRAM_DISABLED,
             CONST_RAINING,
-            CONST_UNAVAILABLE
+            CONST_UNAVAILABLE,
+            CONST_ZONE_DISABLED
             ]
 
     @property

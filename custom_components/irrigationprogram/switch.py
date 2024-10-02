@@ -122,9 +122,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self, hass: HomeAssistant, unique_id, config, device_id, config_entry
     ) -> None:
         """Initialize a Irrigation program."""
-        self.config_entry = config_entry
         self.hass = hass
-        self._config = config
         self._name = config.get(CONF_NAME, device_id)
         self._start_time = config.get(ATTR_START)
         self._run_freq = config.get(ATTR_RUN_FREQ)
@@ -268,7 +266,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     # create pump - zone list
                     if zone.pump not in pumps:
                         pumps[zone.pump] = [zone.switch]
-                        _LOGGER.debug("hass_started - creating pump %s", zone.pump)
                     else:
                         pumps[zone.pump].append(zone.switch)
 
@@ -623,7 +620,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         continue
                 # auto_run where program started based on start time
                 if await zone.should_run(self.scheduled) is False:
-                    _LOGGER.debug("build_run_script - should run false %s", zone.name)
                     # calculate the next run
                     continue
 
@@ -745,8 +741,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # all zones will have the last ran of the program start
         p_last_ran = datetime.now(self._localtimezone)
         self._run_zones = await self.build_run_script(config=False)
-        #take a copy
+        #take a copy to finalise with
         scheduled_zones = self._run_zones.copy()
+
         if self._state is True:
             # program is still running
             for zone in self._run_zones:
