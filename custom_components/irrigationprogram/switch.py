@@ -42,6 +42,7 @@ from .const import (
     ATTR_RAIN_SENSOR,
     ATTR_REMAINING,
     ATTR_REPEAT,
+    ATTR_RESET,
     ATTR_RUN_FREQ,
     ATTR_SCHEDULED,
     ATTR_START,
@@ -103,7 +104,7 @@ async def async_setup_entry(
 
     platform.async_register_entity_service(
         "reset_runtime",
-        {},
+        {vol.Optional(ATTR_RESET, default=10): cv.positive_int},
         "entity_reset_runtime",
     )
 
@@ -496,11 +497,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         for testzone in self._irrigationzones:
             await testzone.async_test_zone(scheduled)
 
-    async def entity_reset_runtime(self) -> None:
+    async def entity_reset_runtime(self, reset=10) -> None:
         """Reset last runtime to support testing."""
         for zone in self._irrigationzones:
-            last_ran = datetime.now(self._localtimezone) - timedelta(days=10)
-            zone.set_last_ran(last_ran)
+            last_ran = datetime.now(self._localtimezone) - timedelta(days=reset)
+            await zone.set_last_ran(last_ran)
             # update the attributes
             attr = self.format_attr(
                 zone.name,
@@ -653,7 +654,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if not self._running_zone and self._state is True and last_ran is not None:
             # not manual run or aborted
             self._extra_attrs[zonelastran] = last_ran
-            zone.set_last_ran(last_ran)
+            await zone.set_last_ran(last_ran)
             self.async_schedule_update_ha_state()
             _LOGGER.debug("async_finalise_run - finalise run - last_ran %s", last_ran)
 

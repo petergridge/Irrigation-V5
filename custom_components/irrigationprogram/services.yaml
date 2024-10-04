@@ -55,6 +55,14 @@ reset_runtime:
         entity:
             integration: irrigationprogram
             domain: switch
+    reset:
+      name: Reset
+      description: Number of days in the past to reset the last ran attribute
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 10
 
 run_simulation:
   description: Simulate running a program. The results are shown in the log.

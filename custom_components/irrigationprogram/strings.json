@@ -38,11 +38,15 @@
 		},
 		"reset_runtime":{
 			"name": "Reset runtimes",
-			"description": "Reset the runtime back to none for the program supports testing.",
+			"description": "Reset the runtime back a number of days for the program supports testing.",
 			"fields": {
 				"entity_id": {
 					"name": "Irrigation Program",
 					"description": "The irrigation program to run"
+				},
+				"reset": {
+					"name": "Reset days",
+					"description": "Number of days to back date the last ran attribute"
 				}
 			}
 		},

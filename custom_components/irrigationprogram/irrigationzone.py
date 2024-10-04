@@ -315,10 +315,6 @@ class IrrigationZone:
     async def run_time(self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=False):
         """Update the run time component."""
 
-        # if not self._scheduled and self._state not in (CONST_PENDING, CONST_ON, CONST_ECO):
-        #     _LOGGER.error("code called")
-        #     await self.set_state_sensor(self._state)
-
         wait = self.wait_value*60
         #make the water adjustment static once the program starts
         if self.state not in (CONST_ECO,CONST_ON):
@@ -562,6 +558,7 @@ class IrrigationZone:
             if state in [CONST_RAINING, CONST_ADJUSTED_OFF,CONST_ZONE_DISABLED]:
                 return False
             #next run time is in the future
+            _LOGGER.debug('SHould run: next %s now %s',self.next_run_dt,datetime.now(self._localtimezone))
             if self.next_run_dt > datetime.now(self._localtimezone):
                 return False
         #should run
@@ -630,7 +627,7 @@ class IrrigationZone:
                 water_adjust_value = self.water_adjust_value
         else:
             water_adjust_value = 1
-        await self.next_run()
+#        await self.next_run()
 
         # run the watering cycle, water/wait/repeat
         zeroflowcount = 0
@@ -773,9 +770,10 @@ class IrrigationZone:
         _LOGGER.warning('Switch has latency exceding %s seconds, cannot confirm %s state, unexpected behaviour may occur', CONST_LATENCY+1, self.switch)
         return True
 
-    def set_last_ran(self, p_last_ran):
+    async def set_last_ran(self, p_last_ran):
         '''Update the last ran attribute.'''
         self._last_ran = p_last_ran
+        await self.next_run()
 
     def validate(self):
         '''Validate inputs.'''

@@ -43,6 +43,10 @@
 				"entity_id": {
 					"name": "Programme d'irrigation",
 					"description": "Le programme d'irrigation à exécuter"
+				},
+				"reset": {
+					"name": "Reset days",
+					"description": "Number of days to back date the last ran attribute"
 				}
 			}
 		},

@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update listener, called when the config entry options are changed."""
-    _LOGGER.warning("reload %s", ConfigEntry)
+    _LOGGER.debug("reload %s", ConfigEntry)
     await hass.config_entries.async_reload(entry.entry_id)
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
