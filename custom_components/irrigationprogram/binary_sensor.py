@@ -69,7 +69,7 @@ class ProgramConfig(SensorEntity):
     ) -> None:
 
         self._state          = 'off'
-        self._attr_unique_id = slugify(f'{unique_id}_config')
+        self._uuid           = slugify(f'{unique_id}_config')
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_has_entity_name = True
         self._attr_name = slugify(f'{program}_config')
@@ -85,6 +85,10 @@ class ProgramConfig(SensorEntity):
             self._state = 'on'
         self.async_schedule_update_ha_state()
 
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
     @property
     def native_value(self):
         """Return the state."""
@@ -103,7 +107,7 @@ class ZoneConfig(SensorEntity):
     ) -> None:
 
         self._state          = 'off'
-        self._attr_unique_id = slugify(f'{unique_id}_{zone}_config')
+        self._uuid           = slugify(f'{unique_id}_{zone}_config')
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_has_entity_name = True
         self._attr_name = slugify(f'{program}_{zone}_config')
@@ -119,6 +123,10 @@ class ZoneConfig(SensorEntity):
             self._state = 'on'
         self.async_schedule_update_ha_state()
 
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
     @property
     def native_value(self):
         """Return the state."""

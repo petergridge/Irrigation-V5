@@ -8,7 +8,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_platform
+from homeassistant.helpers import entity_platform, entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
@@ -85,8 +85,8 @@ class ZoneStatus(SensorEntity):
         unique_id
     ) -> None:
 
-        self._state          = 'off'
-        self._attr_unique_id = slugify(f'{unique_id}_{zone}_status')
+        self._state             = 'off'
+        self._uuid              = slugify(f'{unique_id}_{zone}_status')
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_has_entity_name = True
         self._attr_name = slugify(f'{program}_{zone}_status')
@@ -119,6 +119,10 @@ class ZoneStatus(SensorEntity):
             ]
 
     @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
+    @property
     def native_value(self):
         """Return the state."""
         return self._state
@@ -134,8 +138,8 @@ class ZoneNextRun(SensorEntity):
         unique_id
     ) -> None:
 
-        self._state          = None #datetime.now()
-        self._attr_unique_id = slugify(f'{unique_id}_{zone}_next_run')
+        self._state             = None #datetime.now()
+        self._uuid              = slugify(f'{unique_id}_{zone}_next_run')
         self._attr_device_class = SensorDeviceClass.TIMESTAMP
         self._attr_has_entity_name = True
         self._attr_name = slugify(f'{program}_{zone}_next_run')
@@ -143,10 +147,13 @@ class ZoneNextRun(SensorEntity):
 
     async def set_zone_next_run(self, status=None):
         '''Set the runtime state value.'''
-        self._state = status #.strftime("%c")
+        self._state = status
         self.async_schedule_update_ha_state()
 
-
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
     @property
     def native_value(self):
         """Return the state."""

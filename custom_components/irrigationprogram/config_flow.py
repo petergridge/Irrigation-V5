@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import contextlib
+from datetime import datetime
 import logging
 from typing import Any
 import uuid
+from zoneinfo import ZoneInfo
 
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv, selector as sel
+from homeassistant.helpers import (
+    config_validation as cv,
+    entity_registry as er,
+    selector as sel,
+)
 
 from .const import (
     ATTR_DELAY,
@@ -90,7 +97,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     """FLow handler."""
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
-    VERSION = 4
+    VERSION = 5
 
     def __init__(self) -> None:
         """Initialise."""
@@ -216,7 +223,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     '''Option flow.'''
 
-    VERSION = 4
+    VERSION = 5
     def __init__(self, config_entry) -> None:
         """Initialise option flow."""
         self.config_entry = config_entry
@@ -275,10 +282,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update({ATTR_ZONES:sortedzones})
         #the top level of the dictionary needs to change
         #for HA update to trigger, bug?
-        if newdata.get('xx') == 'x':
-            newdata.update({'xx': 'y'})
-        else:
-            newdata.update({'xx': 'x'})
+        localtimezone = ZoneInfo(self.hass.config.time_zone)
+        updated = datetime.now(localtimezone).strftime("%Y-%m-%d %H:%M:%S.%f")
+        newdata.update({'updated': updated})
+
         # User is done adding, create the config entry.
         return self.async_create_entry(
             title=self._data.get(CONF_NAME), data=newdata
@@ -326,7 +333,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         for n in range(len(zones) - 1, 0, -1):
             # Inner loop to compare adjacent elements
             for i in range(n):
-                if zones[i].get('order',99999) > zones[i + 1].get('order',9999):
+                if zones[i].get('order',0) > zones[i + 1].get('order',0):
                     # Swap elements if they are in the wrong order
                     zones[i], zones[i + 1] = zones[i + 1], zones[i]
         return zones
@@ -338,12 +345,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         zones = []
         newdata = {}
         newdata.update(self._data)
-        # _LOGGER.warning(self.bubble_sort(newdata[ATTR_ZONES]))
+
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
                 return await self.async_step_init()
-
             # find the position of the zone in the zones.
             zones = self.bubble_sort(newdata[ATTR_ZONES]) #newdata[ATTR_ZONES]
             for zonenumber, zone in enumerate(zones):
@@ -351,6 +357,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if (friendlyname) == user_input.get(ATTR_ZONE):
                     # delete the zone from the list of zones
                     newdata[ATTR_ZONES].pop(zonenumber)
+                    status = cv.slugify(f'{self._name}_{friendlyname}_status').lower()
+                    nextrun = cv.slugify(f'{self._name}_{friendlyname}_next_run').lower()
+                    config= cv.slugify(f'{self._name}_{friendlyname}_config').lower()
+                    er.async_get(self.hass).async_remove(f'sensor.{status}')
+                    er.async_get(self.hass).async_remove(f'sensor.{nextrun}')
+                    er.async_get(self.hass).async_remove(f'binary_sensor.{config}')
                     break
 
             self._data = newdata
@@ -382,7 +394,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         sortedzones = self.bubble_sort(self._data.get(ATTR_ZONES))
 
-#        for zonenumber,zone in enumerate(self._data.get(ATTR_ZONES)):
         for zonenumber,zone in enumerate(sortedzones):
             friendlyname = zone.get(ATTR_ZONE)
             text = (str(zonenumber) + ': ' + friendlyname)

@@ -290,8 +290,6 @@ class IrrigationZone:
         program = slugify(self._program.name)
         zone = slugify(self.name)
         device = f'sensor.{program}_{zone}_status'
-        # servicedata = {ATTR_ENTITY_ID: device, 'status': state}
-        # await self.hass.services.async_call(DOMAIN, 'set_zone_status', servicedata)
         return self.hass.states.get(device).state
 
     async def set_zone_next_run_sensor(self, state):

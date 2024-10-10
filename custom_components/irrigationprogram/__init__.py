@@ -160,8 +160,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         new.update({ATTR_DEVICE_TYPE: 'generic'})
         with contextlib.suppress(KeyError):
             new.pop(ATTR_SHOW_CONFIG)
-        config_entry.version = 3
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        hass.config_entries.async_update_entry(config_entry, data=new, version=3)
 
     if config_entry.version == 3:
         if config_entry.options == {}:
@@ -169,13 +168,20 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         else:
             new = {**config_entry.options} #config_entry.options
 
-        try:
+        with contextlib.suppress(KeyError):
             new.pop(ATTR_GROUPS)
-            _LOGGER.info("Removing Groups configuration")
-        except KeyError:
-            pass
-        config_entry.version = 4
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        hass.config_entries.async_update_entry(config_entry, data=new, version = 4)
+
+    if config_entry.version == 4:
+        if config_entry.options == {}:
+            new = {**config_entry.data} #config_entry.data
+        else:
+            new = {**config_entry.options} #config_entry.options
+
+        with contextlib.suppress(KeyError):
+            new.pop('xx')
+        hass.config_entries.async_update_entry(config_entry, data=new, version=5)
+
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
