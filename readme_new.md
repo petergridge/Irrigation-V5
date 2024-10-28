@@ -1,10 +1,42 @@
 ## Content
+- [operation]
+  - [Scheduled v manual operation]
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
+- Release notes
+
+# Operation
+This section provides details of how the program operates.
+
+### Enable options
+![image](https://github.com/user-attachments/assets/fa08bd64-ab21-4176-9887-f18688ad7205)
+
+Helpers are created to allow the disabling of the program or zones.
+- Program is disabled
+  - Program and zones will not start in any circumstance
+- Zone is disabled
+  - Will still start on the manual execution of the Program or zone
+  - Will not start on a scheduled event
+
+### Ignore options
+Helpers are created to support ignoring sensors that impact the operation of the program
+- Ignore rain sensor
+- Ignore adjustment
+The water source sensor is always honoured as this may impact install pumps.
+
+### Zone Transition
+![image](https://github.com/user-attachments/assets/aa29dc28-47d1-411a-b8b8-15b4f9f501c9)
+
+Sets the overlap or wait time when zones start. This can be used to manage 'hammering' when zones stop and start
+
+
+
+
 
 
 
 
 # Configuration
+The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
 
 ## Program definition
 
@@ -77,12 +109,14 @@ This option prevents two programs executing concurrently, the second program to 
 
 Options available:
 - Time selector, supporting the selction of a single start time for the program
-- Multistart, provides an text input that accepts multiple start times for example 08:00:00,18:00:00 to run at 6am and 6pm.
+- Multistart, provides an text input that accepts multiple start times for example 08:00:00,18:00:00 to run at 6am and 6pm. 
 - Sunrise, this provides the base start time of sunrise with an option to offet the time using a numeric slider
 - Sunset, this provides the base start time of sunset with an option to offet the time using a numeric slider
 
 Sunrise and sunset are obtained from the SUN integration.
 
+### Latency
+Set the wait time before a zone is reported as offline, This supports implementation where there is a delay in setting the switch/valve state when turned on/off
 
-
-
+### Pump delay
+Set the delay between a zone stopping and the pump/master solenoid turning off.
