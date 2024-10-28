@@ -1,5 +1,4 @@
 # PROGRAM DEFINITION
-![image](https://github.com/user-attachments/assets/b0cadeef-1080-4719-b3bd-6b1552de6167)
 
 ## Program Name
 
@@ -57,7 +56,7 @@ When the Adjustment sensor is defined the volume to be delivered will be adjuste
 
 It is expected that the senor will provide a multiplying factor to change the defined watering time. If there has been rain or rain is expected you could reduce the watering requirement or if a hot spell is expected you can increase the watering requirement.
 
-See OpenWeatherMap History component.
+See: [OpenWeatherMap History component](https://github.com/petergridge/openweathermaphistory)
 
 ## Rain Sensor
 
