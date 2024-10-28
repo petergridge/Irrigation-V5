@@ -1,5 +1,5 @@
 ## Content
-- [Configuration](https://github.com/petergridge/Irrigation-V5/edit/main/readme_new.md#configuration)
+- [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
 
 
 
