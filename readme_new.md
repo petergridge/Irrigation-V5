@@ -1,8 +1,14 @@
 ## Content
-- [operation]
-  - [Scheduled v manual operation]
+- [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom_card)
+- [Operation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#operation)
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
 - Release notes
+
+# Custom Card
+The custom card is installed with the component.
+![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
+
+
 
 # Operation
 This section provides details of how the program operates.
