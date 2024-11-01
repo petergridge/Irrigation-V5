@@ -25,12 +25,12 @@ The card can be set to display one or more zones to support flexibility
 * Modify programs and zones, add new zones, delete zones
 
 ### Basic Configuration
-All entities to support the features are created automatically. You only need to provide the switches and exteranl sensors that provide information to the system.
+All entities to support the features are created automatically. You only need to provide the switches and external sensors that provide information to the system.
 
 ### Test configuration
 [testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
 
-This allow me to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hinernation.
+This allow you to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hinernation.
 
 Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
 
@@ -51,7 +51,12 @@ Four options are avilable to configure the start time. These can be selected fro
   - calculates the start time based on the sunrise time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
 - Sunset
   - calculates the start time based on the sunset time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
+### Frequency
+The schedule can be configured to support a run frequency as a numeric value, 1 = every day, 2 = every two days. You can also configure the program to run on specific days of the week. 'sun,tue, thu' will run the program on Sunday, Tuesday and Thursday only.
 
+The schedule can be set at the program level to apply to all zones. Or a schdeule can be set independantly on each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2. 
+
+If both are set the zone level frequency takes precidence.
 
 ### Enable options
 ![image](https://github.com/user-attachments/assets/fa08bd64-ab21-4176-9887-f18688ad7205)
