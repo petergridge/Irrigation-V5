@@ -52,11 +52,15 @@ Four options are avilable to configure the start time. These can be selected fro
 - Sunset
   - calculates the start time based on the sunset time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
 ### Frequency
-The schedule can be configured to support a run frequency as a numeric value, 1 = every day, 2 = every two days. You can also configure the program to run on specific days of the week. 'sun,tue, thu' will run the program on Sunday, Tuesday and Thursday only.
+The schedule can be configured to :
+- To run every n days, 1 = every day, 2 = every two days and so on. 
+- On specific week days, 'sun,tue,thu' will run the program on Sunday, Tuesday and Thursday only.
 
-The schedule can be set at the program level to apply to all zones. Or a schdeule can be set independantly on each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2. 
-
-If both are set the zone level frequency takes precidence.
+The schedule can be set at:
+- The program level to apply to all zones.
+- On each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2.
+- A combination of both
+- If both are set the zone level frequency takes precidence.
 
 ### Enable options
 ![image](https://github.com/user-attachments/assets/fa08bd64-ab21-4176-9887-f18688ad7205)
@@ -68,23 +72,39 @@ Helpers are created to allow the disabling of the program or zones.
   - Will still start on the manual execution of the Program or zone
   - Will not start on a scheduled event
 
-### Ignore options
-Helpers are created to support ignoring sensors that impact the operation of the program
-- Ignore rain sensor
-- Ignore adjustment
-The water source sensor is always honoured as this may impact install pumps.
-
 ### Zone Transition
-![image](https://github.com/user-attachments/assets/aa29dc28-47d1-411a-b8b8-15b4f9f501c9)
+The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively.
 
-Sets the overlap or wait time when zones start. This can be used to manage 'hammering' when zones stop and start
+### Disabling programs and zones
+You can disable a program or zone.
+- If the program is disabled it will not run when the scheduled
+- If a zone is disabled it will not run when the rest of the schedule executes.
+However when triggered manually from the interface the entire program will run.
 
+### Impact of sensors
+A number of sensors can be defined
+- A rain sensor can be defined on each zone if active this will prevent the zone activating when executed via the schedule when it is active. It will run if actioned manually.
+- Water source or well sensor, if inactive it will prevent any activation and stop running zones after a 5 second delay.
+- Controller monitor, this monitors the avaialability of the controller hardware and prevents the program starting if inactive.
+- Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multipler applied to the watering time/volume. Use this to adjust the amount of water applied less on rainy days more on hot days.
 
+### Time v Volume
+Watering can be controlled using time or if you have a calibrated flow sensor by volume.
 
+### Pump or master solenoid
+You can define a pump or master solenoid to be triggered with each zone. This valve will remain on for 5 seconds between zones to limit unnecessary cycling of the pump. If ECO mode is used the pump will shut down between cycles.
 
+### ECO
+Configuring ECO mode on a zone will provision the wait and repeat options. This is used to limit run off by allowing for multiple short watering cycles to encourage the water to penetrate the soil. Ideal for pot plants.
 
+### Concurrent programs
+You can configure multiple programs, by default if program executions overlap the second program will terminate the active one. This can be disabled in the advance options of the configuration. The setting must be updated on each program instance.
 
+### Next run behaviour
+The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run if it has already run on that day.
 
+### Last ran
+This is set after any successfull completion of the zone. All zones triggered together will have the same Last ran value set.
 
 # Configuration[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
