@@ -46,7 +46,7 @@ Diagnostic information can be downloaded and shared using from the integration m
 
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
-![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
+<img width="746" alt="image" src="https://github.com/user-attachments/assets/1c8d2d37-01ba-4dc7-8725-a8624d04c95d">
 
 The card can be set to display one or more zones to support flexibility 
 - The program selection will list only IrrigationProgram entities
@@ -210,9 +210,9 @@ Sunrise and sunset are obtained from the SUN integration.
 ## Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
 - A significant redevlopment
+  - Updated documentation
   - All entities that previously required helpers are now created (and cleaned up) automatically
-  - Functionality is prinicply the same ans the previous release
-
+  - Functionality is prinicply the same as the previous release
 ### V2024.10.xx
 * Manage entiy register when zone is deleted
 * Fix run frequency issues
@@ -223,9 +223,8 @@ Sunrise and sunset are obtained from the SUN integration.
 * Support +/- inter zone delay (delay between zone/overlap of zones)
 * Improve start/stop processing of zones while a program is running, if a zone is started while a program is running it will be appended to the run.
 * Add translation for status values in the card
-* Add French translation### V5.4.20
+* Add French translation
 * support for Valve objects - Open/Close only, Position not supported
 * Refactor datetime usage for a more consistent approach
 * Fix system monitor notification
-* Add French translation.
 * Update to hass.config_entries.async_forward_entry_setups
