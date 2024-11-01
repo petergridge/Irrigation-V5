@@ -5,7 +5,7 @@
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
 - Release notes
 
-# Custom Card [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+# Custom Card  [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
 ![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
 
@@ -14,7 +14,7 @@ The card can be set to display one or more zones to support flexibility
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
 
-# Installation [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+# Installation  [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
 ### HACS installation
 * Adding the repository using HACS is the simplest approach. The Custom Card deployed with the component, no need to install separately.
@@ -38,7 +38,7 @@ Be aware this is a sumulation, variatons in latency or behaviour of indivdual im
 
 
 
-# Features [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+# Features  [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 This section provides details of how the program operates.
 
 ### Start time
@@ -81,7 +81,7 @@ Sets the overlap or wait time when zones start. This can be used to manage 'hamm
 
 
 
-# Configuration [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+# Configuration  [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
 
 ## Program definition
