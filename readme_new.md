@@ -1,18 +1,22 @@
+
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2024.10.03/total)
+
+### Would you like more language support? Can you help with a translation? Contact me!
+Now more than in previous versions a translation will help users. From V2024-11-xx all objects are created by the custom control, translations are easier than ever to create and will add to the home assistant community.
+
+Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
+
+
+
+
 ## Content
-- [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom-card)
 - [Installation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Installation)
+- [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom-card)
 - [Features](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#features)
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
-- Release notes
+- [Release history](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#release-history)
 
-# Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
-The custom card is installed with the component.
-![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
 
-The card can be set to display one or more zones to support flexibility 
-- The program selection will list only IrrigationProgram entities
-- If no zones are selected all zones will be displayed in the card
-- The show program option show/hides the program component of the card
 
 # Installation[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
@@ -25,7 +29,7 @@ The card can be set to display one or more zones to support flexibility
 * Modify programs and zones, add new zones, delete zones
 
 ### Basic Configuration
-All entities to support the features are created automatically. You only need to provide the switches and external sensors that provide information to the system.
+All entities to support the features are created automatically. You only need to provide the switches, valves for zones and pumps and external sensors that provide information to the system.
 
 ### Test configuration
 [testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
@@ -34,6 +38,20 @@ This allow you to test the program without triggering any 'real' solenoids, and 
 
 Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
 
+### Diagnostics
+Diagnostic information can be downloaded and shared using from the integration menu
+<img width="615" alt="image" src="https://github.com/user-attachments/assets/8d9ba4f7-d86e-46b5-a3d6-8962070fd49d">
+
+
+
+# Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+The custom card is installed with the component.
+![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
+
+The card can be set to display one or more zones to support flexibility 
+- The program selection will list only IrrigationProgram entities
+- If no zones are selected all zones will be displayed in the card
+- The show program option show/hides the program component of the card
 
 
 
@@ -105,6 +123,10 @@ The next run is set from the start time and frequency provided. Changing the sta
 
 ### Last ran
 This is set after any successfull completion of the zone. All zones triggered together will have the same Last ran value set.
+
+
+
+
 
 # Configuration[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
@@ -182,3 +204,28 @@ Options available:
 - Sunset, this provides the base start time of sunset with an option to offet the time using a numeric slider
 
 Sunrise and sunset are obtained from the SUN integration.
+
+
+
+## Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+### V2024.11.01
+- A significant redevlopment
+  - All entities that previously required helpers are now created (and cleaned up) automatically
+  - Functionality is prinicply the same ans the previous release
+
+### V2024.10.xx
+* Manage entiy register when zone is deleted
+* Fix run frequency issues
+### V2024.09.xx 
+* Reorder zones in the config flow
+* Modify the listing config action to include values of the items
+* Support sensor for start time, for example the sun sensor to start a program at dawn.
+* Support +/- inter zone delay (delay between zone/overlap of zones)
+* Improve start/stop processing of zones while a program is running, if a zone is started while a program is running it will be appended to the run.
+* Add translation for status values in the card
+* Add French translation### V5.4.20
+* support for Valve objects - Open/Close only, Position not supported
+* Refactor datetime usage for a more consistent approach
+* Fix system monitor notification
+* Add French translation.
+* Update to hass.config_entries.async_forward_entry_setups
