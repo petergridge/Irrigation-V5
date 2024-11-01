@@ -10,22 +10,22 @@ switch:
         friendly_name: Zone 1
         value_template: "{{ is_state('input_boolean.dummy_switch_1', 'on') }}"
         turn_on:
-          - delay: '00:00:01'
+          - delay: '00:00:00'
           - service: input_boolean.turn_on
             entity_id: input_boolean.dummy_switch_1
         turn_off:
-          - delay: '00:00:01'
+          - delay: '00:00:00'
           - service: input_boolean.turn_off
             entity_id: input_boolean.dummy_switch_1
       dummy_2:
         friendly_name: Zone 2
         value_template: "{{ is_state('input_boolean.dummy_switch_2', 'on') }}"
         turn_on:
-          - delay: '00:00:01'
+          - delay: '00:00:00'
           - service: input_boolean.turn_on
             entity_id: input_boolean.dummy_switch_2
         turn_off:
-          - delay: '00:00:01'
+          - delay: '00:00:00'
           - service: input_boolean.turn_off
             entity_id: input_boolean.dummy_switch_2
       dummy_3:
@@ -51,139 +51,49 @@ input_boolean:
   dummy_switch_1:
   dummy_switch_2:
   dummy_switch_3:
-  program_enabled:
-  zone_1_enabled:
-  zone_2_enabled:
-  zone_3_enabled:
-  program_rain:
-  zone_1_rain:
-  zone_1_ignore_rain:
+  rain:
+    icon: mdi:weather-pouring
+    name: rain
   dummy_pump:
-  show_config:
+    icon: mdi:pump
+    name: pump
+  well:
+    icon: mdi:water-well-outline
+    name: well
+  controller:
+    icon: mdi:alarm-panel
+    name: controller
 
-input_datetime:
-  program_1_start:
-    name: Start Time
-    has_time: true
+template:
+  - binary_sensor:
+      - name: Rain
+        state: "{{ is_state('input_boolean.rain','on') }}"
+        icon: mdi:weather-pouring
+      - name: Well
+        state: "{{ is_state('input_boolean.well','on') }}"
+        icon: mdi:water-well-outline
+      - name: Controller
+        state: "{{ is_state('input_boolean.controller','on') }}"
+        icon: mdi:alarm-panel
+  - sensor:
+    - name: Adjustment
+      state: "{{ states('input_number.adjustment') }}"
+      icon: mdi:knob
+  - sensor:
+    - name: Flow Sensor
+      state: "{{ states('input_number.flow_sensor') }}"
+      icon: mdi:waves-arrow-right
 
 input_number:
-  zone_1_run_time:
-    min: 1
-    max: 30
-    step: 1
-  zone_2_run_time:
-    min: 1
-    max: 30
-    step: 1
-  zone_3_run_time:
-    min: 1
-    max: 30
-    step: 1
-  zone_1_wait_time:
-    min: 1
-    max: 5
-    step: 1
-  zone_2_wait_time:
-    min: 1
-    max: 5
-    step: 1
-  zone_3_wait_time:
-    min: 1
-    max: 5
-    step: 1
-  zone_1_repeat:
-    min: 1
-    max: 5
-    step: 1
-  zone_2_repeat:
-    min: 1
-    max: 5
-    step: 1
-  zone_3_repeat:
-    min: 1
-    max: 5
-    step: 1
-  zone_1_adjust:
-    initial: 1
-    min: 0
-    max: 2
-    step: .1
-  zone_2_adjust:
-    initial: 1
-    min: 0
-    max: 2
-    step: .1
-  zone_3_adjust:
-    initial: 1
-    min: 0
-    max: 2
-    step: 0.1
   flow_sensor:
+    name: 'Flow Sensor'
     min: 0
     max: 20
     step: 1
-  inter_zone_delay:
+    icon: mdi:waves-arrow-right
+    unit_of_measurement: 'L/min'
+  adjustment:
     min: 0
-    max: 20
-    step: 1
-
-input_select:
-  zone_1_freq:
-   options:
-    - 1
-    - 2
-    - 3
-    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    - Off
-
-  zone_2_freq:
-   options:
-    - 1
-    - 2
-    - 3
-    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    - Off
-
-  zone_3_freq:
-   options:
-    - 1
-    - 2
-    - 3
-    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    - Off
-
-  program_freq:
-   options:
-    - 1
-    - 2
-    - 3
-    - Mon,Tue, Wed, Thu, Fri, Sat, Sun
-    - Mon
-    - Tue
-    - Wed
-    - Thu
-    - Fri
-    - Sat
-    - Sun
-    - Off
+    max: 2
+    step: .1
+    icon: mdi:knob
