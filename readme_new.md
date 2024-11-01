@@ -1,7 +1,7 @@
 ## Content
 - [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom-card)
 - [Installation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Installation)
-- [Operation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#operation)
+- [Features](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#features)
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
 - Release notes
 
