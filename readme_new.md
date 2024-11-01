@@ -170,9 +170,9 @@ Use this to alter the run sequence of the zones. The value increments by 10 as a
 ## Advanced options
 
 ### Concurrent program execution (interlock)
-This option prevents two programs executing concurrently, the second program to run will terminate the running program. A log entry will is created to highlight the occurrence.
+This option allows or prevents two programs executing concurrently, when enabled (default) the second program to run will terminate the running program. A log entry will is created to highlight the occurrence.
 
-⚠️ Warning: if both programs have identical start times neither program will run. 
+⚠️ Warning: if programs have identical start times one program will fail to start when interlock is enabled.
 
 ### Start time options
 Options available:
