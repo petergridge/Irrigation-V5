@@ -6,9 +6,9 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-## This Release V2024.11.01 Beta
-This has been a significant redevelopemnt from V2024-11-xx all helper objects are created by the custom control. 
+## This Release V2024.11.01 - 5 years old!
 
+This has been a significant redevelopemnt from V2024-11-xx all helper objects are created by the custom control. 
 
 ## Content
 - [Installation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Installation)
