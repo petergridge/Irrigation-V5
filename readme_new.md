@@ -1,10 +1,11 @@
 ## Content
 - [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom-card)
+- [Installation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Installation)
 - [Operation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#operation)
 - [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
 - Release notes
 
-# Custom Card
+# Custom Card [🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
 ![image](https://github.com/user-attachments/assets/a1a802aa-661c-4d06-90d1-d4a894093475)
 
@@ -13,8 +14,44 @@ The card can be set to display one or more zones to support flexibility
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
 
-# Operation
+# Installation
+
+### HACS installation
+* Adding the repository using HACS is the simplest approach. The Custom Card deployed with the component, no need to install separately.
+
+### Config Flow
+* Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component. 
+* Add the integration many times if you want more than one program.
+* Modify programs and zones, add new zones, delete zones
+
+### Basic Configuration
+All entities to support the features are created automatically. You only need to provide the switches and exteranl sensors that provide information to the system.
+
+### Test configuration
+[testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
+
+This allow me to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hinernation.
+
+Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
+
+
+
+
+
+# Features
 This section provides details of how the program operates.
+
+### Start time
+Four options are avilable to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
+- Selector
+  - Provides a time selector to input the scheduled start time.
+- Multi time
+  - Provides a text input to all the entry of multiple state times for a program, for example 6am and 6pm
+- Sunrise
+  - calculates the start time based on the sunrise time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
+- Sunset
+  - calculates the start time based on the sunset time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
+
 
 ### Enable options
 ![image](https://github.com/user-attachments/assets/fa08bd64-ab21-4176-9887-f18688ad7205)
