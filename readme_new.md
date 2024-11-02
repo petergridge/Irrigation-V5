@@ -6,9 +6,20 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-## This Release V2024.11.01 - 5 years old!
+## This Release V2024.11.01
 
-This has been a significant redevelopemnt from V2024-11-xx all helper objects are created by the custom control. 
+This has been a significant redevelopment from V2024-11-xx all helper objects are now created automatically. 
+
+This has been the plan for some time but a few technical issues and lack of knowledge have held it back, it is also the push to have some translation files in place before moving over.
+
+The custom card has been updated for this release, the translation entries are no longer needed and the move to entities rather than attributes on the program switch have allow for a richer experience leveraging the icon tranlation capabilites introduced in January.
+
+It is now easier to get data with the integration of the [Diagnotics](#Diagnostics)
+
+However this is a **BREAKING CHANGE**:
+- I recommend that you remove your existing configuration, you will get a few configuration errors if you do not but it will work.
+- If you have an older version than 2024.11.xx you can remove the helpers that have been created for Frequency, Start time ... These have been automatically created.
+- The name of the entities replacing manually created entities is now dependant on the translation files. Please reach out if you can help translate the files.
 
 ## Content
 - [Installation](#Installation)
@@ -41,6 +52,7 @@ The included [custom card](#custom-card) renders the program configuration as a 
 
 This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
 
+
 # Installation[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
 ### HACS installation
@@ -66,7 +78,6 @@ Diagnostic information can be downloaded and shared using from the integration m
 <img width="615" alt="image" src="https://github.com/user-attachments/assets/8d9ba4f7-d86e-46b5-a3d6-8962070fd49d">
 
 
-
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
 <img width="746" alt="image" src="https://github.com/user-attachments/assets/1c8d2d37-01ba-4dc7-8725-a8624d04c95d">
@@ -76,8 +87,6 @@ The card can be set to display one or more zones to support flexibility
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
 - :mdi:cog
-
-
 
 
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
@@ -93,6 +102,7 @@ Four options are avilable to configure the start time. These can be selected fro
   - calculates the start time based on the sunrise time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
 - Sunset
   - calculates the start time based on the sunset time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
+
 ### Frequency
 The schedule can be configured to :
 - To run every n days, 1 = every day, 2 = every two days and so on. 
@@ -148,9 +158,79 @@ The next run is set from the start time and frequency provided. Changing the sta
 ### Last ran
 This is set after any successfull completion of the zone. All zones triggered together will have the same Last ran value set.
 
+### Events
+The *program_turned_on* event provides the following:
+- scheduled: false indicates the program was run manually
+```event_type: irrigation_event
+data:
+  action: program_turned_on
+  device_id: switch.test
+  scheduled: true
+  program: test
+```
+The *program_turned_off* event provides the following:
+- completed:  true indicates the program was not teminated manually
+```event_type: irrigation_event
+data:
+  action: program_turned_off
+  device_id: switch.test
+  completed: true
+  program: test
+```
+The *zone_turned_on* event provides this information:
+- scheduled: false indicates the zone was run manually
+```event_type: irrigation_event
+data:
+  action: zone_turned_on
+  device_id: switch.test
+  scheduled: true
+  zone: dummy_3
+  pump: null
+  runtime: 59
+  water: 1
+  wait: 0
+  repeat: 1
+```
+The *zone_turned_off* event provides this information:
+- latency: true indicates that the zone could not be confirmed as off
+- state:  the state of the switch when the event was raised
+```
+event_type: irrigation_event
+data:
+  action: zone_turned_off
+  device_id: switch.dummy_3
+  zone: dummy_3
+  latency: false
+  state: "off"
+```
+The *zone_became_unavailable* event provides this information:
+```
+event_type: irrigation_event
+data:
+  action: zone_became_unavailable
+  device_id: switch.test
+  scheduled: false
+  zone: dummy_2
+  pump: switch.dummy_pump
+  runtime: 59
+  water: 1
+  wait: 0
+  repeat: 1
+```
 
-
-
+An automation can then use this data to fire on the event you can refine it by adding specific event data.
+``` yaml
+alias: irrigation_program_starts
+description: "do something when the program is initiated on schedule, not manually"
+trigger:
+  - platform: event
+    event_type: irrigation_event
+    event_data:
+      action: program_turned_on
+      scheduled: true
+action: ---- Put your action here ----
+mode: single
+```
 
 # Configuration[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
