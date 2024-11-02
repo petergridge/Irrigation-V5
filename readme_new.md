@@ -4,27 +4,30 @@
 ### Can you help with a translation? Contact me!
 Now more than in previous versions a translation will help users. Translations are easier than ever to create and will add to the home assistant community.
 
-Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
+Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-## This Release V2024.11.01
+## This Release V2024.11.xx
 
-This has been a significant redevelopment from V2024-11-xx all helper objects are now created automatically. 
+This has been a significant redevelopment all helper objects are now created automatically. 
 
-This has been the plan for some time but a few technical issues and lack of knowledge have held it back, it is also the push to have some translation files in place before moving over.
+Naming of entities is determined using the translation files.
 
-The custom card has been updated for this release, the translation entries are no longer needed and the move to entities rather than attributes on the program switch have allow for a richer experience leveraging the icon tranlation capabilites introduced in January.
+The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities introduced in January.
 
-It is now easier to get data with the integration of the [Diagnotics](#Diagnostics)
+It is now easier to get data with the integration of the [Diagnostics](#Diagnostics)
+
+Frequency can now be determined as an offset of Sunrise or Sunset.
 
 However this is a **BREAKING CHANGE**:
-- I recommend that you remove your existing configuration, you will get a few configuration errors if you do not but it will work.
-- If you have an older version than 2024.11.xx you can remove the helpers that have been created for Frequency, Start time ... These have been automatically created.
-- The name of the entities replacing manually created entities is now dependant on the translation files. Please reach out if you can help translate the files.
+- I recommend that you remove your existing configuration, you will get a few configuration errors if you do not, but it will work.
+- You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created.
+- The name of entities entities is dependant on the translation files. Please reach out if you can help translate the files.
+- Setting frequency via a sensor is no longer possible
 
 ## Content
 - [Installation](#Installation)
 - [Custom card](#custom-card)
-- [Features](d#features)
+- [Features](#features)
 - [Configuration](#configuration)
 - [Release history](#release-history)
 
@@ -39,9 +42,9 @@ Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycl
 Supports watering by [time or volume](#Time-v-Volume).
 
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
-* The [rain sensor](#rain-sensor-feature) is implemented as a binary_sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* The [rain sensor](#rain-sensor-feature) is implemented as a binary sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
 * The [water adjustment](#Impact-of-sensors) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
-* [Scheduling](#Frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
+* [Scheduling](#Frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week.
 * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
@@ -50,7 +53,7 @@ There is also support for a [pump or master solenoid](#Pump-or-master-solenoid),
 
 The included [custom card](#custom-card) renders the program configuration as a card and is installed automatically.
 
-This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
+This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help_new.md) will get a basic setup running.
 
 
 # Installation[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
@@ -69,9 +72,9 @@ All entities to support the features are created automatically. You only need to
 ### Test configuration
 [testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
 
-This allow you to test the program without triggering any 'real' solenoids, and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hinernation.
+This allows you to test the program without triggering any 'real' solenoids and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hibernation.
 
-Be aware this is a sumulation, variatons in latency or behaviour of indivdual implementations will have an impact.
+Be aware this is a simulation, variations in latency or behaviour of individual implementations will have an impact.
 
 ### Diagnostics
 Diagnostic information can be downloaded and shared using from the integration menu
@@ -83,7 +86,7 @@ The custom card is installed with the component.
 <img width="746" alt="image" src="https://github.com/user-attachments/assets/1c8d2d37-01ba-4dc7-8725-a8624d04c95d">
 
 The card can be set to display one or more zones to support flexibility 
-- The program selection will list only IrrigationProgram entities
+- The program selection will list only Irrigation Controller entities
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
 - :mdi:cog
@@ -93,7 +96,7 @@ The card can be set to display one or more zones to support flexibility
 This section provides details of how the program operates.
 
 ### Start time
-Four options are avilable to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
+Four options are available to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
 - Selector
   - Provides a time selector to input the scheduled start time.
 - Multi time
@@ -112,7 +115,7 @@ The schedule can be set at:
 - The program level to apply to all zones.
 - On each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2.
 - A combination of both
-- If both are set the zone level frequency takes precidence.
+- If both are set the zone level frequency takes precedence.
 
 ### Enable options
 ![image](https://github.com/user-attachments/assets/fa08bd64-ab21-4176-9887-f18688ad7205)
@@ -131,14 +134,14 @@ The zone transition sets the overlap or wait time between zones. This can be use
 You can disable a program or zone.
 - If the program is disabled it will not run when the scheduled
 - If a zone is disabled it will not run when the rest of the schedule executes.
-However when triggered manually from the interface the entire program will run.
+However, when triggered manually from the interface the entire program will run.
 
 ### Impact of sensors
-A number of sensors can be defined
-- A rain sensor can be defined on each zone if active this will prevent the zone activating when executed via the schedule when it is active. It will run if actioned manually.
+Several sensors can be defined
+- A rain sensor can be defined on each zone if active this will prevent the zone activating when executed via the schedule when it is active. It will run when zone/program is run manually.
 - Water source or well sensor, if inactive it will prevent any activation and stop running zones after a 5 second delay.
-- Controller monitor, this monitors the avaialability of the controller hardware and prevents the program starting if inactive.
-- Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multipler applied to the watering time/volume. Use this to adjust the amount of water applied less on rainy days more on hot days.
+- Controller monitor, this monitors the availability of the controller hardware and prevents the program starting if inactive.
+- Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multiplier applied to the watering time/volume. Use this to adjust the amount of water applied less on rainy days more on hot days. Will default to a value of 1 will run when zone/program is run manually.
 
 ### Time v Volume
 Watering can be controlled using time or if you have a calibrated flow sensor by volume.
@@ -156,7 +159,7 @@ You can configure multiple programs, by default if program executions overlap th
 The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run if it has already run on that day.
 
 ### Last ran
-This is set after any successfull completion of the zone. All zones triggered together will have the same Last ran value set.
+This is set after any successful completion of the zone. All zones triggered together will have the same Last ran value set.
 
 ### Events
 The *program_turned_on* event provides the following:
@@ -241,20 +244,22 @@ The configuration of the program initiates the creation of supporting helper ent
 The name of the program is used to generate a recognisable switch entity that is the foundation of the component.
 
 ### Program wide frequency
-This provides the frequency of operation for all zones that do not have a specific frequency option defined. If you intend to enable independent frequency for each zone this can be disabled.
+Selecting this provides the frequency of operation for all zones that do not have a zone frequency option defined. If you do not select this a zone frequency will be automatically created for each zone.
 
 ### Frequency options
 The options selected/created here are used across the program and zone frequency selectors.
 This supports:
 - numeric values: 1 = every day, 2 = every second day and so on.
 - day of week: valid values are mon,tue,wed,thu,fri,sat,sun. When mon is selected the program will only execute on Monday
-- day groups: mon,wed,thu. When selected the program will run on Monday, Wednesday and Thursday.
+- day groups: wed,sat. When selected the program will run on Wednesday and Saturday.
+
+📝 You can extend by entering your own frequency this with your own options for example mon,wed,fri.
 
 ### Monitor controller
-This option supports monitoring if the controller is online. If the controller is offline the program will not attempt to start.
+This option supports monitoring your controller if it has a *binary sensor* for this purpose. If the controller is offline the program will not attempt to start.
 
 ### Controller type
-If you have a RainBird controller this will result in the RainBird API being used to start the zones bypassing the default runtime limitation.
+Selecting the RainBird controller this will result in the RainBird API being used to start the zones bypassing the default runtime limitation.
 
 ## Zone Definition
 
@@ -267,7 +272,7 @@ Specifying the Zone frequency option will provide the ability for a zone to have
 📝 The frequency options are defined in the program configuration.
 
 ### ECO feature
-Selecting the ECO feature will provide the Wait/Repeat options to support multiple short watering cycles to limit the run off. Particularly useful to allow water to penetrate pot plants.
+Selecting the ECO feature will provide the Wait/Repeat options to support multiple short watering cycles to limit the runoff. Particularly useful to allow water to penetrate pot plants.
 
 ### Pump
 Defining the Pump valve/switch supports the control of a pump or master solenoid. The pump remains on for five seconds after a zone completes.
@@ -279,12 +284,12 @@ When defined the system operates on the delivery of volume rather than watering 
 - When the Adjustment sensor is defined the volume to be delivered will be adjusted by thefactor provided
 
 ### Adjustment Sensor
-It is expected that the senor will provide a multiplying factor to change the defined watering time. If there has been rain or rain is expected you could reduce the watering requirement or if a hot spell is expected you can increase the watering requirement.
+It is expected that the senor will provide a multiplying factor to change the defined watering time. If there has been rain or rain is expected. you could reduce the watering requirement or if a hot spell is expected you can increase the watering requirement.
 
 💡check out this component [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
 
 ### Rain Sensor
-This expects a true/false binary input. If the value is True the zone will be suspended and the zone status indication updated. Watering will continue if the rain sensor is activated once watering commences.
+This expects a true/false binary input. If the value is True, the zone will be suspended and the zone status indication updated. Watering will continue if the rain sensor is activated once watering commences.
 
 ### Water Source
 This expects a true/false binary input. Used to monitor a well status and prevent watering if the water drops below a certain level. Watering will be stopped if this sensor is activated.
@@ -296,16 +301,15 @@ Use this to alter the run sequence of the zones. The value increments by 10 as a
 ## Advanced options
 
 ### Concurrent program execution (interlock)
-This option allows or prevents two programs executing concurrently, when enabled (default) the second program to run will terminate the running program. A log entry will is created to highlight the occurrence.
-
-⚠️ Warning: if programs have identical start times one program will fail to start when interlock is enabled.
+This option allows or prevents two programs executing concurrently, when enabled (default) the second program to run will terminate the running program. A persistent notification is created to highlight the occurrence.
 
 ### Start time options
+Select an option to change the method that the start time is defined.
 Options available:
-- Time selector, supporting the selction of a single start time for the program
-- Multistart, provides an text input that accepts multiple start times for example 08:00:00,18:00:00 to run at 6am and 6pm. 
-- Sunrise, this provides the base start time of sunrise with an option to offet the time using a numeric slider
-- Sunset, this provides the base start time of sunset with an option to offet the time using a numeric slider
+- Time selector, supporting the selection of a single start time for the program
+- Multi start, provides a text input that accepts multiple start times for example 08:00:00,18:00:00 to run at 6am and 6pm. 
+- Sunrise, this provides the base start time of sunrise with an option to offset  the time using a numeric slider
+- Sunset, this provides the base start time of sunset with an option to offset  the time using a numeric slider
 
 Sunrise and sunset are obtained from the SUN integration.
 
@@ -313,12 +317,17 @@ Sunrise and sunset are obtained from the SUN integration.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
-- A significant redevlopment
+**Breaking Change**
+  - Removed capabilty to set frequency via a sensor
+  - Helpers defined to support start time, frequency, config... are no longer required
+  - Recommend removing and re-adding the configuration
+
+- A significant redevelopment
   - Updated documentation
   - All entities that previously required helpers are now created (and cleaned up) automatically
-  - Functionality is prinicply the same as the previous release
+  - Functionality is the same as the previous release
 ### V2024.10.xx
-* Manage entiy register when zone is deleted
+* Manage entity register when zone is deleted
 * Fix run frequency issues
 ### V2024.09.xx 
 * Reorder zones in the config flow
