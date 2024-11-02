@@ -29,17 +29,15 @@ Supports watering by [time or volume](#Time-v-Volume).
 
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
 * The [rain sensor](#rain-sensor-feature) is implemented as a binary_sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
-* The [water adjustment](#watering-adjuster-feature) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
-* [Scheduling](#run-days-and-run-frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
+* The [water adjustment](#Impact-of-sensors) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
+* [Scheduling](#Frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
 * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
-There is also support for a [pump or master solenoid](#pump-or-master-solenoid), running [programs](#interlock) or [zones](#zone-group) sequentially or concurrently.
+There is also support for a [pump or master solenoid](#Pump-or-master-solenoid), running [programs](#Concurrent-programs) sequentially or concurrently.
 
-The [custom card](https://github.com/petergridge/Irrigation-Card) renders the program configuration as a card ans is installed automatically. It exposes in addition to the state of each of the configured helpers:
-* the remaining run time for the program and zone
-* the last run and/or next run details
+The included [custom card](#custom-card) renders the program configuration as a card and is installed automatically.
 
 This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
 
@@ -77,6 +75,7 @@ The card can be set to display one or more zones to support flexibility
 - The program selection will list only IrrigationProgram entities
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
+- :mdi:cog
 
 
 
