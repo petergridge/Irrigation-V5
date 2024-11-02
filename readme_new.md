@@ -11,13 +11,37 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 This has been a significant redevelopemnt from V2024-11-xx all helper objects are created by the custom control. 
 
 ## Content
-- [Installation](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Installation)
-- [Custom card](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#custom-card)
-- [Features](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#features)
-- [Configuration](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#configuration)
-- [Release history](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#release-history)
+- [Installation](#Installation)
+- [Custom card](#custom-card)
+- [Features](d#features)
+- [Configuration](#configuration)
+- [Release history](#release-history)
 
+# Overview
 
+The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
+
+The [Start time]#start-time) can be based on sunrise, sunset, single or multiple times.
+
+Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
+
+Supports watering by [time or volume](#Time-v-Volume).
+
+A number of sensor inputs are available to stop or modify the watering based on external inputs.
+* The [rain sensor](#rain-sensor-feature) is implemented as a binary_sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* The [water adjustment](#watering-adjuster-feature) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
+* [Scheduling](#run-days-and-run-frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week. The schedule can also be supplied by a sensor to allow for changing the watering frequecy automatically based on the season or forecast data.
+* The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
+
+The program issues Home Assistant [events](#events) so you can undertake other automations if required.
+
+There is also support for a [pump or master solenoid](#pump-or-master-solenoid), running [programs](#interlock) or [zones](#zone-group) sequentially or concurrently.
+
+The [custom card](https://github.com/petergridge/Irrigation-Card) renders the program configuration as a card ans is installed automatically. It exposes in addition to the state of each of the configured helpers:
+* the remaining run time for the program and zone
+* the last run and/or next run details
+
+This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help.md) will get a basic setup running.
 
 # Installation[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
@@ -208,7 +232,7 @@ Sunrise and sunset are obtained from the SUN integration.
 
 
 
-## Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+# Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
 - A significant redevlopment
   - Updated documentation
