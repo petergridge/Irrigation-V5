@@ -14,7 +14,7 @@ Naming of entities is determined using the translation files.
 
 The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities introduced in January.
 
-It is now easier to get support data with the integration of the [Diagnostics](#Diagnostics).
+It is now easier to get data with the integration of the [Diagnostics](#Diagnostics)
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
@@ -35,16 +35,16 @@ However this is a **BREAKING CHANGE**:
 
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
-The [Start time](#start-time) can be based on sunrise, sunset, single or multiple times.
+The [Start time](#what-time-will-the-program-start) can be based on sunrise, sunset, single or multiple times.
 
-Watering can occur in an [ECO mode](#eco-feature) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
+Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
 
 Supports watering by [time or volume](#Time-v-Volume).
 
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
 * The [rain sensor](#rain-sensor-feature) is implemented as a binary sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
-* The [water adjustment](#Impact-of-sensors) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
-* [Scheduling](#Frequency) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week.
+* The [water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
+* [Scheduling](#when-will-the-program-run) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week.
 * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
@@ -70,7 +70,7 @@ This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help
 All entities to support the features are created automatically. You only need to provide the switches, valves for zones and pumps and external sensors that provide information to the system.
 
 ### Test configuration
-[testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the helper configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
+[testhelpers.yaml](https://raw.githubusercontent.com/petergridge/Irrigation-V5/main/testhelpers.yaml) provides the configuration to support all the objects for three zones. A set of template switches for the zones and pump as well as inputs to emulate rain and flow sensors.
 
 This allows you to test the program without triggering any 'real' solenoids and will allow you to mimic your configuration in new versions to ensure an operational configuration after coming out your winter hibernation.
 
@@ -83,7 +83,6 @@ Diagnostic information can be downloaded and shared using from the integration m
 
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
-
 <img width="656" alt="image" src="https://github.com/user-attachments/assets/4f62ed90-6a51-46f1-983d-ca5ce3423baa">
 
 The card can be set to display one or more zones to support flexibility
@@ -334,6 +333,7 @@ A significant redevelopment
   - Functionality is updated and reflects the documentation
   - Ignore sensor functions operates on Well, Rain and Adjustment sensors
   - Remove controller monitor functionality
+  - Add persistent notifications when the program is terminated as a result of sensor input.
 ### V2024.10.xx
 * Manage entity register when zone is deleted
 * Fix run frequency issues
