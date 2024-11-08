@@ -83,7 +83,8 @@ Diagnostic information can be downloaded and shared using from the integration m
 
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
-<img width="746" alt="image" src="https://github.com/user-attachments/assets/1c8d2d37-01ba-4dc7-8725-a8624d04c95d">
+
+<img width="656" alt="image" src="https://github.com/user-attachments/assets/4f62ed90-6a51-46f1-983d-ca5ce3423baa">
 
 The card can be set to display one or more zones to support flexibility
 - The program selection will list only Irrigation Controller entities
@@ -95,7 +96,7 @@ The card can be set to display one or more zones to support flexibility
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 This section provides details of how the program operates.
 
-### What time will the prgram start?
+### What time will the program start?
 Four options are available to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
 - Selector
   - Provides a time selector to input the scheduled start time.
