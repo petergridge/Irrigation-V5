@@ -14,7 +14,7 @@ Naming of entities is determined using the translation files.
 
 The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities introduced in January.
 
-It is now easier to get data with the integration of the [Diagnostics](#Diagnostics)
+It is now easier to get support data with the integration of the [Diagnostics](#Diagnostics).
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
