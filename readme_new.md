@@ -75,8 +75,11 @@ This allows you to test the program without triggering any 'real' solenoids and 
 Be aware this is a simulation, variations in latency or behaviour of individual implementations will have an impact.
 
 ### Diagnostics
-Diagnostic information can be downloaded and shared using from the integration menu
+Diagnostic information can be downloaded from the integration menu
 <img width="615" alt="image" src="https://github.com/user-attachments/assets/8d9ba4f7-d86e-46b5-a3d6-8962070fd49d">
+
+### Errors
+Issues identified will be shown in the Notification section of the side bar.
 
 
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
@@ -87,7 +90,6 @@ The card can be set to display one or more zones to support flexibility
 - The program selection will list only Irrigation Controller entities
 - If no zones are selected all zones will be displayed in the card
 - The show program option show/hides the program component of the card
-- :mdi:cog
 
 
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
