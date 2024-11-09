@@ -1,5 +1,5 @@
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2024.10.03/total)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2024.11.01/total)
 
 ### Can you help with a translation? Contact me!
 Now more than in previous versions a translation will help users. Translations are easier than ever to create and will add to the home assistant community.
@@ -8,7 +8,7 @@ Create a PR, contact me using the community link above, or raise and issue on Gi
 
 ## This Release V2024.11.xx
 
-This has been a significant redevelopment all helper objects are now created automatically.
+This has been a significant redevelopment all helper objects are now created automatically. All you need to supply are the switches/valves and sensors.
 
 Naming of entities is determined using the translation files.
 
@@ -95,6 +95,10 @@ The card can be set to display one or more zones to support flexibility
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 This section provides details of how the program operates.
 
+### Are Rain Bird controllers supported?
+Controllers supported by the [Rain Bird](https://www.home-assistant.io/integrations/rainbird/) Home Assistant integration are supported. The RainBird API will be used to start the zones bypassing the default runtime limitation.
+
+
 ### What time will the program start?
 Four options are available to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
 - Selector
@@ -108,39 +112,38 @@ Four options are available to configure the start time. These can be selected fr
 
 ### When will the program run?
 The schedule can be configured to:
-- To run every n days, 1 = every day, 2 = every two days and so on.
+- To run every 'n' days, 1 = every day, 2 = every two days and so on.
 - On specific week days, 'sun,tue,thu' will run the program on Sunday, Tuesday and Thursday only.
 
 The schedule can be set at:
 - The program level to apply to all zones.
 - On each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2.
 - A combination of both
-    - If both are set the zone level frequency takes precedence.
+    - If both are set the zone level frequency is used.
 
 ### What will stop a program or zone while it is running?
 - When the program is disabled all zones will stop
 - When the zone is disabled the zone will stop
 - When the water source (well) sensor is no longer active
-- The rain sensor will allow currently running zone to complete, but subsequent zones will not run
+- The rain sensor will allow currently running program to complete
 
-There is a short delay to allow for false readings where a change in state will not immediately terminate the program or zone.
+There is a short delay to allow for false readings, a change in state will not immediately terminate the program or zone.
 
-### Why don't the rain sensor and adjustment impact running zones
+### Why don't changes in the rain sensor and adjustment impact running zones
 - Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversly.
-- When the rain sensor activates during a watering cycle the program will continue
+- When the rain sensor activates during a watering cycle the program will continue until completed.
 
 ### What will stop the program initiating?
-- The controller sensor is inactive (off)
 - When the Program is disabled (off)
 - When all zones are disabled
 
 ### What will disable a zone?
-- When it is disabled
+- When it is disabled (off)
 - When the rain sensor is active (on)
 - When the adjustment value is zero (0)
 - When the water source (well) sensor is inactive (off)
 
-### What can you do to bypass a zone that will not run
+### Can I bypass the sensors?
 - Ignore sensors
     - This will ignore the state of the Rain Sensor
     - Adjustment will default to one (1)
@@ -160,7 +163,7 @@ Ignoring sensors will result in the program running regardless of the state of t
 
 ### Time v Volume
 - Watering can be controlled using time
-- If you have a calibrated flow sensor water can be measured by volume.
+- If you have a calibrated flow sensor water can be measured by volume. If flow falls to zero for longer than 5 seconds the zone will stop.
 
 ### Pump or master solenoid
 You can define a pump or master solenoid to be triggered with each zone. This valve will remain on for 5 seconds between zones to limit unnecessary cycling of the pump.
@@ -172,7 +175,7 @@ Configuring ECO mode on a zone will provision the wait and repeat options. This 
 You can configure multiple programs, by default if program executions overlap the second program will terminate the active one. This can be disabled in the advance options of the configuration. The setting must be updated on each program instance.
 
 ### Next run behaviour
-The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run if it has already run on that day.
+The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run even if it has already run on that day.
 
 ### Last ran
 This is set after any successful completion of the zone. All zones triggered together will have the same last ran value set.
@@ -180,13 +183,13 @@ This is set after any successful completion of the zone. All zones triggered tog
 ### Events
 Events allow you to trigger other actions when the irrigation program progresses through a program.
 
-The *program_turned_on* event provides the following:
+*program_turned_on*
 - scheduled: false indicates the program was run manually
 ```event_type: irrigation_event
 data:
   action: program_turned_on
   device_id: switch.test
-  scheduled: true
+  scheduled: true|false
   program: test
 ```
 *program_turned_off*
@@ -214,7 +217,7 @@ data:
   repeat: 1
 ```
 *zone_turned_off*
-- state: The state after the zone was turned off, off, eco or aborted
+- state: The state after the zone was turned off
 ```
 event_type: irrigation_event
 data:
@@ -240,60 +243,81 @@ mode: single
 ```
 
 # Configuration[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
-The configuration of the program initiates the creation of supporting helper entities that support the provision of the various capabilities.
+The configuration of the program initiates the creation of supporting helper entities that enable scheduling you irrigation system.
+
+The most basic implementation only requires:
+- The program name
+- zone switch
+All supporting entities are created for you.
 
 ## Program definition
 
 ### Name
-The name of the program is used to generate a recognisable switch entity that is the foundation of the component.
+The name you enter for the program is used to generate a recognisable switch entity that is the foundation of the component.
 
 ### Program wide frequency
 Selecting this provides the frequency of operation for all zones that do not have a zone frequency option defined. If you do not select this a zone frequency will be automatically created for each zone.
 
 ### Frequency options
 The options selected/created here are used across the program and zone frequency selectors and supports:
-- numeric values: 1 = every day, 2 = every second day and so on.
-- day of week: valid values are Mon, Tue, Wed, Thu, Fri, Sat, Sun. When a day/s is selected the program will only execute the defined days.
-- day groups: wed,sat. When selected the program will run on Wednesday and Saturday.
+- Numeric values: 1 = every day, 2 = every second day and so on.
+- Day of week: valid values are Mon, Tue, Wed, Thu, Fri, Sat, Sun. When a day is selected the program will only execute the defined day.
+- Days of the week: Wed,Sat. When selected the program will run on Wednesday and Saturday. This supports specific water restriction is some jurisdictions.
 
-📝 You can extend this by entering your own frequency options for example Mon, Wed, Fri.
+📝 You can extend this by entering your own frequency options for example Mon, Wed, Fri. New groups can only be made up of days of the week.
 
 
 ### Controller type
 Selecting the RainBird controller this will result in the RainBird API being used to start the zones bypassing the default runtime limitation.
 
+Uses the rainbird.start_irrigation action to run for a specific period see: [Rain Bird](https://www.home-assistant.io/integrations/rainbird/)
+
 ## Zone Definition
 
+### Zone Group
+You can optionally configure multiple solenoids to activate concurrently.
+- Create a switch group, group helper. This feature allows you to group switches to operate as a single switch.
+- All solenoids will operate for the same time.
+- You can use this 'new' switch/valve to define a zone.
+
 ### Zone
-The Valve or Switch that is exposed in home assistant that operates the irrigation solenoid.
+The Valve or Switch that is exposed in home assistant to operate the irrigation solenoid.
+📝 Only open and close commands are supported for the valve implementation. Position based valves are not supported.
 
 ### Zone Frequency
 Specifying the Zone frequency option will provide the ability for a zone to have an independent frequency from the rest of the program. For example, pot plants can be watered daily but lawns every three days in a single program definition.
-
 📝 The frequency options are defined in the program configuration.
 
 ### ECO feature
 Selecting the ECO feature will provide the Wait/Repeat options to support multiple short watering cycles to limit the runoff. Particularly useful to allow water to penetrate pot plants.
 
 ### Pump
-Defining the Pump valve/switch supports the control of a pump or master solenoid. The pump remains on for five seconds after a zone completes.
+Defining the Pump valve/switch supports the control of a pump or master solenoid.
+📝 Only open and close commands are supported for the valve implementation. Position based valves are not supported.
 
 ### Flow sensor
 When defined the system operates on the delivery of volume rather than watering for a specified time.
-- The flow sensor is monitored to determine the volume of water delivered for each cycle.
-- When coupled with the ECO setting the specified volume is delivered for each repeated cycle.
-- When the Adjustment sensor is defined the volume to be delivered will be adjusted by the factor provided
+- The flow sensor is monitored to determine the volume of water delivered and varies the watering time dynamically.
+- If the flow sensor value is 0, the zone will terminate after 5 minutes.
+- The ignore senor feature has no impact on this sensor.
 
 ### Adjustment Sensor
-It is expected that the senor will provide a multiplying factor to change the defined watering time. If there has been rain or rain is expected. you could reduce the watering requirement or if a hot spell is expected you can increase the watering requirement.
+This expects a numeric sensor, input value greater than or equal to 0.
 
-💡check out this component [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
+The value is multiplied against the watering time/volume.
+- If there has been rain or rain is expected. you could reduce the water time by the a value being < 1.
+- Or if a hot spell is expected you can increase the watering requirement by the value being > 1.
+- When the ignore senor option is active, treats this value as 1.
+💡Check out [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
+- This exposes weather data to support the creation of sensors that can be used for this feature.
 
 ### Rain Sensor
-This expects a true/false binary input. If the value is True, the zone will be suspended and the zone status indication updated. Watering will continue if the rain sensor is activated once watering commences.
+This expects a true/false binary sensor input. If the value is True, the zone will be suspended and the zone status indication updated. Watering will continue if the rain sensor is activated once watering commences.
+- When the ignore senor feature is active, treats this value as false.
 
 ### Water Source
-This expects a true/false binary input. Used to monitor a well status and prevent watering if the water drops below a certain level. Watering will be stopped if this sensor is activated.
+This expects a true/false binary sensor input. Used to monitor a well status and prevent watering if the water drops below a certain level. Watering will be stopped if this sensor is activated.
+- When the ignore senor feature is active, treats this value as true.
 
 ### Zone Order
 Use this to alter the run sequence of the zones. The value increments by 10 as a default to support easier redefinition of the sort order.
