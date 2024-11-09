@@ -1,5 +1,5 @@
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2024.11.01/total)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2024.10.03/total)
 
 ### Can you help with a translation? Contact me!
 Now more than in previous versions a translation will help users. Translations are easier than ever to create and will add to the home assistant community.
@@ -8,9 +8,10 @@ Create a PR, contact me using the community link above, or raise and issue on Gi
 
 ## This Release V2024.11.xx
 
-This has been a significant redevelopment all helper objects are now created automatically. All you need to supply are the switches/valves and sensors.
+This has been a significant redevelopment.
+All helper objects are now created automatically. All you need to configure now are the switches/valves and sensors.
 
-Naming of entities is determined using the translation files.
+Naming of entities is determined using the translation files. These have gaps so please volunteer to update or provide new file. Contact me if you can help, it is not a complex process.
 
 The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities introduced in January.
 
@@ -20,9 +21,9 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 
 However this is a **BREAKING CHANGE**:
 - I recommend that you remove your existing configuration, you will get a few configuration errors if you do not, but it will work.
-- You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created.
+- You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
 - The name of entities entities is dependant on the translation files. Please reach out if you can help translate the files.
-- Setting frequency via a sensor is no longer possible
+- Setting frequency and start time via a sensor is no longer possible
 
 ## Content
 - [Installation](#Installation)
@@ -42,18 +43,15 @@ Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat
 Supports watering by [time or volume](#Time-v-Volume).
 
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
-* The [rain sensor](#rain-sensor-feature) is implemented as a binary sensor, this allows a sensor to suspend the irrigation. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* The [rain sensor](#rain-sensor-feature) this requires a binary sensor. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
 * The [water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
-* [Scheduling](#when-will-the-program-run) can be configured to support regular watering every number of days or it can be configured to only water on specific days of the week.
-* The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
+  * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
-There is also support for a [pump or master solenoid](#Pump-or-master-solenoid), running [programs](#Concurrent-programs) sequentially or concurrently.
+There is also support for a [pump or master solenoid](#Pump-or-master-solenoid) and running [programs](#Concurrent-programs) sequentially or concurrently.
 
 The included [custom card](#custom-card) renders the program configuration as a card and is installed automatically.
-
-This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help_new.md) will get a basic setup running.
 
 
 # Installation[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
