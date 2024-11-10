@@ -29,6 +29,9 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 - The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of translating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
 - the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
 
+<img width="366" alt="image" src="https://github.com/user-attachments/assets/5612420b-efdc-4ed5-adc7-0478d7616f34">
+
+
 ## Note:
 - You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
 - The name of entities is dependent on the translation files. Please reach out if you can help translate the files.
