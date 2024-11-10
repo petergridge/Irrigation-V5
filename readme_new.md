@@ -92,7 +92,7 @@ The custom card is installed with the component.
 - If no zones are selected only the Program will be displayed, use CTRL-CLICK to select multiple zones.
 - The show program option shows or hides the program component of the card.
 
-# Important information
+# Important information[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
 ### Switch State
 The component relies on accurate switch state information. Some hardware does not update the state of a switch when it turns on or off. The program will wait 5 seconds for the switch to change state after attempting to turn it on or off. If the state has not updated to the expected value the zone will abort and a notification raised.
