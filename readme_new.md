@@ -26,7 +26,7 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 ## Upgrading
 - Once installed the program will reconfigure itself.
 - The frequency options will default to a single value '1', reconfigure the program to add additional options.
-- The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of tranlating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
+- The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of translating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
 - the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
 
 ## Note:
