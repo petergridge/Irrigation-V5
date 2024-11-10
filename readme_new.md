@@ -7,6 +7,11 @@ Now more than in previous versions a translation will help users. Translations a
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
 ## This Release V2024.11.xx
+**BREAKING CHANGE**
+- Depending on the complexity of the implementation some options may need to be transitioned to different entity types.
+- Frequency selection options will need to be updated in the program configuration.
+- The custom card will need to be edited.
+
 
 This has been a significant redevelopment.
 All helper objects are now created automatically. All you need to configure now are the switches/valves and sensors.
@@ -18,6 +23,12 @@ The custom card has been updated for this release, the move to entities rather t
 It is now easier to get data with the integration of the [Diagnostics](#Diagnostics)
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
+
+## Upgrading
+- Once installed the program will reconfigure itself.
+- The frequency options will default to a single value '1', reconfigure the program to add additional options
+- The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of tranlating input types to sensors can be found in the [test helpers yaml file](#./testhelpers.yaml).
+- the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
 
 However this is a **BREAKING CHANGE**:
 - I recommend that you remove your existing configuration, you will get a few configuration errors if you do not, but it will work.
@@ -100,7 +111,7 @@ The component relies on accurate switch state information. Some hardware does no
 If the switch becomes unavailable the program the zone will abort and a notification raised
 
 ### Debounce Delay
-When a change will result in a program being aborted, there is a 5 second delay to accommodate any false readings. For example if the rain sensor switched from off to on and then off again within 5 seconds the program will continue.
+When a change that results in a program being aborted occurs, there is a 5 second delay to accommodate any false readings. For example if the rain sensor switched from off to on and then off again within 5 seconds the program will continue.
 
 
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
@@ -158,7 +169,7 @@ The schedule can be set at:
     - Water source sensor will be ignored
 
 ### What is zone transition?
-The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively.
+The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively. A slider allowing +/- 30 seconds is provided.
 
 ### What do the sensors do?
 Several sensors can be defined
