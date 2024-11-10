@@ -15,17 +15,17 @@ Create a PR, contact me using the community link above, or raise and issue on Gi
 This has been a significant redevelopment.
 All helper objects are now created automatically. All you need to configure now are the switches/valves and sensors.
 
-Naming of entities is determined using the translation files. These have gaps so please volunteer to update or provide new file. Contact me if you can help, it is not a complex process.
+Naming of entities is determined using the translation files. These have gaps so please volunteer to update or provide a new file. Contact me if you can help, it is not a complex process.
 
-The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities introduced in January.
+The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities.
 
-It is now easier to get data with the integration of the [Diagnostics](#Diagnostics)
+It is now easier to get support data with the integration of [Diagnostics](#Diagnostics)
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
 ## Upgrading
 - Once installed the program will reconfigure itself.
-- The frequency options will default to a single value '1', reconfigure the program to add additional options
+- The frequency options will default to a single value '1', reconfigure the program to add additional options.
 - The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of tranlating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
 - the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
 
