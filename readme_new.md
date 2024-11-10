@@ -22,7 +22,7 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 However this is a **BREAKING CHANGE**:
 - I recommend that you remove your existing configuration, you will get a few configuration errors if you do not, but it will work.
 - You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
-- The name of entities entities is dependant on the translation files. Please reach out if you can help translate the files.
+- The name of entities is dependent on the translation files. Please reach out if you can help translate the files.
 - Setting frequency and start time via a sensor is no longer possible
 
 ## Content
@@ -36,7 +36,7 @@ However this is a **BREAKING CHANGE**:
 
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
-The [Start time](#what-time-will-the-program-start) can be based on sunrise, sunset, single or multiple times.
+The [start time](#what-time-will-the-program-start) can be based on sunrise, sunset, single or multiple times.
 
 Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
 
@@ -45,7 +45,7 @@ Supports watering by [time or volume](#Time-v-Volume).
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
 * The [rain sensor](#rain-sensor-feature) this requires a binary sensor. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
 * The [water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
-  * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) control provides sensors that may be useful, this provides access to history and forecast weather information to allow you to expose sensors that can be used.
+  * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) component provides sensors that may be useful, this provides history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
 
@@ -86,10 +86,10 @@ Issues identified will be shown in the Notification section of the side bar.
 The custom card is installed with the component.
 <img width="656" alt="image" src="https://github.com/user-attachments/assets/4f62ed90-6a51-46f1-983d-ca5ce3423baa">
 
-The card can be set to display one or more zones to support flexibility
-- The program selection will list only Irrigation Controller entities
-- If no zones are selected all zones will be displayed in the card
-- The show program option show/hides the program component of the card
+- You can choose to display each zone or the program data in a standalone card. Particularly useful if you have a many zones and want to control the look and feel of the dashboard.
+- The program selection will list only Irrigation Controller entities.
+- If no zones are selected only the Program will be displayed, use CTRL-CLICK to select multiple zones.
+- The show program option shows or hides the program component of the card.
 
 
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
@@ -100,7 +100,7 @@ Controllers supported by the [Rain Bird](https://www.home-assistant.io/integrati
 
 
 ### What time will the program start?
-Four options are available to configure the start time. These can be selected from the 'Advanced option' menu in the configuration.
+Four options are available to configure the start time. These can be selected from the [Advanced option](#advanced-options) menu in the configuration.
 - Selector
   - Provides a time selector to input the scheduled start time.
 - Multi time
@@ -113,25 +113,22 @@ Four options are available to configure the start time. These can be selected fr
 ### When will the program run?
 The schedule can be configured to:
 - To run every 'n' days, 1 = every day, 2 = every two days and so on.
-- On specific week days, 'sun,tue,thu' will run the program on Sunday, Tuesday and Thursday only.
+- On specific week days, 'Sun, Tue, Thu' will run the program on Sunday, Tuesday and Thursday only.
 
 The schedule can be set at:
 - The program level to apply to all zones.
 - On each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2.
-- A combination of both
-    - If both are set the zone level frequency is used.
+- A combination of both, if both are set the zone level frequency is used.
 
 ### What will stop a program or zone while it is running?
-- When the program is disabled all zones will stop
-- When the zone is disabled the zone will stop
-- When the water source (well) sensor is no longer active
-- The rain sensor will allow currently running program to complete
-
-There is a short delay to allow for false readings, a change in state will not immediately terminate the program or zone.
+- When the program is disabled all zones will stop.
+- When the zone is disabled the zone will stop.
+- When the water source (well) sensor is no longer active.
+- The rain sensor will stop a currently running program, [advanced options](#advanced-options) support running completion.
 
 ### Why don't changes in the rain sensor and adjustment impact running zones
-- Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversly.
-- When the rain sensor activates during a watering cycle the program will continue until completed.
+- Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversely.
+- When the rain sensor activates during a watering cycle it is optional for the program to continue until completed.
 
 ### What will stop the program initiating?
 - When the Program is disabled (off)
@@ -147,14 +144,14 @@ There is a short delay to allow for false readings, a change in state will not i
 - Ignore sensors
     - This will ignore the state of the Rain Sensor
     - Adjustment will default to one (1)
-    - Water source sensor will me ignored
+    - Water source sensor will be ignored
 
 ### What is zone transition?
 The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively.
 
 ### What do the sensors do?
 Several sensors can be defined
-- A rain sensor can be defined on each zone if active this will prevent the zone activating.
+- A rain sensor can be defined on each zone if active this will prevent the zone activating. [Advanced options](#advanced-options) are available to allow a running program to complete.
 - Water source or well sensor, if inactive it will prevent any activation and stop running zones after a 5 second delay.
 - Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multiplier applied to the watering time/volume. Use this to adjust the amount of water applied, less on rainy days, more on hot days.
 
@@ -193,7 +190,7 @@ data:
   program: test
 ```
 *program_turned_off*
-- completed:  indicates the program was not teminated during the run by a sensor or manually
+- completed:  indicates the program was not terminated during the run by a sensor or manually
 ```
 event_type: irrigation_event
 data:
@@ -262,7 +259,7 @@ Selecting this provides the frequency of operation for all zones that do not hav
 The options selected/created here are used across the program and zone frequency selectors and supports:
 - Numeric values: 1 = every day, 2 = every second day and so on.
 - Day of week: valid values are Mon, Tue, Wed, Thu, Fri, Sat, Sun. When a day is selected the program will only execute the defined day.
-- Days of the week: Wed,Sat. When selected the program will run on Wednesday and Saturday. This supports specific water restriction is some jurisdictions.
+- Days of the week: Wed, Sat. When selected the program will run on Wednesday and Saturday. This supports specific water restriction is some jurisdictions.
 
 📝 You can extend this by entering your own frequency options for example Mon, Wed, Fri. New groups can only be made up of days of the week.
 
@@ -305,15 +302,19 @@ When defined the system operates on the delivery of volume rather than watering 
 This expects a numeric sensor, input value greater than or equal to 0.
 
 The value is multiplied against the watering time/volume.
-- If there has been rain or rain is expected. you could reduce the water time by the a value being < 1.
-- Or if a hot spell is expected you can increase the watering requirement by the value being > 1.
+- If there has been rain or rain is expected. Reduce the water time with a value < 1.
+- Or if a hot spell is expected, increase the watering requirement with a value > 1.
 - When the ignore senor option is active, treats this value as 1.
 💡Check out [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
-- This exposes weather data to support the creation of sensors that can be used for this feature.
+  - This exposes weather data to support the creation of sensors that can be used for this feature.
 
 ### Rain Sensor
-This expects a true/false binary sensor input. If the value is True, the zone will be suspended and the zone status indication updated. Watering will continue if the rain sensor is activated once watering commences.
+This expects a true/false binary sensor input. If the value is True, the zone will be suspended and the zone status indication updated.
 - When the ignore senor feature is active, treats this value as false.
+- [Advanced options](#advanced-options) allows selecting the behaviour when the program is already running:
+  - Stop: the program will stop after a short delay, a persistent notification is created to highlight the occurrence
+  - Continue: the program will continue to completion
+
 
 ### Water Source
 This expects a true/false binary sensor input. Used to monitor a well status and prevent watering if the water drops below a certain level. Watering will be stopped if this sensor is activated.
@@ -326,7 +327,9 @@ Use this to alter the run sequence of the zones. The value increments by 10 as a
 ## Advanced options
 
 ### Concurrent program execution (interlock)
-This option allows or prevents two programs executing concurrently, when enabled (default) the second program to run will terminate the running program. A persistent notification is created to highlight the occurrence.
+This option allows or prevents two programs executing concurrently.
+- When enabled (default) the second program to run will terminate the running program.
+- A persistent notification is created to highlight the occurrence.
 
 ### Start time options
 Select an option to change the method that the start time is defined.
@@ -338,6 +341,10 @@ Options available:
 
 Sunrise and sunset are obtained from the SUN integration.
 
+### Rain sensor behaviour
+Allows selecting the behaviour when the program is already running:
+  - Stop: the program will stop after a short delay
+  - Continue: the program will continue to completion
 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
