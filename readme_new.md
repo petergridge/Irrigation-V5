@@ -28,6 +28,7 @@ However this is a **BREAKING CHANGE**:
 ## Content
 - [Installation](#Installation)
 - [Custom card](#custom-card)
+- [Important information](#important-information)
 - [Features](#features)
 - [Configuration](#configuration)
 - [Release history](#release-history)
@@ -86,10 +87,20 @@ Issues identified will be shown in the Notification section of the side bar.
 The custom card is installed with the component.
 <img width="656" alt="image" src="https://github.com/user-attachments/assets/4f62ed90-6a51-46f1-983d-ca5ce3423baa">
 
-- You can choose to display each zone or the program data in a standalone card. Particularly useful if you have a many zones and want to control the look and feel of the dashboard.
+- You can choose to display each zone or the program data in a standalone card. Particularly useful when there are many zones to control the look and feel of the dashboard.
 - The program selection will list only Irrigation Controller entities.
 - If no zones are selected only the Program will be displayed, use CTRL-CLICK to select multiple zones.
 - The show program option shows or hides the program component of the card.
+
+# Important information
+
+### Switch State
+The component relies on accurate switch state information. Some hardware does not update the state of a switch when it turns on or off. The program will wait 5 seconds for the switch to change state after attempting to turn it on or off. If the state has not updated to the expected value the zone will abort and a notification raised.
+
+If the switch becomes unavailable the program the zone will abort and a notification raised
+
+### Debounce Delay
+When a change will result in a program being aborted, there is a 5 second delay to accommodate any false readings. For example if the rain sensor switched from off to on and then off again within 5 seconds the program will continue.
 
 
 # Features[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
