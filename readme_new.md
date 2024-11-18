@@ -104,7 +104,7 @@ The custom card is installed with the component.
 - The show program option shows or hides the program component of the card.
 
 ### Additional configuraton options
-The following items can be configured by adding the confiugration to using the code editor option in the card.
+The following items can be configured by adding the confiugration using the code editor option in the card.
 
 **title:** (optional) The title to be set in the card.
 
