@@ -56,8 +56,8 @@ Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat
 Supports watering by [time or volume](#Time-v-Volume).
 
 A number of sensor inputs are available to stop or modify the watering based on external inputs.
-* The [rain sensor](#rain-sensor-feature) this requires a binary sensor. This can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
-* The [water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs
+* The [rain sensor](#rain-sensor-feature), this requires a binary sensor and can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* [Water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs.
   * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) component provides sensors that may be useful, this provides history and forecast weather information to allow you to expose sensors that can be used.
 
 The program issues Home Assistant [events](#events) so you can undertake other automations if required.
@@ -94,7 +94,6 @@ Diagnostic information can be downloaded from the integration menu
 ### Errors
 Issues identified will be shown in the Notification section of the side bar.
 
-
 # Custom Card[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 The custom card is installed with the component.
 <img width="656" alt="image" src="https://github.com/user-attachments/assets/4f62ed90-6a51-46f1-983d-ca5ce3423baa">
@@ -103,6 +102,60 @@ The custom card is installed with the component.
 - The program selection will list only Irrigation Controller entities.
 - If no zones are selected only the Program will be displayed, use CTRL-CLICK to select multiple zones.
 - The show program option shows or hides the program component of the card.
+
+### Additional configuraton options
+The following items can be configured by adding the confiugration to using the code editor option in the card.
+
+**title:** (optional) The title to be set in the card.
+
+**icon:** (optional) An icon to display to the left of the title.
+
+**theme:** (optional) Override the used theme for this card with any loaded theme. For more information about themes, see the [frontend documentation](https://www.home-assistant.io/integrations/frontend/).
+
+**header:** (optional) Header widget to render an image. See [header/footer documentation](https://www.home-assistant.io/lovelace/header-footer/).
+
+**footer:** (optional) Header widget to render an image. See [header/footer documentation](https://www.home-assistant.io/lovelace/header-footer/).
+
+### Card-Mod
+
+Support for https://github.com/thomasloven/lovelace-card-mod.
+Allows you to apply CSS styles to various elements of the Home Assistant frontend.
+
+![image](https://user-images.githubusercontent.com/40281772/219922995-611c4fde-9f5f-48ba-8d5e-544149516704.png)
+
+```
+type: custom:irrigation-card-test
+program: switch.test_irrigation
+entities:
+  - switch.dummy_2
+show_program: false
+card_mod:
+  style: |
+    ha-card {
+      background-image: url('/local/lawn.png');
+      --mdc-theme-primary: black;
+      }
+```
+Note: /local/ is the path to the /config/www directory in you home assistant install.
+
+These are some examples, use F12 on Chrome to discover other style options. My explanation of the action are not definitive the style change can affect other components as well. There are many more style options available that will have an impact. Please share examples and action for me to update this list.
+ 
+|example     |action   |
+|:---        |:---     |
+|background-image: url('/local/lawn.png');|to set a background image|
+|background-repeat: no-repeat; |to prevent the image repeating to fill the card|
+|color: red; |set the general text colour|
+|--state-active-color: blue;| change the colour of the input_boolean icon 'on' state|
+|--state-switch-active-color: blue;|change the colour of switch entity icons |
+|--paper-item-icon-color: red; |set the icon inactive 'off' state colour|
+|--mdc-theme-primary: black; |set the colour of the program run/stop text|
+|--paper-slider-active-color: red; |change the slider colour left of the knob|
+|--paper-slider-knob-color: red;| knob colour when the slider is not at the minimum value|
+|--paper-slider-knob-start-color: red;|Knob colour when the slider is at the minimum value|
+|--paper-slider-pin-color: red;|colour of the slider value callout|
+|--paper-slider-pin-start-color: red;|colour of the slider value callout when at the minimum value|
+|--paper-slider-container-color: red;|colour of the line to the right of the knob|
+
 
 # Important information[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
