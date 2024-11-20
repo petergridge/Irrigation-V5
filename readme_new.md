@@ -19,7 +19,7 @@ Naming of entities is determined using the translation files. These have gaps so
 
 The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities.
 
-It is now easier to get support data with the integration of [Diagnostics](#Diagnostics)
+It is now easier to get support information with the integration of [Diagnostics](#Diagnostics)
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
@@ -51,12 +51,13 @@ The driver for this project is to provide an easy-to-use interface for the garde
 
 The [start time](#what-time-will-the-program-start) can be based on sunrise, sunset, single or multiple times.
 
-Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles. Great for pots.
+Watering can occur in an [ECO mode](#what-is-eco-mode) where a water/wait/repeat cycle is run to minimise run off by letting water soak in using several short watering cycles.
 
 Supports watering by [time or volume](#Time-v-Volume).
 
-A number of sensor inputs are available to stop or modify the watering based on external inputs.
+A number of sensor inputs can be configured to stop or modify the watering based on external inputs.
 * The [rain sensor](#rain-sensor-feature), this requires a binary sensor and can be defined at the zone level to allow for covered areas to continue watering while exposed areas are suspended.
+* Water source sensor can be used to ensure that a well has water or stop watering when the well sensor is off.
 * [Water adjustment](#what-do-sensors-do) provides for a factor to be applied to the watering time/volume either increasing or decreasing watering based on external inputs.
   * The [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory) component provides sensors that may be useful, this provides history and forecast weather information to allow you to expose sensors that can be used.
 
