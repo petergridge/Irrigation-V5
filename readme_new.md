@@ -172,8 +172,7 @@ When a change that results in a program being aborted occurs, there is a 5 secon
 This section provides details of how the program operates.
 
 ### Are Rain Bird controllers supported?
-Controllers supported by the [Rain Bird](https://www.home-assistant.io/integrations/rainbird/) Home Assistant integration are supported. The RainBird API will be used to start the zones bypassing the default runtime limitation.
-
+Controllers supported by the [Rain Bird](https://www.home-assistant.io/integrations/rainbird/) Home Assistant integration are supported. The RainBird API will be used to start the zones bypassing the default runtime limitation. There have been reports of issues with the Rain Bird implementation not updating the state of the switch in some circumstances. This will result in a notification indicating a latency problem. This has been noted when using a negative zone transition value.
 
 ### What time will the program start?
 Four options are available to configure the start time. These can be selected from the [Advanced option](#advanced-options) menu in the configuration.
@@ -223,16 +222,19 @@ The schedule can be set at:
     - Water source sensor will be ignored
 
 ### What is zone transition?
-The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively. A slider allowing +/- 30 seconds is provided.
+The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively. A slider allowing +/- 10 seconds is provided.
 
 ### What do the sensors do?
 Several sensors can be defined
 - A rain sensor can be defined on each zone if active this will prevent the zone activating. [Advanced options](#advanced-options) are available to allow a running program to complete.
 - Water source or well sensor, if inactive it will prevent any activation and stop running zones after a 5 second delay.
-- Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multiplier applied to the watering time/volume. Use this to adjust the amount of water applied, less on rainy days, more on hot days.
+- Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multiplier applied to the watering time/volume. Use this to adjust the amount of water applied, less on rainy days, more on hot days. If the value is 0 the zone will not run.
 
-### You can ignore the sensors
-Ignoring sensors will result in the program running regardless of the state of the three sensors.
+### Can multiple zones run at the same time?
+No, but... You can create a switch group using HomeAssistant helper functionality. A group set up this way will allow multiple zones to be treated as a single switch. All the grouped switches will have the same run profile/duration.
+
+### Can two programs run at the same time.
+You can configure multiple programs to run together, by default if program executions overlap the second program will terminate the active one. This can be disabled in the advance options of the configuration. The setting must be updated on each program instance.
 
 ### Time v Volume
 - Watering can be controlled using time
@@ -243,9 +245,6 @@ You can define a pump or master solenoid to be triggered with each zone. This va
 
 ### What is ECO mode?
 Configuring ECO mode on a zone will provision the wait and repeat options. This is used to limit run off by allowing for multiple short watering cycles to encourage the water to penetrate the soil. Ideal for pot plants.
-
-### Concurrent programs
-You can configure multiple programs, by default if program executions overlap the second program will terminate the active one. This can be disabled in the advance options of the configuration. The setting must be updated on each program instance.
 
 ### Next run behaviour
 The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run even if it has already run on that day.
@@ -339,7 +338,6 @@ The options selected/created here are used across the program and zone frequency
 
 📝 You can extend this by entering your own frequency options for example Mon, Wed, Fri. New groups can only be made up of days of the week.
 
-
 ### Controller type
 Selecting the RainBird controller this will result in the RainBird API being used to start the zones bypassing the default runtime limitation.
 
@@ -422,6 +420,8 @@ Allows selecting the behaviour when the program is already running:
   - Stop: the program will stop after a short delay
   - Continue: the program will continue to completion
 
+### Maximum watering time/step
+These options change the default settings for the slider to enter time/volume in the custom card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
