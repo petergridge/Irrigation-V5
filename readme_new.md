@@ -23,6 +23,8 @@ It is now easier to get support information with the integration of [Diagnostics
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
+Add the option to [pause](#Pause) and resume a running program.
+
 ## Upgrading
 - Once installed the program will reconfigure itself.
 - The frequency options will default to a single value '1', reconfigure the program to add additional options.
@@ -201,6 +203,11 @@ The schedule can be set at:
 - When the zone is disabled the zone will stop.
 - When the water source (well) sensor is no longer active.
 - The rain sensor will stop a currently running program, [advanced options](#advanced-options) support running completion.
+
+### Can I pause a program?
+You can pause and resume a program from the custom card or programaticaly. When paused the running zone will be turned off and the remaing program suspended until the program is resumed.
+
+There is an example of automating the pause feature [here](#.\pause.md)
 
 ### Why don't changes in the rain sensor and adjustment impact running zones
 - Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversely.
