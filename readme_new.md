@@ -204,11 +204,6 @@ The schedule can be set at:
 - When the water source (well) sensor is no longer active.
 - The rain sensor will stop a currently running program, [advanced options](#advanced-options) support running completion.
 
-### Pause a program.
-You can pause and resume a program from the custom card or programaticaly. When paused the running zone will be turned off and the remaing program suspended until the program is resumed.
-
-There is an example of automating the pause feature [here](../pause.md)
-
 ### Why don't changes in the rain sensor and adjustment impact running zones
 - Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversely.
 - When the rain sensor activates during a watering cycle it is optional for the program to continue until completed.
@@ -231,6 +226,11 @@ There is an example of automating the pause feature [here](../pause.md)
 
 ### What is zone transition?
 The zone transition sets the overlap or wait time between zones. This can be used to manage 'hammering' when zones stop and start, or support occasions where your solenoid requires back pressure to operate effectively. A slider allowing +/- 10 seconds is provided.
+
+### Pause a program.
+You can pause and resume a program from the custom card or programaticaly. When paused the running zone will be turned off and the remaining program suspended until the program is resumed.
+
+There is an example of automating the pause feature [here](https://github.com/petergridge/Irrigation-V5/blob/main/pause.md)
 
 ### What do the sensors do?
 Several sensors can be defined
