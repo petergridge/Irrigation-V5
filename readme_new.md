@@ -23,7 +23,7 @@ It is now easier to get support information with the integration of [Diagnostics
 
 Frequency can now be determined as an offset of Sunrise or Sunset.
 
-Add the option to [pause](#Pause) and resume a running program.
+Add the option to [pause](#Pause-a-program) and resume a running program.
 
 ## Upgrading
 - Once installed the program will reconfigure itself.
@@ -204,10 +204,10 @@ The schedule can be set at:
 - When the water source (well) sensor is no longer active.
 - The rain sensor will stop a currently running program, [advanced options](#advanced-options) support running completion.
 
-### Can I pause a program?
+### Pause a program.
 You can pause and resume a program from the custom card or programaticaly. When paused the running zone will be turned off and the remaing program suspended until the program is resumed.
 
-There is an example of automating the pause feature [here](#.\pause.md)
+There is an example of automating the pause feature [here](https://github.com/petergridge/Irrigation-V5/blob/main/pause.md)
 
 ### Why don't changes in the rain sensor and adjustment impact running zones
 - Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversely.
