@@ -4,8 +4,7 @@ One use case for automating the pause feature is to fill a tank from a slow well
 
 In this example it takes 30 Minutes to fill the tank and 4 minutes to empty it once watering commences. This example could be extended to support a sensor when the tank is full.
 
-The requirement for the automations is:
-###Triggered when the program starts.
+### Triggered when the program starts.
 1. Turn on the pump
 2. Repeat while the irrigation program is on
    - Water for 4 Minutes
