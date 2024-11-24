@@ -207,7 +207,7 @@ The schedule can be set at:
 ### Pause a program.
 You can pause and resume a program from the custom card or programaticaly. When paused the running zone will be turned off and the remaing program suspended until the program is resumed.
 
-There is an example of automating the pause feature [here](https://github.com/petergridge/Irrigation-V5/blob/main/pause.md)
+There is an example of automating the pause feature [here](#../pause.md)
 
 ### Why don't changes in the rain sensor and adjustment impact running zones
 - Some users have soil sensors to determine the adjustment. If this sensor modified the operation of the zone it would impact the watering time adversely.
