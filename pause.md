@@ -32,8 +32,8 @@ actions:
       sequence:
         - delay:
             hours: 0
-            minutes: 0
-            seconds: 30
+            minutes: 4
+            seconds: 0
             milliseconds: 0
         - action: switch.turn_on
           metadata: {}
@@ -42,8 +42,8 @@ actions:
             entity_id: switch.pause
         - delay:
             hours: 0
-            minutes: 0
-            seconds: 30
+            minutes: 30
+            seconds: 0
             milliseconds: 0
         - action: switch.turn_off
           metadata: {}
