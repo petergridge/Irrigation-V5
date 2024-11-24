@@ -25,6 +25,8 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 
 Add the option to [pause](#Pause-a-program) and resume a running program.
 
+Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-time) in a program. If this setting is selected the zone trasntion is not available.
+
 ## Upgrading
 - Once installed the program will reconfigure itself.
 - The frequency options will default to a single value '1', reconfigure the program to add additional options.
@@ -239,7 +241,9 @@ Several sensors can be defined
 - Adjustment, this sensor is expected to provide a factor greater than or equal to 0, this is a multiplier applied to the watering time/volume. Use this to adjust the amount of water applied, less on rainy days, more on hot days. If the value is 0 the zone will not run.
 
 ### Can multiple zones run at the same time?
-No, but... You can create a switch group using HomeAssistant helper functionality. A group set up this way will allow multiple zones to be treated as a single switch. All the grouped switches will have the same run profile/duration.
+You can set the degree of parallel run in the program configuration. A value of 1 will result in the zones runing sequentially. A value of 2 will let two zones run simultanteously the practical limit is the water pressure and number of sprinklers in your zones.
+
+You can also create a switch group using HomeAssistant helper functionality. A group set up this way will allow multiple zones to be treated as a single switch. All the grouped switches will have the same run profile/duration.
 
 ### Can two programs run at the same time.
 You can configure multiple programs to run together, by default if program executions overlap the second program will terminate the active one. This can be disabled in the advance options of the configuration. The setting must be updated on each program instance.
@@ -430,6 +434,9 @@ Allows selecting the behaviour when the program is already running:
 
 ### Maximum watering time/step
 These options change the default settings for the slider to enter time/volume in the custom card.
+
+### Zone parallel execution
+This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone trasntion is not available.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
