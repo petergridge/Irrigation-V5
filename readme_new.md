@@ -6,7 +6,7 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-## This Release V2024.11.xx
+## This Release V2024.12.xx
 **BREAKING CHANGE**
 - Depending on the complexity of the implementation some options may need to be transitioned to different entity types.
 - Frequency selection options will need to be updated in the program configuration.
