@@ -3,9 +3,10 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V2024.10.xx
-* Manage entiy register when zone is deleted
-* Fix run frequency issues
+### V2024.12.xx
+# Major release
+
+See the new release notes [here](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md)
 
 # Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
