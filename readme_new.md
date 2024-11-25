@@ -436,7 +436,7 @@ Allows selecting the behaviour when the program is already running:
 These options change the default settings for the slider to enter time/volume in the custom card.
 
 ### Zone parallel execution
-This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone trasntion is not available.
+This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone transition is not available.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.11.01
