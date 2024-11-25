@@ -25,7 +25,7 @@ Frequency can now be determined as an offset of Sunrise or Sunset.
 
 Add the option to [pause](#Pause-a-program) and resume a running program.
 
-Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-time) in a program. If this setting is selected the zone trasntion is not available.
+Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-time) in a program. If this setting is selected the zone transition is not available.
 
 ## Upgrading
 - Once installed the program will reconfigure itself.
