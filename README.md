@@ -3,8 +3,7 @@
 ### Would you like more language support? Can you help with a translation? Contact me!
 Create a PR, contact me using the community link above, or raise and issue on github, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-### V2024.12.xx
-# Major release
+# V2024.12.xx Major release
 
 See the new release notes [here](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md)
 
