@@ -6,9 +6,9 @@ class IrrigationCard extends HTMLElement {
     const cardConfig = Object.assign({}, config);
     if (!cardConfig.card) cardConfig.card = {};
     if (!cardConfig.card.type) cardConfig.card.type = "entities";
-    if (!cardConfig.entities_vars)
-      cardConfig.entities_vars = { type: "entity" };
-    const element = document.createElement(`hui-${cardConfig.card.type}-card`);
+     if (!cardConfig.entities_vars)
+       cardConfig.entities_vars = { type: "entity" };
+    const element = document.createElement('hui-entities-card');
     this._config = JSON.parse(JSON.stringify(cardConfig));
     customElements.whenDefined("card-mod").then(() => {
       customElements
@@ -20,7 +20,6 @@ class IrrigationCard extends HTMLElement {
   }
 
   set hass(hass) {
-    let entities = [];
 
     const config = this._config;
     config.card.title = config.title;
@@ -31,10 +30,13 @@ class IrrigationCard extends HTMLElement {
     config.card.theme = config.theme;
     config.card.show_header_toggle = false;
     config.card.state_color = true;
-    let defentities = [];
+    let doErrors = [];
     let validconfig = "invalid";
 
-    let zones = Number(hass.states[config.program].attributes["zone_count"]);
+    let zones = hass.states[config.program].attributes["zones"];
+
+    let entities = [];
+    let buttons = [];
 
     console.log("editor:constructor()");
 
@@ -42,7 +44,7 @@ class IrrigationCard extends HTMLElement {
     if (!x) {
       config.card.title = "ERR";
       validconfig == "invalid";
-      defentities.push({
+      doErrors.push({
         type: "section",
         label: "Program: not found",
       });
@@ -52,260 +54,177 @@ class IrrigationCard extends HTMLElement {
     }
 
     if (validconfig === "valid") {
-      if (!hass.states[config.program].attributes["zone_count"]) {
-        defentities.push({
+      if (!hass.states[config.program].attributes["zones"]) {
+        doErrors.push({
           type: "section",
-          label: "Program: not v4 or newer irriation component",
+          label: "Program: not v2024.11 or newer irriation component",
         });
         config.card.title = "ERROR: " + config.program;
         validconfig = "invalid";
       }
     }
 
-    function cardentities(hass) {
-      function addZoneRunConfigButtons(p_zone, p_config) {
-        var zone_name = hass.states[p_zone].attributes["friendly_name"];
-        var buttons = [];
-        buttons[0] = {
-          entity: p_zone,
-          name: zone_name,
-          icon: "mdi:water",
-          tap_action: {
-            action: "call-service",
-            service: "irrigationprogram.toggle_zone",
-            service_data: {
-              entity_id: config.program,
-              zone: p_zone,
-            },
-          },
-        };
+    function doRenderProgram(hass) {
 
-        buttons[1] = {
-          entity: p_config,
-          show_name: false,
-          tap_action: {
-            action: "call-service",
-            service: "irrigationprogram.toggle",
-            service_data: {
-              entity_id: p_config,
-            },
-          },
-        };
+      // Build the Card
+      if (config.show_program === true) {
+        buttons = [];
 
-        entities.push({
-          type: "buttons",
-          entities: buttons,
-        });
-      } //addZoneRunConfigButtons
-
-      function addProgramRunConfigButtons() {
-        var buttons = [];
-
-        let showconfig = "binary_sensor." + config.program.split(".")[1] +  "_config";
-
+        let showconfig = hass.states[config.program].attributes["show_config"]
+        //Add button group
         buttons[0] = {
           entity: config.program,
           show_name: true,
-          icon: "mdi:power",
         };
 
         buttons[1] = {
           entity: showconfig,
+          show_name: true,
+        };
+
+        buttons[2] = {
+          entity: hass.states[config.program].attributes["pause"],
           show_name: false,
-          tap_action: {
-            action: "call-service",
-            service: "irrigationprogram.toggle",
-            service_data: {
-              entity_id: showconfig,
-            },
-          },
         };
 
         entities.push({
           type: "buttons",
           entities: buttons,
         });
-      } //addProgramRunConfigButtons
 
-      function add_entity(p_conditions = [], p_entity, array) {
-        if (hass.states[config.program].attributes[p_entity]) {
+        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" }];
+        add_simple_entity(config.program, condition, "start_time", entities);
+
+        var condition = [{ entity: showconfig, state: "on" }];
+        if (hass.states[config.program].attributes["sunrise"] || hass.states[config.program].attributes["sunset"]) {
+          add_simple_entity(config.program, condition, "start_time", entities);
+        } else {
+          add_entity(config.program, condition, "start_time", entities);
+        }
+        add_entity(config.program,condition, "sunrise", entities);
+        add_entity(config.program,condition, "sunset", entities);
+
+        var condition = [{ entity: config.program, state: "on" }];
+        add_entity(config.program, condition, "remaining", entities);
+
+        var condition = [{ entity: showconfig, state: "on" }];
+        add_entity(config.program, condition, "irrigation_on", entities);
+        add_entity(config.program, condition, "run_freq", entities);
+        add_entity(config.program, condition, "inter_zone_delay", entities);
+      }
+
+      //add the zones
+      zones = config.entities;
+
+      let first_zone = true;
+      let i, len;
+      for (i = 0; len = zones.length, i < len; i++) {
+        let zone = zones[i]
+        AddZone(zone, first_zone);
+        first_zone = false;
+      };
+
+      return entities;
+
+      function add_entity(object, conditions = [], entity, array) {
+        if (hass.states[object].attributes[entity]) {
           array.push({
             type: "conditional",
-            conditions: p_conditions,
+            conditions: conditions,
             row: {
-              entity: hass.states[config.program].attributes[p_entity]
+              entity: hass.states[object].attributes[entity]
             },
           });
         }
       } //add_entity
 
-      function add_attribute(p_attribute, p_name, p_icon, p_conditions, array) {
-        if (hass.states[config.program].attributes[p_attribute]) {
+      function add_simple_entity(object, conditions = [], entity, array) {
+        if (hass.states[object].attributes[entity]) {
           array.push({
             type: "conditional",
-            conditions: p_conditions,
+            conditions: conditions,
             row: {
-              type: "attribute",
-              entity: config.program,
-              attribute: p_attribute,
-              format: "relative",
-              name: p_name,
-              icon: p_icon,
-              state_color: false,
+              entity: hass.states[object].attributes[entity],
+              type: "simple-entity"
             },
           });
         }
-      } //add_attribute
+      } //add_entity
 
-      function has_attr_value(p_attribute) {
-        let attrvalue = null;
-        if (hass.states[config.program].attributes[p_attribute]) {
-          attrvalue = hass.states[config.program].attributes[p_attribute];
-        }
-        return attrvalue;
-      } //has_attr_value
+      // Process zone
+      function AddZone(zone, first_zone) {
 
-      function add_attr_value(p_attribute, array,showconfig) {
-        if (has_attr_value(p_attribute)) {
-          add_entity([{ entity: showconfig, state: "on" }], p_attribute, array);
-        }
-      } //add_attr_value
-
-      function ProcessZone(zone, zone_attrs) {
-        let pname = zone.split(".")[1];
-        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_" + pname + "_config";
-
-        // list of other in order
-        add_attr_value(pname + "_enable_zone", zone_attrs,showconfig);
-        add_attr_value(pname + "_run_freq", zone_attrs, showconfig);
-        add_attr_value(pname + "_water", zone_attrs, showconfig);
-        add_attr_value(pname + "_water_adjustment", zone_attrs, showconfig);
-        add_attr_value(pname + "_flow_sensor", zone_attrs, showconfig);
-        add_attr_value(pname + "_wait", zone_attrs, showconfig);
-        add_attr_value(pname + "_repeat", zone_attrs, showconfig);
-        add_attr_value(pname + "_rain_sensor", zone_attrs, showconfig);
-        add_attr_value(pname + "_ignore_rain_sensor", zone_attrs, showconfig);
-      } //ProcessZone
-
-
-      function ZoneHeader(zone, zone_name, first_zone) {
-
-        // process zone/zonegroup main section
-        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_" + zone_name + "_config";
-
+        //Add a section break
         if (config.show_program === false && first_zone && !config.title) {
           //do nothing
         } else {
           entities.push({ type: "section", label: "" });
         }
 
-        addZoneRunConfigButtons(zone, showconfig);
-        // Next/Last run details
-        let zonestatus =
-          "sensor." + config.program.split(".")[1] + "_" + zone_name + "_status";
-        let zonenextrun =
-          "sensor." + config.program.split(".")[1] + "_" + zone_name + "_next_run";
+        let showconfig = hass.states[zone].attributes["show_config"]
+        let condition = []
+        buttons = [];
+
+        //Add the buttons
+        buttons[0] = {
+          entity: zone,
+          show_name: true,
+          tap_action: {
+            action: "call-service",
+            service: "switch.toggle",
+            service_data: {
+              entity_id: zone,
+            },
+          },        };
+
+          buttons[1] = {
+            entity: showconfig,
+            show_name: true,
+          };
 
         entities.push({
-          type: "conditional",
-          conditions: [
-            { entity: zonestatus, state: ["off"] }
-          ],
-          row: {
-            entity: zonenextrun,
-            name: config.next_run_label || "Next Run",
-            icon: "mdi:clock-start",
-            format: "relative",
-          },
+          type: "buttons",
+          entities: buttons,
         });
 
-        entities.push({
-          type: "conditional",
-          conditions: [
-            { entity: zonestatus, state_not: ["off", "on", "pending", "eco"] }
-          ],
-          row: {
-            entity: zonestatus,
-            name: config.next_run_label || "Next Run",
-            icon: "mdi:alert-outline"
-          },
-        });
+        let zonestatus = hass.states[zone].attributes["status"]
 
-        // Show the remaining time when on/eco/pending
-        add_attribute(
-          zone_name + "_remaining",
-          config.remaining_label || "Remaining Time",
-          "mdi:timer-outline",
-          [
-            { entity: zonestatus, state: ["on","eco","pending"]},
-          ],
-          entities
-        );
+        condition = [{ entity: zonestatus, state: ["off"]}        ]
+        add_entity(zone, condition, "next_run", entities)
 
-        add_attribute(
-          zone_name + "_last_ran",
-          config.last_ran_label || "Last Ran",
-          "mdi:clock-end",
-          [
-            { entity: zonestatus, state_not: ["on","eco","pending"] },
-            { entity: showconfig, state: "on" },
-          ],
-          entities
-        );
-      } //ZoneHeader
+        condition = [{ entity: zonestatus, state_not: ["off", "on", "pending", "eco"]}        ]
+        add_entity(zone, condition, "status", entities)
 
-      // Build the Program level entities
-      if (config.show_program === true) {
-        addProgramRunConfigButtons();
-        add_entity([], "start_time", entities);
-        add_attribute(
-          "remaining",
-          config.remaining_label || "Remaining Time",
-          "mdi:timer-outline",
-          [{ entity: config.program, state: "on" }],
-          entities
-        );
+        condition = [{ entity: zonestatus, state: ["on","eco","pending"]}        ]
+        add_entity(zone, condition, "remaining", entities)
 
-        //add the program level configuration
-        let showconfig = "binary_sensor." + config.program.split(".")[1] + "_config";
+        condition = [
+          { entity: zonestatus, state_not: ["on", "eco", "pending"] },
+          { entity: showconfig, state: "on" },
+        ]
+        add_entity(zone, condition, "last_ran", entities)
 
-        add_attr_value("irrigation_on", entities, showconfig);
-        add_attr_value("run_freq", entities, showconfig);
-        add_attr_value("controller_monitor", entities, showconfig);
-        add_attr_value("inter_zone_delay", entities, showconfig);
-      }
+        condition = [{ entity: showconfig, state: "on" }]
+        add_entity(zone, condition, "enable_zone", entities)
+        add_entity(zone, condition, "run_freq", entities)
+        add_entity(zone, condition, "water", entities)
+        add_entity(zone, condition, "wait", entities)
+        add_entity(zone, condition, "repeat", entities)
+        add_entity(zone, condition, "flow_sensor", entities)
+        add_entity(zone, condition, "water_adjustment", entities)
+        add_entity(zone, condition, "rain_sensor", entities)
+        add_entity(zone, condition, "water_source_active", entities)
+        add_entity(zone, condition, "ignore_sensors", entities)
+      } //AddZone
 
-      //add the zone level configuration
-      let first_zone = true;
-      for (let i = 1; i < zones + 1; i++) {
-        let _zone_name =
-          hass.states[config.program].attributes["zone_" + String(i) + "_name"];
-        let _zone_type =
-          hass.states[config.program].attributes[_zone_name + "_type"];
+      //------------------------------------------------------------
 
-        if (config.entities) {
-          if (config.entities.length > 0) {
-            if (config.entities.indexOf(_zone_type + "." + _zone_name) == -1) {
-              continue;
-            }
-          }
-        }
-
-        let zone = _zone_type + "." + _zone_name;
-        ZoneHeader(zone, _zone_name, first_zone);
-        let zone_attrs = [];
-        ProcessZone(zone, zone_attrs);
-        const newentities = entities.concat(zone_attrs);
-        entities = newentities;
-        first_zone = false;
-      }
-      return entities;
-    } //cardentities
+    } //doRenderProgram
 
     if (validconfig === "valid") {
-      config.card.entities = cardentities(hass);
+      config.card.entities = doRenderProgram(hass);
     } else {
-      config.card.entities = defentities;
+      config.card.entities = doErrors;
     }
 
     this.lastChild.setConfig(config.card);
@@ -321,9 +240,6 @@ class IrrigationCard extends HTMLElement {
       program: "",
       entities: [],
       show_program: true,
-      next_run_label: "Next Run",
-      last_ran_label: "Last Run",
-      remaining_label: "Remaining time",
     };
   }
 
@@ -371,11 +287,8 @@ class IrrigationCardEditor extends HTMLElement {
     this._elements.editor = document.createElement("form");
     this._elements.editor.innerHTML = `
 			<div class="row"><label class="label" for="program">Program:</label><select class="value" id="program" ></select></div>
-			<div class="row"><label class="label" for="entities">Entity:</label><select class="value" id="entities" multiple></select></div>
+			<div class="row"><label class="label" for="entities">Zone:</label><select class="value" id="entities" multiple></select></div>
 			<div class="row"><label class="label" for="show_program">Show program:</label><input type="checkbox" id="show_program" checked></input></div>
-			<div class="row"><label class="label" for="last_ran_label">Last ran label:</label><input type="text" id="last_ran_label" defaultValue='Last Ran'></input></div>
-			<div class="row"><label class="label" for="next_run_label">Next run label:</label><input type="text" id="next_run_label" defaultValue='Next Run'></input></div>
-			<div class="row"><label class="label" for="remaining_label">Remaining label:</label><input type="text" id="remaining_label" defaultValue='Remaining time'></input></div>
 			`;
   }
 
@@ -405,12 +318,6 @@ class IrrigationCardEditor extends HTMLElement {
     this._elements.entities = this._elements.editor.querySelector("#entities");
     this._elements.show_program =
       this._elements.editor.querySelector("#show_program");
-    this._elements.last_ran_label =
-      this._elements.editor.querySelector("#last_ran_label");
-    this._elements.next_run_label =
-      this._elements.editor.querySelector("#next_run_label");
-    this._elements.remaining_label =
-      this._elements.editor.querySelector("#remaining_label");
   }
 
   doListen() {
@@ -423,18 +330,6 @@ class IrrigationCardEditor extends HTMLElement {
       this.onChanged.bind(this)
     );
     this._elements.show_program.addEventListener(
-      "change",
-      this.onChanged.bind(this)
-    );
-    this._elements.last_ran_label.addEventListener(
-      "change",
-      this.onChanged.bind(this)
-    );
-    this._elements.next_run_label.addEventListener(
-      "change",
-      this.onChanged.bind(this)
-    );
-    this._elements.remaining_label.addEventListener(
       "change",
       this.onChanged.bind(this)
     );
@@ -458,10 +353,10 @@ class IrrigationCardEditor extends HTMLElement {
 		}
 
     // populate the list of programs
-		var first = true;
     for (var x in this._hass.states) {
-      if (Number(this._hass.states[x].attributes["zone_count"]) > 0) {
-        let newOption = new Option(x, x);
+      if (this._hass.states[x].attributes["attribution"] ==  "Irrigation Program") {
+        var friendly_name = this._hass.states[x].attributes["friendly_name"];
+        let newOption = new Option(friendly_name, x);
 
         if (x == this._config.program) {
           newOption.selected = true;
@@ -474,25 +369,25 @@ class IrrigationCardEditor extends HTMLElement {
 
   doBuildEntityOptions(program, entities) {
     // build the list of zones in the program
-
-    var zones = Number(this._hass.states[program].attributes["zone_count"]);
+    console.log("do build entity options")
+    //var zones = Number(this._hass.states[program].attributes["zone_count"]);
     var select = this._elements.editor.querySelector("#entities");
     //remove existing options
+    var zones = this._hass.states[program].attributes["zones"];
+    var l = zones.length;
     var i = 0;
-    var l = select.options.length - 1;
+
     for (i = l; i >= 0; i--) {
+      console.log("do build entity options - remove")
       select.remove(i);
     }
-    //rebuild the options
-    for (i = 1; i < zones + 1; i++) {
 
-      let _zone_name =
-      this._hass.states[this._config.program].attributes["zone_" + String(i) + "_name"];
-      let _zone_type =
-      this._hass.states[this._config.program].attributes[_zone_name + "_type"];
+    for (i = 0; i < l; i++) {
+      var zone = zones[i]
+      var friendly_name = this._hass.states[zone].attributes["friendly_name"];
+      var zone_name = this._hass.states[zone].entity_id;
 
-      var zone_name = _zone_type + "." + _zone_name;
-      let newOption = new Option(zone_name, zone_name);
+      let newOption = new Option(friendly_name,zone_name);
       if (entities.includes(zone_name)) {
         newOption.selected = true;
       }
@@ -504,12 +399,6 @@ class IrrigationCardEditor extends HTMLElement {
     // Build values on load
     this.doBuildProgramOptions(this._config.program);
     this._elements.show_program.checked = this._config.show_program;
-    this._elements.last_ran_label.value =
-      this._config.last_ran_label || "Last Ran";
-    this._elements.next_run_label.value =
-      this._config.next_run_label || "Next Run";
-    this._elements.remaining_label.value =
-      this._config.remaining_label || "Remaining time";
     if (this._elements.program.value.split(".")[0] == "switch") {
       this._elements.entities.value = this._hass.config["entities"];
       this.doBuildEntityOptions(
@@ -547,12 +436,6 @@ class IrrigationCardEditor extends HTMLElement {
       newConfig.entities = selectedentities;
     } else if (changedEvent.target.id == "show_program") {
       newConfig.show_program = changedEvent.target.checked;
-    } else if (changedEvent.target.id == "last_ran_label") {
-      newConfig.last_ran_label = changedEvent.target.value;
-    } else if (changedEvent.target.id == "next_run_label") {
-      newConfig.next_run_label = changedEvent.target.value;
-    } else if (changedEvent.target.id == "remaining_label") {
-      newConfig.remaining_label = changedEvent.target.value;
     }
 
     const event = new Event("config-changed", {

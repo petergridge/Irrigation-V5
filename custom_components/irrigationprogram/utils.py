@@ -9,7 +9,6 @@ from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
-
 def register_static_path(app: web.Application, url_path: str, path):
     """Register static path with CORS for Chromecast."""
 
@@ -60,3 +59,17 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
         add_extra_js_url(hass, url2)
 
     return True
+
+#Utilities
+def bubble_sort(zones):
+    """Sort an array of data."""
+    # Outer loop to iterate through the list n times
+    for n in range(len(zones) - 1, 0, -1):
+        # Inner loop to compare adjacent elements
+        for i in range(n):
+            if zones[i].get('order',0) > zones[i + 1].get('order',0):
+                # Swap elements if they are in the wrong order
+                zones[i], zones[i + 1] = zones[i + 1], zones[i]
+    for n, zone in enumerate(zones):
+        zone['order'] = (n+1)*10
+    return zones

@@ -1,117 +1,30 @@
 {
-    "services":{
-		"stop_programs":{
-			"name": "Arrêter les programmes",
-			"description": "Arrêter tous les programmes et zones en cours d'exécution."
-		},
-		"list_config":{
-			"name": "Lister la configuration",
-			"description": "Lister la configuration dans le fichier journal"
-		},
-		"run_zone":{
-			"name": "Exécuter la zone",
-			"description": "Exécuter une zone spécifique.",
-			"fields": {
-				"entity_id": {
-					"name": "Programme d'irrigation",
-					"description": "Le programme d'irrigation à exécuter"
-				},
-				"zone": {
-					"name": "Zone",
-					"description": "Zones à exécuter"
-				}
-			}
-		},
-		"toggle_zone":{
-			"name": "Basculer la zone",
-			"description": "Exécuter une zone spécifique.",
-			"fields": {
-				"entity_id": {
-					"name": "Programme d'irrigation",
-					"description": "Le programme d'irrigation à exécuter"
-				},
-				"zone": {
-					"name": "Zone",
-					"description": "Zones à exécuter"
-				}
-			}
-		},
-		"reset_runtime":{
-			"name": "Réinitialiser les temps d'exécution",
-			"description": "Réinitialiser le temps d'exécution à zéro pour le programme, supporte les tests.",
-			"fields": {
-				"entity_id": {
-					"name": "Programme d'irrigation",
-					"description": "Le programme d'irrigation à exécuter"
-				},
-				"reset": {
-					"name": "Reset days",
-					"description": "Number of days to back date the last ran attribute"
-				}
-			}
-		},
-		"run_simulation":{
-			"name": "Exécuter la simulation",
-			"description": "Simuler l'exécution d'un programme. Les résultats sont affichés dans le journal.",
-			"fields": {
-				"entity_id": {
-					"name": "Programme d'irrigation",
-					"description": "Le programme d'irrigation à exécuter"
-				},
-				"scheduled": {
-					"name": "Programmé",
-					"description": "Exécution simulée programmée (true) ou manuelle (false)"
-				}
-			}
-		},
-		"set_zone_status":{
-			"name": "Définir le statut de la zone",
-			"description": "Définir le statut de la zone",
-			"fields": {
-				"entity_id": {
-					"name": "Capteur de statut de la zone d'irrigation",
-					"description": "Le capteur de zone à définir"
-				}
-			}
-		},
-		"toggle":{
-			"name": "Basculer le capteur de configuration",
-			"description": "Basculer la configuration",
-			"fields": {
-				"entity_id": {
-					"name": "Capteur de configuration de zone d'irrigation",
-					"description": "Le capteur de configuration de zone à basculer"
-				}
-			}
-		}
-    },
 	"selector": {
-		"status": {
-			"options": {
-				"off": "Arrêt",
-				"on": "Marche",
-				"disabled": "Désactivé",
-				"pending": "En attente",
-				"eco": "ECO",
-				"program_disabled": "Programme désactivé",
-				"controller_disabled": "Contrôleur désactivé",
-				"unavailable": "Indisponible",
-				"raining": "Pluie",
-				"adjusted_off": "Aucun ajustement",
-				"no_water_source": "Source d'eau non détectée",
-				"zone_disabled": "Désactivé"
-		}
-		},
 		"device_type": {
 			"options": {
 				"generic": "Générique",
 				"rainbird": "RainBird"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Time selector",
+				"multistart":"Multiple times",
+				"sunrise":"Sunrise with offset",
+				"sunset":"Sunset with offset"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Stop the program",
+				"continue": "Allow program to complete"
 			}
 		}
 	},
 	"entity": {
 		"sensor": {
 			"zonestatus": {
+				"name":"Zone status",
 				"state": {
 					"off": "Arrêt",
 					"on": "Marche",
@@ -124,8 +37,76 @@
 					"raining": "Pluie",
 					"adjusted_off": "Aucun ajustement",
 					"no_water_source": "Source d'eau non détectée",
-					"zone_disabled": "Désactivé"
+					"zone_disabled": "Désactivé",
+					"paused": "Program paused"
 				}
+			},
+			"zone_next_run":{
+				"name":"Next run"
+			},
+			"zone_last_ran":{
+				"name":"Last ran"
+			},
+			"remaining_time":{
+				"name":"Remaining time"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Watering time"
+			},
+			"volume":{
+				"name":"Watering volume"
+			},
+			"wait":{
+				"name":"Wait time"
+			},
+			"repeat":{
+				"name":"Repeats"
+			},
+			"inter_zone_delay":{
+				"name":"Zone transition"
+			},
+			"sunrise_offset":{
+				"name":"Sunrise offset"
+			},
+			"sunset_offset":{
+				"name":"Sunset offset"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Start time"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Start times"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignore sensors"
+			},
+			"enable_program":{
+				"name":"Enable program"
+			},
+			"enable_zone":{
+				"name":"Enable zone"
+			},
+			"config":{
+				"name": "Settings"
+			},
+			"zone":{
+				"name": "{zone_name}"
+			},
+			"pause":{
+				"name": "Pause"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Frequency"
 			}
 		}
 	},
@@ -133,7 +114,9 @@
 		"error": {
 			"zone_defined": "Le commutateur de zone sélectionné est déjà défini dans ce programme d'irrigation",
 			"mandatory": "Champ obligatoire non rempli",
-			"zone_required": "Au moins une zone doit être définie"
+			"zone_required": "Au moins une zone doit être définie",
+			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
 		},
 		"step": {
 			"user": {
@@ -141,61 +124,88 @@
 				"description": "Définit le programme",
 				"data": {
 					"name": "Nom",
-					"run_freq": "Entité de fréquence",
+					"freq": "Enable program wide frequency",
+					"freq_options": "Select or add frequency options",
 					"controller_monitor": "Surveiller l'entité du contrôleur",
-					"start_time": "Entité de l'heure de début",
-					"irrigation_on": "Activer l'entité d'irrigation",
-					"show_config": "Afficher l'entité de configuration",
-					"device_type": "Type de contrôleur",
-					"inter_zone_delay": "Entité de délai entre les zones",
-					"interlock": "Empêcher les programmes de s'exécuter simultanément"
+					"device_type": "Type de contrôleur"
 				}
 			},
-			"zones": {
+			"add_zone": {
 				"title": "Zones du programme",
 				"description": "Configuration de la zone",
 				"data": {
 					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
 					"pump": "Entité de commutateur de pompe",
 					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
-					"run_freq": "Entité de fréquence",
 					"rain_sensor": "Entité de capteur de pluie",
-					"group": "Entité de groupe de zones",
-					"water": "Entité d'exécution",
-					"wait": "Entité de temps d'attente",
-					"repeat": "Entité de nombre de répétitions",
-					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
-					"enable_zone": "Activer l'entité de zone",
 					"water_source_active": "Entité de source d'eau",
-					"show_config": "Afficher l'entité de configuration"
+					"order": "Zone run order"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuration de la zone",
+				"description": "Supprimer la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"rain_sensor": "Entité de capteur de pluie",
+					"water_source_active": "Entité de source d'eau",
+					"order": "Zone run order"
+				}
+			},
+			"update_zone": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
 				}
 			},
 			"menu": {
 				"description": "",
 				"menu_options": {
-					"add_group": "Ajouter un groupe de zones",
-					"zones": "Ajouter une zone",
-					"finalise": "Appliquer"
+					"user": "Mettre à jour le programme",
+					"add_zone": "Ajouter une zone",
+					"update_zone": "Mettre à jour la zone",
+					"delete_zone": "Delete zone",
+					"finalise": "Appliquer",
+					"advanced": "Advanced options"
 				}
 			},
-			"add_group": {
-				"title": "Configuration du groupe",
-				"description": "Ajouter un groupe",
+			"advanced": {
+				"description": "",
+				"title": "Advanced Options",
 				"data": {
-					"zones": "Sélectionner les zones"
+					"sun":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution"
 				}
 			}
 		}
 	},
-
  	"options": {
 		"error": {
 			"zone_defined": "Le commutateur de zone est déjà défini dans ce programme d'irrigation",
-			"group_define": "Le nom de groupe sélectionné est déjà utilisé",
-			"two_zones_required": "Au moins deux zones sont nécessaires pour créer un groupe",
 			"mandatory": "Champ obligatoire non rempli",
-			"zone_required": "Au moins une zone doit être définie"
+			"zone_required": "Au moins une zone doit être définie",
+			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
 		},
 		"step": {
 			"user": {
@@ -205,23 +215,31 @@
 					"update_zone": "Mettre à jour la zone",
 					"delete_zone": "Supprimer la zone",
 					"add_zone": "Ajouter une zone",
-					"add_group": "Ajouter un groupe de zones",
-					"delete_group": "Supprimer le groupe",
-					"finalise": "Appliquer"
+					"finalise": "Appliquer",
+					"advanced": "Advanced options"
+				}
+			},
+			"advanced": {
+				"title": "Advanced Options",
+				"description": "",
+				"data": {
+					"sun":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution"
 				}
 			},
 			"update_program": {
 				"title": "Données du programme",
 				"description": "Mettre à jour le programme",
 				"data": {
-					"run_freq": "Entité de fréquence d'exécution",
+					"program": "Program Name",
+					"freq": "Enable program wide frequency",
+					"freq_options": "Select or add frequency options",
 					"controller_monitor": "Surveiller l'entité du contrôleur",
-					"start_time": "Entité de l'heure de début",
-					"irrigation_on": "Activer l'entité d'irrigation",
-					"show_config": "Afficher l'entité de configuration",
-					"device_type": "Type de contrôleur",
-					"inter_zone_delay": "Entité de délai entre les zones",
-					"interlock": "Empêcher les programmes de s'exécuter simultanément"
+					"device_type": "Type de contrôleur"
 				}
 			},
 			"add_zone": {
@@ -229,19 +247,14 @@
 				"description": "Définir la zone",
 				"data": {
 					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
 					"pump": "Entité de commutateur de pompe",
 					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
-					"run_freq": "Entité de fréquence",
 					"rain_sensor": "Entité de capteur de pluie",
-					"group": "Entité de groupe de zones",
-					"water": "Entité d'exécution",
-					"wait": "Entité de temps d'attente",
-					"repeat": "Entité de nombre de répétitions",
-					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
-					"enable_zone": "Activer l'entité de zone",
 					"water_source_active": "Entité de source d'eau",
-					"show_config": "Afficher l'entité de configuration"
+					"order": "Zone run order"
 				}
 			},
 			"update_zone_data": {
@@ -249,19 +262,14 @@
 				"description": "Mettre à jour la zone",
 				"data": {
 					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
 					"pump": "Entité de commutateur de pompe",
 					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
-					"run_freq": "Entité de fréquence",
 					"rain_sensor": "Entité de capteur de pluie",
-					"group": "Entité de groupe de zones",
-					"water": "Entité d'exécution",
-					"wait": "Entité de temps d'attente",
-					"repeat": "Entité de nombre de répétitions",
-					"ignore_rain_sensor": "Ignorer l'entité du capteur de pluie",
-					"enable_zone": "Activer l'entité de zone",
 					"water_source_active": "Entité de source d'eau",
-					"show_config": "Afficher l'entité de configuration"
+					"order": "Zone run order"
 				}
 			},
 			"delete_zone": {
@@ -276,20 +284,6 @@
 				"description": "Mettre à jour la zone",
 				"data": {
 					"zone": "Sélectionner la zone"
-				}
-			},
-			"add_group": {
-				"title": "Configuration du groupe",
-				"description": "Ajouter un groupe",
-				"data": {
-					"zones": "Sélectionner les zones"
-				}
-			},
-			"delete_group": {
-				"title": "Configuration du groupe",
-				"description": "Supprimer le groupe",
-				"data": {
-					"group": "Sélectionner le groupe"
 				}
 			}
 		}
