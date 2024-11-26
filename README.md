@@ -7,7 +7,7 @@ Create a PR, contact me using the community link above, or raise and issue on gi
 
 See the new release notes [here](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md)
 
-# Irrigation Component V5 <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
+# IrrigationProgram Custom Component <img src="https://github.com/petergridge/Irrigation-V5/blob/main/icon.png" alt="drawing" width="30"/>
 
 The driver for this project is to provide an easy-to-use interface for the gardener of the house. The goal is that once the initial configuration is done all the features can be modified using the custom lovelace card.
 
@@ -36,7 +36,10 @@ This [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/help/help
 ## INSTALLATION
 
 ### HACS installation
-* Adding the repository using HACS is the simplest approach. From V5.3 a Custom Card deployed with the component, no need to install separately.
+* Adding the repository using HACS is the simplest approach. From V5.3 a Custom Card deployed with the component, no need to install separately. Search for IrrigationProgarm.
+
+<img width="277" alt="image" src="https://github.com/user-attachments/assets/3f38d483-3d65-4cd5-a636-1a49ff61cc69">
+
 
 ### Important
 * Make sure that all of the objects you reference i.e. switches, sensors etc are defined or you will get errors when the irrigationprogram is triggered. Check the log for errors.
