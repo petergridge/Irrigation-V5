@@ -76,6 +76,9 @@ The included [custom card](#custom-card) renders the program configuration as a 
 
 ### HACS installation
 * Adding the repository using HACS is the simplest approach. The Custom Card deployed with the component, no need to install separately.
+* look for IrrigationProgram Custom Component
+<img width="277" alt="image" src="https://github.com/user-attachments/assets/065f9d00-c223-4112-8158-22e1bdae0633">
+
 
 ### Config Flow
 * Define the program using the UI. From Setting, Devices & Services choose 'ADD INTEGRATION'. Search for Irrigation Controller Component.
