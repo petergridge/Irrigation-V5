@@ -189,7 +189,7 @@ Four options are available to configure the start time. These can be selected fr
 - Selector
   - Provides a time selector to input the scheduled start time.
 - Multi time
-  - Provides a text input to all the entry of multiple state times for a program, for example 6am and 6pm
+  - Provides a text input to enter multiple start times for a program, for example 6am and 6pm
 - Sunrise
   - calculates the start time based on the sunrise time provided by the sun integration. A slider provides the ability to offset the time by +/- 4 hours
 - Sunset
