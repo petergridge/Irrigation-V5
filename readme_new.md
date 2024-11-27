@@ -270,7 +270,7 @@ The next run is set from the start time and frequency provided. Changing the sta
 This is set after any successful completion of the zone. All zones triggered together will have the same last ran value set.
 
 ### Events
-Events allow you to trigger other actions when the irrigation program progresses through a program.
+The following events are raised by this component and could be used to trigger other actions when the irrigation program is processed.
 
 *program_turned_on*
 - scheduled: false indicates the program was run manually
@@ -444,7 +444,7 @@ These options change the default settings for the slider to enter time/volume in
 This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone transition is not available.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
-### V2024.11.01
+### V2024.12.01
 **Breaking Change**
 - Recommend removing and re-adding the configuration
 - Removed capability to set frequency via a sensor
