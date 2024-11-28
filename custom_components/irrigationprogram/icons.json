@@ -91,9 +91,9 @@
 				"default":"mdi:alert-outline",
 				"state": {
 					"off": "mdi:water-outline",
-					"on": "mdi:water",
+					"on": "mdi:sprinkler-variant",
 					"disabled": "mdi:alert-outline",
-					"pending": "mdi:pause",
+					"pending": "mdi:timer-pause-outline",
 					"eco": "mdi:leaf",
 					"program_disabled": "mdi:alert-outline",
 					"controller_disabled": "mdi:fuse-alert",

@@ -1,6 +1,6 @@
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import timedelta
 import logging
 import math
 
@@ -154,7 +154,6 @@ class Zone(SwitchEntity, RestoreEntity):
         """Pump solenoid Entity str."""
         return self._zonedata.pump
 
-
     @property
     def entity_type(self)->str:
         """Switch or Valve."""
@@ -254,11 +253,6 @@ class Zone(SwitchEntity, RestoreEntity):
         """Next run entity time."""
         return self._zonedata.next_run
 
-    # @property
-    # def next_run_dt(self):
-    #     """Present next run as a datetime."""
-    #     return self.next_run.native_value
-
     @property
     def aborted(self):
         """Return the name of the variable."""
@@ -266,24 +260,24 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def prepare_to_run(self,scheduled=True):
         """Initialise the remaining time when the program is started."""
+
         self._scheduled = scheduled
         self._water_adjust_prior = self.adjustment
         self._remaining_time = await self.calc_run_time(repeats=self.repeat,scheduled=scheduled)
         await self.remaining_time.set_value(self._remaining_time)
         self._status = CONST_PENDING
         await self.status.set_value(self._status)
+        self.async_schedule_update_ha_state()
 
     async def should_run(self, scheduled=True):
         '''Determine if the zone should run.'''
-        #zone has been turned off or is offline
+
         if self.status.state in [CONST_DISABLED, CONST_PROGRAM_DISABLED,
                      CONST_UNAVAILABLE, CONST_ADJUSTED_OFF,
                      CONST_NO_WATER_SOURCE, CONST_RAINING, CONST_ZONE_DISABLED]:
             return False
-
         if not scheduled:
             return True
-
         if self.next_run.native_value > dt_util.as_local(dt_util.now()):
             return False
 
@@ -304,28 +298,41 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def handle_validation_error(self):
         """Validate if any state change impacts the continued running."""
+
         while await self.next_run_validation() == CONST_PAUSED:
             #wait until the program is unpaused
             await asyncio.sleep(1)
 
+        v_error = await self.next_run_validation()
+        if v_error in (CONST_OFF, CONST_ON, CONST_PENDING, CONST_ECO):
+            return v_error
+        if self._status in (CONST_ON, CONST_PENDING, CONST_ECO) and v_error == CONST_RAINING:
+            return self._status
+
         for _ in range(CONST_LATENCY):
             #allow for false readings/debounce
             v_error = await self.next_run_validation()
-            if v_error in (None, CONST_ADJUSTED_OFF, CONST_RAINING):
-                return
+            if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
+                #the zone is running so debounce
+                pass
+            else:
+                #zone is not running so let the status change
+                break
             await asyncio.sleep(1)
 
         if v_error in (CONST_PROGRAM_DISABLED, CONST_ZONE_DISABLED):
             self._stop = True
 
         if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
-            if self.water_source in (False,CONST_OFF):
+            if v_error in (CONST_NO_WATER_SOURCE):
                 async_create(
                     self.hass,
                     message=f"No water source detected, {self.name} run terminated",
                     title="Irrigation Controller"
                 )
                 self._stop = True
+                await self.async_turn_off()
+                await self.calc_next_run()
             if self._status in (CONST_UNAVAILABLE):
                 async_create(
                     self.hass,
@@ -333,6 +340,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     title="Irrigation Controller"
                 )
                 self._stop = True
+                await self.async_turn_off()
             if v_error in (CONST_RAINING_STOP):
                 async_create(
                     self.hass,
@@ -340,8 +348,8 @@ class Zone(SwitchEntity, RestoreEntity):
                     title="Irrigation Controller"
                 )
                 self._stop = True
-
-        return
+                await self.async_turn_off()
+        return v_error
 
     async def next_run_validation(self):
         """Validate the object readyness."""
@@ -361,7 +369,9 @@ class Zone(SwitchEntity, RestoreEntity):
             return CONST_RAINING_STOP
         if self.adjustment <= 0  and not self.ignore_sensors:
             return CONST_ADJUSTED_OFF
-        return None
+        if self._status not in (CONST_ON, CONST_ECO, CONST_PENDING):
+            return CONST_OFF
+        return self._status
 
     def clean_up_string(self, data) -> list:
         """Remove spaces, new line, quotes and brackets."""
@@ -369,21 +379,19 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def calc_next_run(self):
         '''Determine when a zone will next attempt to run.'''
+
         #something has changed recalculate the run time
         if self._status == CONST_PENDING:
             await self.prepare_to_run(scheduled=True)
 
         #check the sensor states
-        v_error = await self.next_run_validation()
+        v_error = await self.handle_validation_error()
         if v_error == CONST_PAUSED:
             return
-        if self._status in (CONST_PENDING,CONST_ECO,CONST_ON) and v_error in (CONST_RAINING,None):
-            #zone is running, the program will complete regardless
-            return
-        if self._status in (CONST_ECO,CONST_ON):
+        if self._status in (CONST_ECO,CONST_ON,CONST_PENDING):
             #zone is running let the process run, debounce process
             return
-        if v_error is not None:
+        if v_error not in (CONST_OFF):
             #real issue reset the zone
             self._status = CONST_RAINING if v_error == CONST_RAINING_STOP else v_error
             await self.status.set_value(self._status)
@@ -393,6 +401,9 @@ class Zone(SwitchEntity, RestoreEntity):
         #it must be off
         await self.status.set_value(CONST_OFF)
         self._state = self._status = CONST_OFF
+        self.async_schedule_update_ha_state()
+
+        #now the state/status is sorted calc the next start
         string_times = self.clean_up_string(self._programdata.switch.start_time_value)
         string_times.sort()
         starttime = string_times[0]
@@ -463,7 +474,7 @@ class Zone(SwitchEntity, RestoreEntity):
         await self.next_run.set_value(v_next_run)
         if self._state  not in (CONST_PENDING,CONST_ON,CONST_ECO,CONST_OFF):
             self._state = CONST_OFF
-            await self.status.set_value(self._state)
+            await self.status.set_value(CONST_OFF)
         return
 
     def get_weekday(self,day):
@@ -568,16 +579,15 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-
-        # set the historical flow
         if self.flow_sensor and self._state == CONST_ON:
             self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
             self._hist_flow_rate = self.flow_sensor
 
         await self.async_solenoid_turn_off()
-        await self.remaining_time.set_value(0)
-        await self.status.set_value(CONST_OFF)
         self._remaining_time = 0
+        await self.remaining_time.set_value(0)
+        if self._status in (CONST_PENDING, CONST_ECO, CONST_ON):
+            await self.status.set_value(CONST_OFF)
         self._state = CONST_OFF
         self._status = CONST_OFF
         self._stop = True
@@ -643,7 +653,12 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         """Start the zone watering cycle."""
+        # if self._programdata.switch.state == CONST_OFF:
+        #     #trigger zone outside of program context
+        #     await self._programdata.switch.entity_toggle_zone(self._zonedata)
+        #     return
         self._status = CONST_ON
+        await self.status.set_value(CONST_ON)
         self._state = CONST_ON
         self.async_schedule_update_ha_state()
         self._stop = False
@@ -653,6 +668,8 @@ class Zone(SwitchEntity, RestoreEntity):
             water_adjust_value = 1
         else:
             water_adjust_value = self._water_adjust_prior
+
+        last_ran = dt_util.as_local(dt_util.now())
 
         # run the watering cycle, water/wait/repeat
         for reps in range(self.repeat, 0, -1):
@@ -682,7 +699,6 @@ class Zone(SwitchEntity, RestoreEntity):
                     seconds_run += 1
                     self._remaining_time = await self.calc_run_time(seconds_run, repeats=reps, scheduled=self.scheduled)
                     await self.remaining_time.set_value(self._remaining_time)
-                    await self.handle_validation_error()
                     if self._stop:
                         self._aborted = True
                         break
@@ -693,27 +709,36 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
         # End of repeat loop
         self._scheduled = False
+
+        if not self._aborted:
+            await self.last_ran.set_state(last_ran)
+
         await self.async_turn_off()
+
 
     async def time(self, water_adjust_value, seconds_run, reps):
         """Track watering time based on time."""
+        if self._stop:
+            return 0
         watertime = math.ceil(self.water*60 * water_adjust_value)
         while watertime > 0:
             seconds_run += 1
             watertime = math.ceil(self.water*60 * water_adjust_value) - seconds_run
             self._remaining_time = await self.calc_run_time(seconds_run, repeats=reps, scheduled=self.scheduled)
             await self.remaining_time.set_value(self._remaining_time)
+            if self._stop:
+                break
             await asyncio.sleep(1)
-            await self.handle_validation_error()
             if await self.check_switch_state() is False:
                 self._aborted = True
                 self._stop = True
-            if self._stop:
-                break
+
         return seconds_run
 
     async def volume(self,water_adjust_value,reps):
         """Track watering time based on volume."""
+        if self._stop:
+            return
         volume_remaining = self.water * water_adjust_value
         volume_delivered = 0
         zeroflowcount = 0
@@ -728,7 +753,6 @@ class Zone(SwitchEntity, RestoreEntity):
                                                             scheduled=self.scheduled)
             await self.remaining_time.set_value(self._remaining_time)
             await asyncio.sleep(1)
-            await self.handle_validation_error()
             if await self.check_switch_state() is False:
                 self._stop = True
             #flow sensor has failed

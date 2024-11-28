@@ -40,7 +40,6 @@ from .pump import PumpClass
 
 _LOGGER = logging.getLogger(__name__)
 
-
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
 
@@ -66,7 +65,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         )
         self._scheduled = False
         self._state = False
-        self._aborted = False
+        self._finished = True
+
         self._last_run = None
         self._program_remaining = 0
 
@@ -292,7 +292,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     async def entity_toggle_zone(self, zone) -> None:
         """Toggle a specific zone."""
         #built to handle a list but only one
-
         checkzone = None
         #index the switch to process
         for czone in self._zones:
@@ -398,17 +397,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.sum += item
 
         if self.degree_of_parallel > 1:
-
             remaining = [int(zone.remaining_time.state) for zone in zones ]
-
             streams = []
             #create the streams
             for _ in range(self.degree_of_parallel):
                 stream = Stream()
                 streams.append(stream)
-
             for time in remaining:
-            #put the time in the stream with the lowest time
+                #put the time in the stream with the lowest time
                 minstream = None
                 for stream in streams:
                     if minstream is None:
@@ -416,15 +412,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     if minstream.sum > stream.sum:
                         minstream = stream
                 minstream.append(time)
-
             remaining_time = 0
             for stream in streams:
-            #return the max stream time
+                #return the max stream time
                 remaining_time = max(remaining_time, stream.sum)
-
             self._program_remaining = remaining_time
             await self._program.remaining_time.set_value(self._program_remaining)
-        else:
+        else: #single stream with zone transitions
             self._program_remaining = 0
             for program_postion, zone in enumerate(zones,1):
                 if zone.switch.status.state in  (CONST_ON, CONST_PENDING, CONST_ECO):
@@ -435,13 +429,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await self._program.remaining_time.set_value(self._program_remaining)
         return self._program_remaining
 
-    async def async_finalise_run(self, zone, last_ran):
-        """Clean up once it has run."""
-        # clean up after the run
-        if zone.switch.aborted is False:
-            # completed zone
-            await zone.last_ran.set_state(last_ran)
-
     async def pause_program(self, entity=None, old_status=None, new_status=None):
         """Program paused status changes."""
         if self._state is False:
@@ -449,19 +436,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         for zone in self._zones:
             await zone.switch.pause()
 
-    async def run_monitor_zones(self, running_zones, all_zones, last_ran):
+    async def run_monitor_zones(self, running_zones, all_zones):
         """Monitor zones to start based on inter zone delay."""
         if self._program.pause.is_on:
             await asyncio.sleep(1)
             return running_zones
-
-        if running_zones == []:
-            #start first zones
-            for zone in all_zones:
-                running_zones.append(zone.switch)
-                await self.zone_turn_on(zone.switch)
-                if len(running_zones) == self.degree_of_parallel:
-                    break
 
         if len(running_zones) < self.degree_of_parallel:
             #add another zone as required
@@ -470,6 +449,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 #start the next zone
                 await self.zone_turn_on(zone.switch)
                 running_zones.append(zone.switch)
+                # if len(running_zones) == self.degree_of_parallel:
+                #      break
                 break
 
         rzones = running_zones
@@ -489,8 +470,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
             if running_zone.remaining_time.state == 0 and running_zones.count(running_zone) > 0:
                 running_zones.remove(running_zone)
-                # if running_zone.aborted is False:
-                #     await running_zone.last_ran.set_state(last_ran)
 
             if self.inter_zone_delay > 0 and running_zone.remaining_time.state == 0:
                 #there is a + IZD and there is a zone to follow
@@ -514,29 +493,26 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def zone_turn_on(self,zone):
         """Turn on the irrigation zone."""
+        await zone.set_scheduled(self._scheduled)
+        #run in the event loop to support independant executions
         background_tasks = set()
-
-        loop = asyncio.get_event_loop()
-        task = loop.create_task(zone.set_scheduled(self._scheduled))
-        background_tasks.add(task)
-        task.add_done_callback(background_tasks.discard)
-
         loop = asyncio.get_event_loop()
         task = loop.create_task(zone.async_turn_on())
         background_tasks.add(task)
         task.add_done_callback(background_tasks.discard)
-
         return True
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
+
         if self._state is True:
             # program is already running
             return
+        if self._finished is False:
+            # program is not finalised
+            return
 
         self._run_zones = await self.build_run_script()
-        #take a copy to finalise with
-        scheduled_zones = self._run_zones.copy()
 
         if len(self._run_zones) > 0:
             # raise event when the program starts
@@ -551,6 +527,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # No zones to run
             return
         self._state = True
+        self._finished = False
         self.async_schedule_update_ha_state()
         # stop all running programs except the calling program
         if self._program.interlock:
@@ -564,20 +541,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             background_tasks.add(task)
             task.add_done_callback(background_tasks.discard)
 
-        # now start the program
-        # all zones will have the last ran of the program start
-        p_last_ran = datetime.now(self._localtimezone)
         # calculate the remaining time for the program
         # Monitor and start the zone with lead/lag time
         running_zones = []
-        running_zones = await self.run_monitor_zones(running_zones, self._run_zones,p_last_ran)
+        running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
 
         while self._program_remaining > 0:
-            running_zones = await self.run_monitor_zones(running_zones, self._run_zones,p_last_ran)
-        # clean up after the run
-        for zone in scheduled_zones:
-            await self.async_finalise_run(zone, p_last_ran)
-
+            running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
 
         # run is complete stop pump monitoring
         background_tasks = set()
@@ -598,18 +568,17 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._running_zone = []
         self._run_zones = []
         self.async_schedule_update_ha_state()
+        self._finished = True
         # program finished
 
     async def async_turn_off(self, **kwargs):
         """Stop the switch/program."""
         await self._program.pause.async_turn_off()
         if self._state is True:
-            self._state = False
             self._scheduled = False
             self._running_zone = []
             self._run_zones = []
             for zone in self._zones:
-                if zone.switch.remaining_time.state > 0:
-                    self._aborted = True
                 await zone.switch.async_turn_off()
+            self._state = False
         self.async_schedule_update_ha_state()

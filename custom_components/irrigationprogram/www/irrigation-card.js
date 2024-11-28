@@ -36,7 +36,6 @@ class IrrigationCard extends HTMLElement {
     let zones = hass.states[config.program].attributes["zones"];
 
     let entities = [];
-    let buttons = [];
 
     console.log("editor:constructor()");
 
@@ -68,28 +67,51 @@ class IrrigationCard extends HTMLElement {
 
       // Build the Card
       if (config.show_program === true) {
-        buttons = [];
-
         let showconfig = hass.states[config.program].attributes["show_config"]
+
+        var buttons = [];
+        buttons.length = 0;
         //Add button group
-        buttons[0] = {
+        buttons.push({
           entity: config.program,
           show_name: true,
-        };
-
-        buttons[1] = {
+        });
+        buttons.push({
           entity: showconfig,
           show_name: true,
-        };
+        });
+        var condition = [{ entity: config.program, state: "off" }];
+        entities.push({
+          type: "conditional",
+          conditions: condition,
+          row: {
+            type: 'buttons',
+            entities: buttons
+          }
+        });
 
-        buttons[2] = {
+        var buttons1 = [];
+        buttons1.length = 0;
+        buttons1.push({
+          entity: config.program,
+          show_name: true,
+        });
+        buttons1.push({
+          entity: showconfig,
+          show_name: true,
+        });
+        buttons1.push({
           entity: hass.states[config.program].attributes["pause"],
           show_name: false,
-        };
-
+        });
+        var condition = [{ entity: config.program, state: "on" }];
         entities.push({
-          type: "buttons",
-          entities: buttons,
+          type: "conditional",
+          conditions: condition,
+          row: {
+            type: 'buttons',
+            entities: buttons1
+          }
         });
 
         var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" }];
@@ -162,34 +184,78 @@ class IrrigationCard extends HTMLElement {
         }
 
         let showconfig = hass.states[zone].attributes["show_config"]
-        let condition = []
-        buttons = [];
 
+        let btns1 = [];
+        btns1.length = 0
         //Add the buttons
-        buttons[0] = {
+        btns1.push({
           entity: zone,
           show_name: true,
+          show_icon: false,
           tap_action: {
             action: "call-service",
             service: "switch.toggle",
             service_data: {
               entity_id: zone,
             },
-          },        };
-
-          buttons[1] = {
-            entity: showconfig,
-            show_name: true,
-          };
-
-        entities.push({
-          type: "buttons",
-          entities: buttons,
+          },
         });
+
+        btns1.push({
+          entity: showconfig,
+          show_name: false,
+        });
+
+        var condition = [{ entity: hass.states[zone].attributes["status"], state: "off" }];
+        entities.push({
+          type: "conditional",
+          conditions: condition,
+          row: {
+            type: 'buttons',
+            entities: btns1
+          }
+        });
+
+        let btns = [];
+        btns.length = 0
+        //Add the buttons
+        btns.push({
+          entity: zone,
+          show_name: true,
+          show_icon: false,
+          tap_action: {
+            action: "call-service",
+            service: "switch.toggle",
+            service_data: {
+              entity_id: zone,
+            },
+          },
+        });
+
+        btns.push({
+          entity: showconfig,
+          show_name: false,
+        });
+
+        btns.push({
+          entity: hass.states[zone].attributes["status"],
+          show_name: false,
+        });
+
+        var condition = [{ entity: hass.states[zone].attributes["status"], state_not: "off" }];
+        entities.push({
+          type: "conditional",
+          conditions: condition,
+          row: {
+            type: 'buttons',
+            entities: btns
+          }
+        });
+
 
         let zonestatus = hass.states[zone].attributes["status"]
 
-        condition = [{ entity: zonestatus, state: ["off"]}        ]
+        var condition = [{ entity: zonestatus, state: ["off"]}        ]
         add_entity(zone, condition, "next_run", entities)
 
         condition = [{ entity: zonestatus, state_not: ["off", "on", "pending", "eco"]}        ]
