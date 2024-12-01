@@ -30,10 +30,12 @@ Add the option to [pause](#Pause-a-program) and resume a running program.
 Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-time) in a program. If this setting is selected the zone transition is not available.
 
 ## Upgrading
-- Once installed the program will reconfigure itself.
-- The frequency options will default to a single value '1', reconfigure the program to add additional options.
-- The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of translating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
-- the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
+- Once installed:
+ - The frequency options will default to a single value '1', reconfigure the program to add additional options.
+ - Watering time/volume will default to 1.
+ - ECO attributes will default to 1.
+ - The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of translating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
+ - the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
 
 <img width="366" alt="image" src="https://github.com/user-attachments/assets/5612420b-efdc-4ed5-adc7-0478d7616f34">
 
