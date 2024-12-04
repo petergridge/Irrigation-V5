@@ -105,7 +105,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
             user_input["freq_options"] = cleanoptions
 
-
             if not errors:
                 # Input is valid, set data.
                 for attr in user_input:
@@ -214,32 +213,27 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     async def async_step_delete_zone(self, user_input=None):
         '''Delete a zone.'''
         errors = {}
-        zones = []
-        newdata = {}
-        newdata.update(self._data)
 
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
-                return await self.async_step_init()
-            # find the position of the zone in the zones.
-            zones = bubble_sort(newdata[ATTR_ZONES]) #newdata[ATTR_ZONES]
-            for zonenumber, zone in enumerate(zones):
-                friendlyname = zone.get(ATTR_ZONE)
-                if (friendlyname) == user_input.get(ATTR_ZONE):
-                    # delete the zone from the list of zones
-                    newdata[ATTR_ZONES].pop(zonenumber)
-                    break
+                return await self.async_step_menu()
 
-            self._data = newdata
+            zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
+            self._data[ATTR_ZONES].pop(zones.index(user_input.get(ATTR_ZONE)))
             return await self.async_step_menu()
 
         # build list of zones
-        for zone in self._data.get(ATTR_ZONES):
-            zones.append(zone.get(ATTR_ZONE))
-        # define the display schema
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
-
+        zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
+        # build the options list
+        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        list_schema = vol.Schema(
+            {
+                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
+                    "options": optionslist,
+                })
+            }
+        )
         return self.async_show_form(
             step_id="delete_zone", data_schema=list_schema, errors=errors
         )
@@ -247,12 +241,11 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     async def async_step_update_zone(self, user_input=None):
         '''List zones for Update.'''
         errors = {}
-        zones = []
+
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
                 return await self.async_step_menu()
-
             # Input is valid, set data.
             self.zoneselect = user_input
             # Return the form of the next step.
@@ -260,13 +253,17 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
         #sort and display the selection list
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
-        for zonenumber,zone in enumerate(sortedzones):
-            friendlyname = zone.get(ATTR_ZONE)
-            text = (str(zonenumber) + ': ' + friendlyname)
-            text = zone.get(ATTR_ZONE)
-            zones.append(text)
-
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
+        # build list of zones
+        zones = [zone[ATTR_ZONE] for zone in sortedzones]
+        # build the options list
+        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        list_schema = vol.Schema(
+            {
+                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
+                    "options": optionslist,
+                })
+            }
+        )
 
         return self.async_show_form(
             step_id="update_zone", data_schema=list_schema, errors=errors
@@ -417,9 +414,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self._exclude.append(zone.get(ATTR_ZONE))
         self._exclude.extend(exclude(self.hass))
 
-        xmenu_options = ["update_program", "update_zone", "add_zone"]
+        xmenu_options = ["update_program", "add_zone", "update_zone"]
         # only one zone so don't show delete zone option
-        if len(self._data.get(ATTR_ZONES)) > 1:
+        zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
+        # remove zones already flagged for deletion
+        zones = [zone for zone in zones if zone not in self._delete]
+        if len(zones) > 1:
             xmenu_options.extend(["delete_zone"])
         xmenu_options.extend(["advanced","finalise"])
         return self.async_show_menu(
@@ -467,7 +467,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if not errors:
                 newdata[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
                 newdata[ATTR_START_TYPE] = user_input[ATTR_START_TYPE]
-                newdata[ATTR_RAIN_BEHAVIOUR] = user_input[ATTR_RAIN_BEHAVIOUR]
+                newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(ATTR_RAIN_BEHAVIOUR,'stop')
                 newdata['water_max'] = user_input['water_max']
                 newdata['water_step'] = user_input['water_step']
                 newdata['parallel'] = user_input['parallel']
@@ -497,7 +497,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional(ATTR_START_TYPE, description={"suggested_value":default_input.get(ATTR_START_TYPE)}): sel.SelectSelector({
                     "options": ["selector","multistart","sunrise", "sunset"],
                     "translation_key":ATTR_START_TYPE}),
-                vol.Optional(ATTR_RAIN_BEHAVIOUR, description={"suggested_value": default_input.get(ATTR_RAIN_BEHAVIOUR)}): sel.SelectSelector({"options": ["stop","continue"], "translation_key":ATTR_RAIN_BEHAVIOUR}),
+                vol.Optional(ATTR_RAIN_BEHAVIOUR, description={"suggested_value": default_input.get(ATTR_RAIN_BEHAVIOUR,"stop")}): sel.SelectSelector({"options": ["stop","continue"], "translation_key":ATTR_RAIN_BEHAVIOUR}),
                 vol.Optional('water_max', description={"suggested_value": default_input.get('water_max',30)}): sel.NumberSelector({"min":1, "max":9999, "mode":"box"}),
                 vol.Optional('water_step', description={"suggested_value": default_input.get('water_step',1)}): sel.NumberSelector({"min":1, "max":100, "mode":"box"}),
                 vol.Optional('parallel', description={"suggested_value": default_input.get('parallel',1)}): sel.NumberSelector({"min":1, "max":10, "mode":"box"}),
@@ -595,46 +595,43 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_delete_zone(self, user_input=None):
         '''Delete a zone.'''
         errors = {}
-        zones = []
-        newdata = {}
-        newdata.update(self._data)
 
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
                 return await self.async_step_init()
             # find the position of the zone in the zones.
-            zones = bubble_sort(newdata[ATTR_ZONES]) #newdata[ATTR_ZONES]
-            for zonenumber, zone in enumerate(zones):
-                name = zone.get(ATTR_ZONE)
-                if name == user_input.get(ATTR_ZONE):
-                    friendlyname = zone.get(ATTR_ZONE).split(".")[1]
-                    # register zone to delete the zone from the list of zones
-                    self._delete.append(zonenumber)
-                    #set up to remove entities when finalising
-                    await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_config'))
-                    await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_ignore_sensors'))
-                    await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_enable_zone'))
-                    await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_status'))
-                    await self.get_er('select',slugify(f'{self._uid}_{friendlyname}_frequency'))
-                    await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_water'))
-                    await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_wait'))
-                    await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_repeat'))
-                    await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_next_run'))
-                    await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_last_ran'))
-                    await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_remaining_time'))
-                    break
-
-            self._data = newdata
+            zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
+            # register zone to delete the zone from the list of zones
+            self._delete.append(user_input.get(ATTR_ZONE))
+            # set up to remove entities when finalising
+            friendlyname = user_input.get(ATTR_ZONE).split(".")[1]
+            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_config'))
+            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_ignore_sensors'))
+            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_enable_zone'))
+            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_status'))
+            await self.get_er('select',slugify(f'{self._uid}_{friendlyname}_frequency'))
+            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_water'))
+            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_wait'))
+            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_repeat'))
+            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_next_run'))
+            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_last_ran'))
+            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_remaining_time'))
             return await self.async_step_init()
-        # build list of zones
-        candidatezones = bubble_sort(self._data.get(ATTR_ZONES)) #newdata[ATTR_ZONES]
-        for zonenumber, zone in enumerate(candidatezones):
-            if zonenumber not in self._delete:
-                zones.append(zone.get(ATTR_ZONE))
-        # define the display schema
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
 
+        # build list of zones
+        zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
+        # remove zones already flagged for deletion
+        zones = [zone for zone in zones if zone not in self._delete]
+        # build the options list
+        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        list_schema = vol.Schema(
+            {
+                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
+                    "options": optionslist,
+                })
+            }
+        )
         return self.async_show_form(
             step_id="delete_zone", data_schema=list_schema, errors=errors
         )
@@ -642,12 +639,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_update_zone(self, user_input=None):
         '''List zones for Update.'''
         errors = {}
-        zones = []
         if user_input is not None:
             if user_input == {}:
                 #no data provided return to the menu
                 return await self.async_step_init()
-
             # Input is valid, set data.
             self.zoneselect = user_input
             # Return the form of the next step.
@@ -655,13 +650,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         #sort and display the selection list
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
-        for zonenumber,zone in enumerate(sortedzones):
-            friendlyname = zone.get(ATTR_ZONE)
-            text = (str(zonenumber) + ': ' + friendlyname)
-            text = zone.get(ATTR_ZONE)
-            zones.append(text)
-
-        list_schema = vol.Schema({vol.Optional(ATTR_ZONE): vol.In(zones)})
+        # build list of zones
+        zones = [zone[ATTR_ZONE] for zone in sortedzones]
+        # remove zones already flagged for deletion
+        zones = [zone for zone in zones if zone not in self._delete]
+        # build the options list
+        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        list_schema = vol.Schema(
+            {
+                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
+                    "options": optionslist,
+                })
+            }
+        )
 
         return self.async_show_form(
             step_id="update_zone", data_schema=list_schema, errors=errors
