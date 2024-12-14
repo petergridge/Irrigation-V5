@@ -1,0 +1,291 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Générique",
+				"rainbird": "RainBird"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Time selector",
+				"multistart":"Multiple times",
+				"sunrise":"Sunrise with offset",
+				"sunset":"Sunset with offset"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Stop the program",
+				"continue": "Allow program to complete"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zonestatus": {
+				"name":"Zone status",
+				"state": {
+					"off": "Arrêt",
+					"on": "Marche",
+					"disabled": "Désactivé",
+					"pending": "En attente",
+					"eco": "ECO",
+					"program_disabled": "Programme désactivé",
+					"controller_disabled": "Contrôleur désactivé",
+					"unavailable": "Indisponible",
+					"raining": "Pluie",
+					"adjusted_off": "Aucun ajustement",
+					"no_water_source": "Source d'eau non détectée",
+					"zone_disabled": "Désactivé",
+					"paused": "Program paused"
+				}
+			},
+			"zone_next_run":{
+				"name":"Next run"
+			},
+			"zone_last_ran":{
+				"name":"Last ran"
+			},
+			"remaining_time":{
+				"name":"Remaining time"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Watering time"
+			},
+			"volume":{
+				"name":"Watering volume"
+			},
+			"wait":{
+				"name":"Wait time"
+			},
+			"repeat":{
+				"name":"Repeats"
+			},
+			"inter_zone_delay":{
+				"name":"Zone transition"
+			},
+			"sunrise_offset":{
+				"name":"Sunrise offset"
+			},
+			"sunset_offset":{
+				"name":"Sunset offset"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Start time"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Start times"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignore sensors"
+			},
+			"enable_program":{
+				"name":"Enable program"
+			},
+			"enable_zone":{
+				"name":"Enable zone"
+			},
+			"config":{
+				"name": "Settings"
+			},
+			"zone":{
+				"name": "{zone_name}"
+			},
+			"pause":{
+				"name": "Pause"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Frequency"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Le commutateur de zone sélectionné est déjà défini dans ce programme d'irrigation",
+			"mandatory": "Champ obligatoire non rempli",
+			"zone_required": "Au moins une zone doit être définie",
+			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+		},
+		"step": {
+			"user": {
+				"title": "Données du programme",
+				"description": "Définit le programme",
+				"data": {
+					"name": "Nom",
+					"freq": "Enable program wide frequency",
+					"freq_options": "Select or add frequency options",
+					"controller_monitor": "Surveiller l'entité du contrôleur",
+					"device_type": "Type de contrôleur"
+				}
+			},
+			"add_zone": {
+				"title": "Zones du programme",
+				"description": "Configuration de la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"rain_sensor": "Entité de capteur de pluie",
+					"water_source_active": "Entité de source d'eau",
+					"order": "Zone run order"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuration de la zone",
+				"description": "Supprimer la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"rain_sensor": "Entité de capteur de pluie",
+					"water_source_active": "Entité de source d'eau",
+					"order": "Zone run order"
+				}
+			},
+			"update_zone": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Mettre à jour le programme",
+					"add_zone": "Ajouter une zone",
+					"update_zone": "Mettre à jour la zone",
+					"delete_zone": "Delete zone",
+					"finalise": "Appliquer",
+					"advanced": "Advanced options"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Advanced Options",
+				"data": {
+					"sun":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "Le commutateur de zone est déjà défini dans ce programme d'irrigation",
+			"mandatory": "Champ obligatoire non rempli",
+			"zone_required": "Au moins une zone doit être définie",
+			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+		},
+		"step": {
+			"user": {
+				"description": "Si une zone est supprimée ou si le commutateur de zone est modifié, tout groupe associé sera supprimé",
+				"menu_options": {
+					"update_program": "Mettre à jour le programme",
+					"update_zone": "Mettre à jour la zone",
+					"delete_zone": "Supprimer la zone",
+					"add_zone": "Ajouter une zone",
+					"finalise": "Appliquer",
+					"advanced": "Advanced options"
+				}
+			},
+			"advanced": {
+				"title": "Advanced Options",
+				"description": "",
+				"data": {
+					"sun":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution"
+				}
+			},
+			"update_program": {
+				"title": "Données du programme",
+				"description": "Mettre à jour le programme",
+				"data": {
+					"program": "Program Name",
+					"freq": "Enable program wide frequency",
+					"freq_options": "Select or add frequency options",
+					"controller_monitor": "Surveiller l'entité du contrôleur",
+					"device_type": "Type de contrôleur"
+				}
+			},
+			"add_zone": {
+				"title": "Configuration de la zone",
+				"description": "Définir la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"rain_sensor": "Entité de capteur de pluie",
+					"water_source_active": "Entité de source d'eau",
+					"order": "Zone run order"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Entité de commutateur de zone",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Entité de commutateur de pompe",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_adjustment": "Entité d'ajustement de l'exécution",
+					"rain_sensor": "Entité de capteur de pluie",
+					"water_source_active": "Entité de source d'eau",
+					"order": "Zone run order"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuration de la zone",
+				"description": "Supprimer la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			},
+			"update_zone": {
+				"title": "Configuration de la zone",
+				"description": "Mettre à jour la zone",
+				"data": {
+					"zone": "Sélectionner la zone"
+				}
+			}
+		}
+	}
+}
