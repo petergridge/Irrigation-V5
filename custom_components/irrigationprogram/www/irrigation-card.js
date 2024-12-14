@@ -353,7 +353,7 @@ class IrrigationCardEditor extends HTMLElement {
     this._elements.editor = document.createElement("form");
     this._elements.editor.innerHTML = `
 			<div class="row"><label class="label" for="program">Program:</label><select class="value" id="program" ></select></div>
-			<div class="row"><label class="label" for="entities">Zone:</label><select class="value" id="entities" multiple></select></div>
+			<div class="row"><label class="label" for="entities">Zone:</label><select class="value" id="entities" size=10 multiple></select></div>
 			<div class="row"><label class="label" for="show_program">Show program:</label><input type="checkbox" id="show_program" checked></input></div>
 			`;
   }

@@ -299,27 +299,27 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
         msg='Migration warnings:'
         msg += chr(10) + chr(10) + 'Frequency Options have defaulted to "1", reconfigure the program to add more options'
+        msg += chr(10) + chr(10) + 'Remove ' + new.get('start_time')
         with contextlib.suppress(KeyError):
             new.pop('start_time')
-        msg += chr(10) + chr(10) + 'Remove ' + new.get('start_time')
         #if this has a value set the flag and collect the options
         if new.get('run_freq',None):
+            msg += chr(10) + chr(10) + 'Remove ' + new.get('run_freq')
             with contextlib.suppress(KeyError):
                 new.pop('run_freq')
-            msg += chr(10) + chr(10) + 'Remove ' + new.get('run_freq')
             new['freq'] = True
         if new.get('controller_monitor',None):
+            msg += chr(10) + chr(10) + 'Remove ' + new.get('controller_monitor')
             with contextlib.suppress(KeyError):
                 new.pop('controller_monitor')
-            msg += chr(10) + chr(10) + 'Remove ' + new.get('controller_monitor')
         if new.get('inter_zone_delay',None):
+            msg += chr(10) + chr(10) + 'Remove ' + new.get('inter_zone_delay')
             with contextlib.suppress(KeyError):
                 new.pop('inter_zone_delay')
-            msg += chr(10) + chr(10) + 'Remove ' + new.get('inter_zone_delay')
         if new.get('irrigation_on',None):
+            msg += chr(10) + chr(10) + 'Remove ' + new.get('irrigation_on')
             with contextlib.suppress(KeyError):
                 new.pop('irrigation_on')
-            msg += chr(10) + chr(10) + 'Remove ' + new.get('irrigation_on')
             #add required defaults
         new[ATTR_START_TYPE] = "selector"
         new[ATTR_RAIN_BEHAVIOUR] = "stop"
@@ -331,32 +331,32 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             newzone = zone
             #remove unused
             if newzone.get('water',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('water')
                 with contextlib.suppress(KeyError):
                     newzone.pop('water')
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('water')
             if newzone.get('wait',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('wait')
                 with contextlib.suppress(KeyError):
                     newzone.pop('wait')
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('wait')
                 newzone['eco'] = True
             if newzone.get('repeat',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('repeat')
                 with contextlib.suppress(KeyError):
                     newzone.pop('repeat')
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('repeat')
             #if this has a value set the flag and collect the options
             if newzone.get('run_freq',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('run_freq')
                 with contextlib.suppress(KeyError):
                     newzone.pop('run_freq')
                 newzone['freq'] = True
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('run_freq')
             if newzone.get('ignore_rain_sensor',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('ignore_rain_sensor')
                 with contextlib.suppress(KeyError):
                     newzone.pop('ignore_rain_sensor')
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('ignore_rain_sensor')
             if newzone.get('enable_zone',None):
+                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('enable_zone')
                 with contextlib.suppress(KeyError):
                     newzone.pop('enable_zone')
-                msg += chr(10) + chr(10) + 'Remove ' + newzone.get('enable_zone')
             #remove the entries with wrong data type
             if newzone.get('water_adjustment',None):
                 if newzone.get('water_adjustment',None).split('.')[0] != 'sensor':

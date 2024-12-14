@@ -323,11 +323,11 @@ class Zone(SwitchEntity, RestoreEntity):
             v_error = await self.next_run_validation()
             if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
                 #the zone is running so debounce
-                pass
-            else:
-                #zone is not running so let the status change
-                break
-            await asyncio.sleep(1)
+                await asyncio.sleep(1)
+                continue
+            #zone is not running so let the status change
+            break
+
 
         if v_error in (CONST_PROGRAM_DISABLED, CONST_ZONE_DISABLED):
             self._stop = True
@@ -388,9 +388,15 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def calc_next_run(self):
         '''Determine when a zone will next attempt to run.'''
-        if self._status == CONST_PAUSED:
-            return
         #something has changed recalculate the run time
+
+        if self._status == CONST_PAUSED:
+            v_error = await self.handle_validation_error()
+            if v_error not in (CONST_OFF):
+                #real issue reset the zone last status so reflected accurately after pause
+                self._last_status = CONST_RAINING if v_error == CONST_RAINING_STOP else v_error
+            return
+
         if self._status == CONST_PENDING:
             await self.prepare_to_run(scheduled=True)
         if self._status in (CONST_ECO,CONST_ON,CONST_PENDING):
@@ -405,6 +411,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._remaining_time = 0
             await self.remaining_time.set_value(0)
             return
+
         #it must be off
         await self.status.set_value(CONST_OFF)
         self._state = self._status = CONST_OFF
@@ -698,13 +705,15 @@ class Zone(SwitchEntity, RestoreEntity):
                 await self.async_solenoid_turn_on()
                 for _ in range(CONST_LATENCY):
                     self._stop = True
+                    if self._status == CONST_PAUSED:
+                        self._stop = False
+                        break
                     if await self.check_switch_state() is not True:
                         #if not the expected state loop again
                         await asyncio.sleep(1)
-                    else:
-                        self._stop = False
-                        break
-
+                        continue
+                    self._stop = False
+                    break
             #track the watering
             if self.flow_sensor is not None:
                 await self.volume(water_adjust_value,reps)
@@ -757,15 +766,21 @@ class Zone(SwitchEntity, RestoreEntity):
 
             #Check to see if the zone has been stopped
             for _ in range(CONST_LATENCY):
+                if self._status == CONST_PAUSED:
+                    self._stop = False
+                    self._aborted = False
+                    break
+
                 self._stop = True
                 self._aborted = True
                 if await self.check_switch_state() is not True and self._status != CONST_PAUSED:
                     #if not on loop again
                     await asyncio.sleep(1)
-                else:
-                    self._stop = False
-                    self._aborted = False
-                    break
+                    continue
+                self._stop = False
+                self._aborted = False
+                break
+
 
         return seconds_run
 
@@ -790,8 +805,17 @@ class Zone(SwitchEntity, RestoreEntity):
                                                             scheduled=self.scheduled)
             await self.remaining_time.set_value(self._remaining_time)
             await asyncio.sleep(1)
-            if await self.check_switch_state() is False:
+            #Check to see if the zone has been stopped
+            for _ in range(CONST_LATENCY):
                 self._stop = True
+                self._aborted = True
+                if await self.check_switch_state() is not True and self._status != CONST_PAUSED:
+                    #if not on loop again
+                    await asyncio.sleep(1)
+                else:
+                    self._stop = False
+                    self._aborted = False
+                    break
             #flow sensor has failed
             if self.flow_sensor == 0:
                 zeroflowcount += 1

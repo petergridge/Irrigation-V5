@@ -416,7 +416,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 minstream.append(time)
             remaining_time = 0
             for stream in streams:
-                #return the max stream time
+               #return the max stream time
                 remaining_time = max(remaining_time, stream.sum)
             self._program_remaining = remaining_time
             await self._program.remaining_time.set_value(self._program_remaining)
@@ -516,7 +516,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # program is already running
             return
         if self._finished is False:
-            # program is not finalised
+            # program is not finalised from previous run
             return
 
         self._run_zones = await self.build_run_script()
