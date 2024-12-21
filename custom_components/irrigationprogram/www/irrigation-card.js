@@ -191,7 +191,7 @@ class IrrigationCard extends HTMLElement {
         btns1.push({
           entity: zone,
           show_name: true,
-          show_icon: false,
+          show_icon: true,
           tap_action: {
             action: "call-service",
             service: "switch.toggle",
@@ -203,7 +203,7 @@ class IrrigationCard extends HTMLElement {
 
         btns1.push({
           entity: showconfig,
-          show_name: false,
+          show_name: true,
         });
 
         var condition = [{ entity: hass.states[zone].attributes["status"], state: "off" }];
@@ -222,7 +222,7 @@ class IrrigationCard extends HTMLElement {
         btns.push({
           entity: zone,
           show_name: true,
-          show_icon: false,
+          show_icon: true,
           tap_action: {
             action: "call-service",
             service: "switch.toggle",
@@ -234,7 +234,7 @@ class IrrigationCard extends HTMLElement {
 
         btns.push({
           entity: showconfig,
-          show_name: false,
+          show_name: true,
         });
 
         btns.push({

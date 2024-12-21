@@ -105,7 +105,7 @@ class Water(RestoreNumber):
     _attr_has_entity_name = True
     _attr_editable = True
     _attr_mode = 'slider'
-    _attr_native_min_value = 1
+
 
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
@@ -114,6 +114,7 @@ class Water(RestoreNumber):
         self._attr_attribution = f'Irrigation Controller: {pname}, {zone_name}'
         self._attr_native_max_value = max
         self._attr_native_step = step
+        self._attr_native_min_value = step
         if flow_sensor:
             self._attr_device_class = NumberDeviceClass.VOLUME
             self._attr_native_unit_of_measurement = 'L'

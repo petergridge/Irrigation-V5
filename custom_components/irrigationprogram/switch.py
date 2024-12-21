@@ -1,5 +1,6 @@
 """Switch entity definition."""
 
+import asyncio
 import logging
 
 from homeassistant.components.switch import SwitchEntity
@@ -11,10 +12,13 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import slugify
 
 from . import IrrigationData
+from .const import CONST_CLOSED, CONST_LATENCY, CONST_OFF, CONST_ON, CONST_OPEN
 from .program import IrrigationProgram
 from .zone import Zone
 
 _LOGGER = logging.getLogger(__name__)
+
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -41,7 +45,19 @@ async def async_setup_entry(
 
     zones = data.zone_data
     for i, zone in enumerate(zones):
-        friendly_name = hass.states.get(zone.zone).attributes.get('friendly_name')
+        #check if the switch is ready
+        switch_not_ready = True
+        for _ in range(CONST_LATENCY):
+            try:
+                friendly_name = hass.states.get(zone.zone).attributes.get('friendly_name')
+                switch_not_ready = False
+                break
+            except AttributeError:
+                await asyncio.sleep(1)
+        if switch_not_ready:
+            #switch has not initialised raise an error
+            _LOGGER.error("Switch %s has not initialised before irrigation program",zone.zone)
+
         z_name = zone.name
         if zone.rain_sensor or zone.adjustment or zone.water_source:
             switch = IgnoreRainSensor(unique_id, name, z_name)
