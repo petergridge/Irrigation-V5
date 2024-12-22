@@ -697,7 +697,7 @@ class Zone(SwitchEntity, RestoreEntity):
         for reps in range(self.repeat, 0, -1):
             seconds_run = 0
             #run time adjusted to 0 skip this zone
-            if self.remaining_time.state <= 0:
+            if int(self.remaining_time.native_value) <= 0:
                 continue
             self._status = CONST_ON
             await self.status.set_value(self._status)

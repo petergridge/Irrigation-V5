@@ -1,112 +1,124 @@
 {
 	"selector": {
+		"status": {
+			"options": {
+				"off": "Spento",
+				"on": "Acceso",
+				"disabled": "Disattivato",
+				"pending": "In attesa",
+				"eco": "ECO",
+				"program_disabled": "Programma disattivato",
+				"controller_disabled": "Interruttore disattivato",
+				"unavailable": "Non disponibile",
+				"raining": "Pioggia",
+				"adjusted_off": "Corretto",
+				"no_water_source": "Nessuna entità di irrigazione rilevata",
+				"zone_disabled": "Zona disattivata"
+			}
+		},
 		"device_type": {
 			"options": {
-				"generic": "Generic",
+				"generic": "Generico",
 				"rainbird": "RainBird"
 			}
 		},
 		"start_type": {
 			"options": {
-				"selector":"Time selector",
-				"multistart":"Multiple times",
-				"sunrise":"Sunrise with offset",
-				"sunset":"Sunset with offset"
+				"selector":"Selettore del tempo",
+				"multistart":"Tempi multipli",
+				"sunrise":"Alba",
+				"sunset":"Tramonto"
 			}
 		},
 		"rain_behaviour": {
 			"options": {
-				"stop": "Stop the program",
-				"continue": "Allow program to complete"
+				"stop": "Blocca il programma",
+				"continue": "Permetti al programme di continuare"
 			}
 		}
 	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Zone status",
+				"name":"Stato zona",
 				"state": {
-					"off": "Off",
-					"on": "On",
-					"disabled": "Disabled",
-					"pending": "Pending",
+					"off": "Spenta",
+					"on": "Accesa",
+					"disabled": "Disabilitata",
+					"pending": "In attesa",
 					"eco": "ECO",
-					"program_disabled": "Program disabled",
-					"controller_disabled": "Controller disabled",
-					"unavailable": "Unavailable",
-					"raining": "Raining",
-					"adjusted_off": "Adjusted off",
-					"no_water_source": "No water source detected",
-					"zone_disabled": "Disabled",
-					"paused": "Program paused"
+					"program_disabled": "Programma disattivato",
+					"controller_disabled": "Interruttore disattivato",
+					"unavailable": "Non disponibile",
+					"raining": "Pioggia",
+					"adjusted_off": "Corretta",
+					"no_water_source": "Nessuna entità di irrigazione rilevata",
+					"zone_disabled": "Zona disabilitata"
 				}
 			},
 			"zone_next_run":{
-				"name":"Next run"
+				"name":"Prossima zona da irrigare"
 			},
 			"zone_last_ran":{
-				"name":"Last ran"
+				"name":"Ultima zona irrigata"
 			},
 			"remaining_time":{
-				"name":"Remaining time"
+				"name":"Tempo rimanente"
 			}
 		},
 		"number":{
 			"water":{
-				"name":"Watering time"
+				"name":"Tempo di irrigazione"
 			},
 			"volume":{
-				"name":"Watering volume"
+				"name":"Volume di irrigazione"
 			},
 			"wait":{
-				"name":"Wait time"
+				"name":"Tempo di attesa"
 			},
 			"repeat":{
-				"name":"Repeats"
+				"name":"Ripetizione"
 			},
 			"inter_zone_delay":{
-				"name":"Zone transition"
+				"name":"Ritardo tra zone"
 			},
 			"sunrise_offset":{
-				"name":"Sunrise offset"
+				"name":"Scostamento dall'alba"
 			},
 			"sunset_offset":{
-				"name":"Sunset offset"
+				"name":"Scostamento dal tramonto"
 			}
 		},
 		"time":{
 			"start_time":{
-				"name":"Start time"
+				"name":"Tempo di inizio"
 			}
 		},
 		"text":{
 			"start_times":{
-				"name":"Start times"
+				"name":"Tempi di inizio"
 			}
 		},
 		"switch":{
 			"ignore_sensor":{
-				"name":"Ignore sensors"
+				"name":"Ignora i sensori"
 			},
 			"enable_program":{
-				"name":"Enable program"
+				"name":"Abilita il programma"
 			},
 			"enable_zone":{
-				"name":"Enable zone"
+				"name":"Abilita la zona"
 			},
 			"config":{
-				"name": "Settings"
+				"name":"Impostazioni"
 			},
 			"zone":{
-				"name": "{zone_name}"
-			},
-			"pause":{
-				"name": "Pause"
+				"name":"{zone_name}"
 			}
 		},
 		"select":{
 			"frequency":{
-				"name":"Frequency"
+				"name":"Frequenza"
 			}
 		}
 	},
@@ -115,8 +127,8 @@
 			"zone_defined": "La zona specificata è già stata definita in questo programma di irrigazione",
 			"mandatory": "Il campo richiesto non è stato riempito",
 			"zone_required": "Deve essere definita almeno una zona",
-			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+			"invalid_days_group": "Le opzioni della frequenza nella lista sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
+			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom"
 		},
 		"step": {
 			"user": {
@@ -124,10 +136,10 @@
 				"description": "Definisce il programma di irrigazione",
 				"data": {
 					"name": "Nome",
-					"freq": "Enable program wide frequency",
-					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Entità monitoraggio controllore",
-					"device_type": "Controller type"
+					"freq": "Abilita la frequenza del programma",
+					"freq_options": "Seleziona o aggiungi l'opzione frequenza",
+					"controller_monitor": "Entità di monitoraggio dell'interruttore",
+					"device_type": "Tipo interruttore"
 				}
 			},
 			"add_zone": {
@@ -135,14 +147,14 @@
 				"description": "Configurazione zone",
 				"data": {
 					"zone": "Entità interruttore zona",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
+					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
 					"pump": "Entità interruttore pompa",
 					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Water source entity",
-					"order": "Zone run order"
+					"water_source_active": "Entità sorgente irrigazione",
+					"order": "Ordine di esecuzione delle zone"
 				}
 			},
 			"delete_zone": {
@@ -153,18 +165,18 @@
 				}
 			},
 			"update_zone_data": {
-				"title": "Configuratione zone",
+				"title": "Configurazione zone",
 				"description": "Definizione zone",
 				"data": {
 					"zone": "Entità interruttore zona",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
+					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
 					"pump": "Entità interruttore pompa",
 					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Water source entity",
-					"order": "Zone run order"
+					"water_source_active": "Entità sorgente irrigazione",
+					"order": "Ordine di esecuzione delle zone"
 				}
 			},
 			"update_zone": {
@@ -182,19 +194,18 @@
 					"delete_zone": "Cancella zona",
 					"add_zone": "Aggiungi zona",
 					"finalise": "Applica modifiche",
-					"advanced": "Advanced options"
+					"advanced": "Opzioni avanzate"
 				}
 			},
 			"advanced": {
 				"description": "",
-				"title": "Advanced Options",
+				"title": "Opzioni avanzate",
 				"data": {
-					"sun":"Start time options",
-					"interlock": "Prevent programs running concurrently",
-					"rain_behaviour": "Rain sensor behaviour",
-					"water_max": "Maximum watering time/volume",
-					"water_step": "Time/volume step",
-					"parallel": "Zone parallel execution"
+					"sun":"Opzioni per i tempi di inizio",
+					"interlock": "Evita che i programmi vengano eseguiti in parallelo",
+					"rain_behaviour": "Comportamento del sensore pioggia",
+					"water_max": "Tempo/volume massimo di irrigazione",
+					"water_step": "Intervallo di tempo/volume"
 				}
 			}
 		}
@@ -204,8 +215,8 @@
 			"zone_defined": "La zona specificata è già stata definita in questo programma di irrigazione",
 			"mandatory": "Il campo richiesto non è stato riempito",
 			"zone_required": "Deve essere definita almeno una zona",
-			"invalid_days_group": "Frequency options must be mon,tue,wed,thu,fri,sat,sun",
-			"invalid_option": "Frequency option must be numeric or mon,tue,wed,thu,fri,sat,sun"
+			"invalid_days_group": "Le opzioni della frequenza nella lista sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
+			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom"
 		},
 		"step": {
 			"user": {
@@ -216,19 +227,18 @@
 					"delete_zone": "Cancella zona",
 					"add_zone": "Aggiungi zona",
 					"finalise": "Applica modifiche",
-					"advanced": "Advanced options"
+					"advanced": "Opzioni avanzate"
 				}
 			},
 			"advanced": {
-				"title": "Advanced Options",
+				"title": "Opzioni avanzate",
 				"description": "",
 				"data": {
-					"sun":"Start time options",
-					"interlock": "Prevent programs running concurrently",
-					"rain_behaviour": "Rain sensor behaviour",
-					"water_max": "Maximum watering time/volume",
-					"water_step": "Time/volume step",
-					"parallel": "Zone parallel execution"
+					"sun":"Opzioni per i tempi di inizio",
+					"interlock": "Evita che i programmi vengano eseguiti in parallelo",
+					"rain_behaviour": "Comportamento del sensore pioggia",
+					"water_max": "Tempo/volume massimo di irrigazione",
+					"water_step": "Intervallo di tempo/volume"
 				}
 			},
 			"update_program": {
@@ -236,40 +246,40 @@
 				"description": "Aggiorna programma irrigazione",
 				"data": {
 					"name": "Nome",
-					"freq": "Enable program wide frequency",
-					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Entità monitoraggio controllore",
-					"device_type": "Controller type"
+					"freq": "Abilita la frequenza del programma",
+					"freq_options": "Seleziona o aggiungi le opzioni di frequenza",
+					"controller_monitor": "Entità monitoraggio interruttore",
+					"device_type": "Tipo di interruttore"
 				}
 			},
 			"add_zone": {
-				"title": "Configuratione zone",
+				"title": "Configurazione zone",
 				"description": "Definizione zone",
 				"data": {
 					"zone": "Entità interruttore zona",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
+					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
 					"pump": "Entità interruttore pompa",
 					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Water source entity",
-					"order": "Zone run order"
+					"water_source_active": "Entità sorgente irrigazione",
+					"order": "Ordine di esecuzione delle zone"
 				}
 			},
 			"update_zone_data": {
-				"title": "Configuratione zone",
+				"title": "Configurazione zone",
 				"description": "Definizione zone",
 				"data": {
 					"zone": "Entità interruttore zona",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
+					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
 					"pump": "Entità interruttore pompa",
 					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Water source entity",
-					"order": "Zone run order"
+					"water_source_active": "Entità sorgente irrigazione",
+					"order": "Ordine di esecuzione delle zone"
 				}
 			},
 			"delete_zone": {

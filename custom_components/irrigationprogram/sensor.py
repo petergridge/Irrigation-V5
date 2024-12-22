@@ -244,7 +244,7 @@ class ZoneRemainingTime(SensorEntity):
     @property
     def native_value(self):
         """Return the state."""
-        return self._state
+        return int(self._state)
 
 class RemainingTime(SensorEntity):
     '''Next zone run date time class defn.'''
