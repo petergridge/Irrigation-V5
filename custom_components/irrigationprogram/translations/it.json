@@ -1,21 +1,5 @@
 {
 	"selector": {
-		"status": {
-			"options": {
-				"off": "Spento",
-				"on": "Acceso",
-				"disabled": "Disattivato",
-				"pending": "In attesa",
-				"eco": "ECO",
-				"program_disabled": "Programma disattivato",
-				"controller_disabled": "Interruttore disattivato",
-				"unavailable": "Non disponibile",
-				"raining": "Pioggia",
-				"adjusted_off": "Corretto",
-				"no_water_source": "Nessuna entità di irrigazione rilevata",
-				"zone_disabled": "Zona disattivata"
-			}
-		},
 		"device_type": {
 			"options": {
 				"generic": "Generico",
@@ -53,7 +37,8 @@
 					"raining": "Pioggia",
 					"adjusted_off": "Corretta",
 					"no_water_source": "Nessuna entità di irrigazione rilevata",
-					"zone_disabled": "Zona disabilitata"
+					"zone_disabled": "Zona disabilitata",
+					"paused": "Program paused"
 				}
 			},
 			"zone_next_run":{
@@ -114,6 +99,9 @@
 			},
 			"zone":{
 				"name":"{zone_name}"
+			},
+			"pause":{
+				"name": "Pausa"
 			}
 		},
 		"select":{
@@ -205,7 +193,8 @@
 					"interlock": "Evita che i programmi vengano eseguiti in parallelo",
 					"rain_behaviour": "Comportamento del sensore pioggia",
 					"water_max": "Tempo/volume massimo di irrigazione",
-					"water_step": "Intervallo di tempo/volume"
+					"water_step": "Intervallo di tempo/volume",
+					"parallel": "Esecuzione parallela a zone"
 				}
 			}
 		}
@@ -238,7 +227,8 @@
 					"interlock": "Evita che i programmi vengano eseguiti in parallelo",
 					"rain_behaviour": "Comportamento del sensore pioggia",
 					"water_max": "Tempo/volume massimo di irrigazione",
-					"water_step": "Intervallo di tempo/volume"
+					"water_step": "Intervallo di tempo/volume",
+					"parallel": "Esecuzione parallela a zone"
 				}
 			},
 			"update_program": {
