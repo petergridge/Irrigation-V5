@@ -399,7 +399,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.sum += item
 
         if self.degree_of_parallel > 1:
-            remaining = [int(zone.remaining_time.state) for zone in zones]
+            remaining = [int(zone.remaining_time.native_value) for zone in zones]
             streams = []
             #create the streams
             for _ in range(self.degree_of_parallel):
@@ -424,7 +424,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._program_remaining = 0
             for program_postion, zone in enumerate(zones,1):
                 if zone.switch.status.state in  (CONST_ON, CONST_PENDING, CONST_ECO):
-                    self._program_remaining +=  int(zone.remaining_time.state)
+                    self._program_remaining +=  int(zone.remaining_time.native_value)
                     if program_postion < len(zones):
                         self._program_remaining += self.inter_zone_delay
             self._program_remaining += izd_remaining
@@ -464,7 +464,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         rzones = running_zones
 
         for running_zone in rzones:
-            if self.inter_zone_delay <= 0 and running_zone.remaining_time.state <= abs(self.inter_zone_delay):
+            if self.inter_zone_delay <= 0 and running_zone.remaining_time.native_value <= abs(self.inter_zone_delay):
                 #zone has turned off remove from the running zones
                 running_zones.remove(running_zone)
                 #start the next zone if there is one
@@ -475,10 +475,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     running_zones.append(zone.switch)
                     break
 
-            if running_zone.remaining_time.state == 0 and running_zones.count(running_zone) > 0:
+            if running_zone.remaining_time.native_value == 0 and running_zones.count(running_zone) > 0:
                 running_zones.remove(running_zone)
 
-            if self.inter_zone_delay > 0 and running_zone.remaining_time.state == 0:
+            if self.inter_zone_delay > 0 and running_zone.remaining_time.native_value == 0:
                 #there is a + IZD and there is a zone to follow
                 pend = (x for x in all_zones if x.status.state == CONST_PENDING)
                 if len(list(pend)) > 0:
