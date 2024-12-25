@@ -207,6 +207,9 @@ The schedule can be set at:
 - On each zone. This allows the program to run different zones at varying tempos allowing the lawn to be watered weekly and the pots every 2.
 - A combination of both, if both are set the zone level frequency is used.
 
+
+Automate the watering season using inbuilt [calendar funtionality](https://github.com/petergridge/Irrigation-V5/blob/main/automate_watering_season.md) to enable/disable the program.
+
 ### What will stop a program or zone while it is running?
 - When the program is disabled all zones will stop.
 - When the zone is disabled the zone will stop.
