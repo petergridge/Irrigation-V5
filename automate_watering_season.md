@@ -1,4 +1,4 @@
-There has been interest in automating the start and end of the watering season. THe following automation makes use of the inbuild calendar funtionality.
+There has been interest in automating the start and end of the watering season. The following automation makes use of the inbuilt HA calendar funtionality.
 
 1. Create a local calendar, https://www.home-assistant.io/integrations/calendar, I named mine 'local'
 2. Add the 'Watering Season' entry with the desired start and end dates, using the calendar link in the sidebar
