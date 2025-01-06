@@ -234,7 +234,7 @@ async def async_stop_programs(hass,ignore_program):
         servicedata = {ATTR_ENTITY_ID: device}
         #warn if the program is terminated
         await asyncio.sleep(n)
-        if hass.states.get(device).is_on:
+        if hass.states.get(device).state == 'on':
             async_create(
                 hass,
                 message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {ignore_program}",

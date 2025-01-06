@@ -42,10 +42,10 @@
 				}
 			},
 			"zone_next_run":{
-				"name":"Prossima zona da irrigare"
+				"name":"Prossima irrigazione"
 			},
 			"zone_last_ran":{
-				"name":"Ultima zona irrigata"
+				"name":"Ultima irrigazione"
 			},
 			"remaining_time":{
 				"name":"Tempo rimanente"
