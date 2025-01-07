@@ -293,8 +293,8 @@ class IrrigationCard extends HTMLElement {
       config.card.entities = doErrors;
     }
 
-    this.lastChild.setConfig(config.card);
-    this.lastChild.hass = hass;
+    this.lastElementChild.setConfig(config.card);
+    this.lastElementChild.hass = hass;
   }
 
   static getConfigElement() {
