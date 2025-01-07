@@ -2,7 +2,7 @@ class IrrigationCard extends HTMLElement {
 
 
   setConfig(config) {
-    if (this.lastChild) this.removeChild(this.lastChild);
+    if (this.lastElementChild) this.removeChild(this.lastElementChild);
     const cardConfig = Object.assign({}, config);
     if (!cardConfig.card) cardConfig.card = {};
     if (!cardConfig.card.type) cardConfig.card.type = "entities";
@@ -33,21 +33,18 @@ class IrrigationCard extends HTMLElement {
     let doErrors = [];
     let validconfig = "invalid";
 
-    let zones = hass.states[config.program].attributes["zones"];
-
+    let zones = [];
     let entities = [];
 
     console.log("editor:constructor()");
 
     const x = hass.states[config.program];
     if (!x) {
-      config.card.title = "ERR";
       validconfig == "invalid";
       doErrors.push({
         type: "section",
-        label: "Program: not found",
+        label: "Program: Select a program",
       });
-      config.card.title = "ERROR: " + config.program;
     } else {
       validconfig = "valid";
     }
@@ -310,7 +307,7 @@ class IrrigationCard extends HTMLElement {
   }
 
   getCardSize() {
-   return "getCardSize" in this.lastChild ? this.lastChild.getCardSize() : 1;
+   return "getCardSize" in this.lastElementChild ? this.lastElementChild.getCardSize() : 1;
   }
 }
 
@@ -430,7 +427,6 @@ class IrrigationCardEditor extends HTMLElement {
         select.add(newOption);
       }
     }
-
   }
 
   doBuildEntityOptions(program, entities) {
