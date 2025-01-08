@@ -289,8 +289,12 @@ class IrrigationCard extends HTMLElement {
     } else {
       config.card.entities = doErrors;
     }
-
-    this.lastElementChild.setConfig(config.card);
+    try {
+      this.lastElementChild.setConfig(config.card);
+    }
+    catch (err) {
+      console.log("setConfig() failed ignored");
+    }
     this.lastElementChild.hass = hass;
   }
 
