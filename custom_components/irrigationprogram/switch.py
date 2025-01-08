@@ -18,8 +18,6 @@ from .zone import Zone
 
 _LOGGER = logging.getLogger(__name__)
 
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: MyConfigEntry,
@@ -82,7 +80,6 @@ async def async_setup_entry(
     config_entry.runtime_data.program.switch=program
     programs.append(program)
     async_add_entities(programs)
-
 
 class ProgramConfig(SwitchEntity, RestoreEntity):
 

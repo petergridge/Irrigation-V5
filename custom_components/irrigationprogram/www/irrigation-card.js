@@ -1,33 +1,13 @@
 class IrrigationCard extends HTMLElement {
 
-
-  setConfig(config) {
-    if (this.lastElementChild) this.removeChild(this.lastElementChild);
-    const cardConfig = Object.assign({}, config);
-    if (!cardConfig.card) cardConfig.card = {};
-    if (!cardConfig.card.type) cardConfig.card.type = "entities";
-     if (!cardConfig.entities_vars)
-       cardConfig.entities_vars = { type: "entity" };
-    const element = document.createElement('hui-entities-card');
-    this._config = JSON.parse(JSON.stringify(cardConfig));
-    customElements.whenDefined("card-mod").then(() => {
-      customElements
-        .get("card-mod")
-        .applyToElement(element, "card-mod-card", this._config.card_mod.style);
-    });
-
-    this.appendChild(element);
-  }
-
   set hass(hass) {
-
     const config = this._config;
     config.card.title = config.title;
-    //https://www.home-assistant.io/lovelace/header-footer/
-    config.card.header = config.header;
-    config.card.footer = config.footer;
-    config.card.icon = config.icon;
-    config.card.theme = config.theme;
+    // https://www.home-assistant.io/lovelace/header-footer/
+    // config.card.header = config.header;
+    // config.card.footer = config.footer;
+    // config.card.icon = config.icon;
+    // config.card.theme = config.theme;
     config.card.show_header_toggle = false;
     config.card.state_color = true;
     let doErrors = [];
@@ -36,7 +16,7 @@ class IrrigationCard extends HTMLElement {
     let zones = [];
     let entities = [];
 
-    console.log("editor:constructor()");
+    console.log("card:constructor()");
 
     const x = hass.states[config.program];
     if (!x) {
@@ -47,6 +27,7 @@ class IrrigationCard extends HTMLElement {
       });
     } else {
       validconfig = "valid";
+      console.log("valide program");
     }
 
     if (validconfig === "valid") {
@@ -57,16 +38,30 @@ class IrrigationCard extends HTMLElement {
         });
         config.card.title = "ERROR: " + config.program;
         validconfig = "invalid";
+        console.log("Invalid version");
       }
     }
 
-    function doRenderProgram(hass) {
+    if (validconfig === "valid") {
+      console.log("call doRenderProgram()");
+      config.card.entities = doRenderProgram(hass);
+      console.log("call setConfig");
+    } else {
+      config.card.entities = doErrors;
+    }
 
+    this.lastElementChild.setConfig(config.card);
+    this.lastElementChild.hass = hass;
+
+    // Functions
+
+    function doRenderProgram(hass) {
+      console.log("doRenderProgram()");
       // Build the Card
       if (config.show_program === true) {
         let showconfig = hass.states[config.program].attributes["show_config"]
 
-        var buttons = [];
+        const buttons = [];
         buttons.length = 0;
         //Add button group
         buttons.push({
@@ -87,7 +82,7 @@ class IrrigationCard extends HTMLElement {
           }
         });
 
-        var buttons1 = [];
+        const buttons1 = [];
         buttons1.length = 0;
         buttons1.push({
           entity: config.program,
@@ -249,7 +244,6 @@ class IrrigationCard extends HTMLElement {
           }
         });
 
-
         let zonestatus = hass.states[zone].attributes["status"]
 
         var condition = [{ entity: zonestatus, state: ["off"]}        ]
@@ -280,22 +274,25 @@ class IrrigationCard extends HTMLElement {
         add_entity(zone, condition, "ignore_sensors", entities)
       } //AddZone
 
-      //------------------------------------------------------------
-
     } //doRenderProgram
 
-    if (validconfig === "valid") {
-      config.card.entities = doRenderProgram(hass);
-    } else {
-      config.card.entities = doErrors;
-    }
-    try {
-      this.lastElementChild.setConfig(config.card);
-    }
-    catch (err) {
-      console.log("setConfig() failed ignored");
-    }
-    this.lastElementChild.hass = hass;
+  }
+
+  setConfig(config) {
+    if (this.lastElementChild) this.removeChild(this.lastElementChild);
+    const cardConfig = Object.assign({}, config);
+    if (!cardConfig.card) cardConfig.card = {};
+    if (!cardConfig.card.type) cardConfig.card.type = "entities";
+     if (!cardConfig.entities_vars)
+       cardConfig.entities_vars = { type: "entity" };
+    const element = document.createElement('hui-entities-card');
+    this._config = JSON.parse(JSON.stringify(cardConfig));
+    customElements.whenDefined("card-mod").then(() => {
+      customElements
+        .get("card-mod")
+        .applyToElement(element, "card-mod-card", this._config.card_mod.style);
+    });
+    this.appendChild(element);
   }
 
   static getConfigElement() {
