@@ -40,7 +40,7 @@ Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-t
 <img width="366" alt="image" src="https://github.com/user-attachments/assets/5612420b-efdc-4ed5-adc7-0478d7616f34">
 
 ## Experiencing issues with the custom card?
-V2025.01.03 provides the yaml to recreate the custom card as a entities card. The custom card is just an entities card that has been automatically populated.
+V2025.01.03 provides the yaml to recreate the custom card as an entities card. The custom card is just an entities card that has been automatically populated.
 - The script is regenerated each time you modify the configuration and on restart.
 - Copy the script to a manual card.
 
