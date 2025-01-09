@@ -43,6 +43,7 @@ Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-t
 V2025.01.03 provides the yaml to recreate the custom card as an entities card. The custom card is just an entities card that has been automatically populated.
 - The script is regenerated each time you modify the configuration and on restart.
 - Copy the script to a manual card.
+- [More detail here](https://github.com/petergridge/Irrigation-V5/issues/103#issuecomment-2579184201)
 
 ## Note:
 - You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
