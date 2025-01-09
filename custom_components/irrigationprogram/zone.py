@@ -279,7 +279,7 @@ class Zone(SwitchEntity, RestoreEntity):
             return False
         if not scheduled:
             return True
-        if self.next_run.native_value > dt_util.as_local(dt_util.now()):
+        if self.next_run.native_value > dt_util.as_local(dt_util.now()): 
             return False
 
         return True

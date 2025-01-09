@@ -194,7 +194,8 @@
 					"rain_behaviour": "Comportamento del sensore pioggia",
 					"water_max": "Tempo/volume massimo di irrigazione",
 					"water_step": "Intervallo di tempo/volume",
-					"parallel": "Esecuzione parallela a zone"
+					"parallel": "Esecuzione parallela a zone",
+					"card_yaml": "Enable creation of entities card yaml"
 				}
 			}
 		}
@@ -228,7 +229,8 @@
 					"rain_behaviour": "Comportamento del sensore pioggia",
 					"water_max": "Tempo/volume massimo di irrigazione",
 					"water_step": "Intervallo di tempo/volume",
-					"parallel": "Esecuzione parallela a zone"
+					"parallel": "Esecuzione parallela a zone",
+					"card_yaml": "Enable creation of entities card yaml"
 				}
 			},
 			"update_program": {

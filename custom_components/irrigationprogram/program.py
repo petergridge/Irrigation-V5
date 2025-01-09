@@ -84,8 +84,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._localtimezone = ZoneInfo(self._hass.config.time_zone)
 
-#    def generate_card (self):
-        """Create card config."""
+        if self._program.card_yaml:
+            self.generate_card()
+
+    def generate_card (self):
+        """Create card config yaml."""
 
         def add_entity(object,conditions,simple=False):
             if object:
@@ -131,8 +134,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 return data
             return ""
 
-        card:str = "### Copy into manual card"+chr(10)
-        card += "```"+chr(10)
+        card:str = "### Copy into manual card" + chr(10)
+        card += "```" + chr(10)
+
+        card += "state_color: true" + chr(10)
+        card += "show_header_toggle: false" + chr(10)
+
         card += "type: entities" + chr(10)
         card += "entities:"  + chr(10)
         card += "- type: conditional" + chr(10)
@@ -140,9 +147,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "  - entity: " + self._device_id + chr(10)
         card += "    state: off" + chr(10)
         card += "  row:" + chr(10)
-        card += "    type: buttons"   + chr(10)
+        card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
-        card += "    - entity: " + self._device_id+ chr(10)
+        card += "    - entity: " + self._device_id + chr(10)
         card += "      show_name: true" + chr(10)
         card += "    - entity: " + self._program.config.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
@@ -151,7 +158,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "  - entity: " + self._device_id + chr(10)
         card += "    state: on" + chr(10)
         card += "  row:" + chr(10)
-        card += "    type: buttons"   + chr(10)
+        card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
         card += "    - entity: " + self._device_id + chr(10)
         card += "      show_name: true" + chr(10)
@@ -160,7 +167,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "    - entity: " + self._program.pause.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
 
-        condition = [{ "entity": self._program.config.entity_id, "state_not": "on" },{ "entity": "showconfig", "state_not": "on" }]
+        condition = [{ "entity": self._device_id, "state_not": "on" },{ "entity": self._program.config.entity_id, "state_not": "on" }]
         card += add_entity(self._program.start_time,condition,True)
 
         condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
@@ -186,53 +193,52 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
             card += "- type: conditional" + chr(10)
             card += "  conditions:" + chr(10)
-            card += "  - entity: " + zone.zone + chr(10)
+            card += "  - entity: " + zone.switch.entity_id + chr(10)
             card += "    state: off" + chr(10)
             card += "  row:" + chr(10)
             card += "    type: buttons"   + chr(10)
             card += "    entities: " + chr(10)
-            card += "    - entity: " + zone.zone + chr(10)
+            card += "    - entity: " + zone.switch.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
             card += "      show_icon: true" + chr(10)
             card += "      tap_action: " + chr(10)
             card += "        action: call-service" + chr(10)
             card += "        service: switch.toggle" + chr(10)
             card += "        service_data:" + chr(10)
-            card += "          entity_id: " + zone.zone + chr(10)
+            card += "          entity_id: " + zone.switch.entity_id + chr(10)
             card += "    - entity: " + zone.config.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
 
-
             card += "- type: conditional" + chr(10)
             card += "  conditions:" + chr(10)
-            card += "  - entity: " + zone.zone + chr(10)
+            card += "  - entity: " + zone.switch.entity_id + chr(10)
             card += "    state_not: off" + chr(10)
             card += "  row:" + chr(10)
             card += "    type: buttons"   + chr(10)
             card += "    entities: " + chr(10)
-            card += "    - entity: " + zone.zone + chr(10)
+            card += "    - entity: " + zone.switch.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
             card += "      show_icon: true" + chr(10)
             card += "      tap_action: " + chr(10)
             card += "        action: call-service" + chr(10)
             card += "        service: switch.toggle" + chr(10)
             card += "        service_data:" + chr(10)
-            card += "          entity_id: " + zone.zone + chr(10)
+            card += "          entity_id: " + zone.switch.entity_id + chr(10)
             card += "    - entity: " + zone.config.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
             card += "    - entity: " + zone.status.entity_id + chr(10)
             card += "      show_name: false" + chr(10)
 
-            condition = [{ "entity": "zonestatus", "state": '["off"]'}        ]
+            condition = [{ "entity": zone.status.entity_id, "state": '["off"]'}        ]
             card += add_entity(zone.next_run,condition)
 
-            condition = [{ "entity": "zonestatus", "state_not": '["off", "on", "pending", "eco"]'}        ]
+            condition = [{ "entity": zone.status.entity_id, "state_not": '["off", "on", "pending", "eco"]'}        ]
             card += add_entity(zone.status,condition)
 
-            condition = [{ "entity": "zonestatus", "state": '["on","eco","pending"]'}        ]
-            card += add_entity(zone.switch,condition)
+            condition = [{ "entity": zone.status.entity_id, "state": '["on","eco","pending"]'}        ]
+            card += add_entity(zone.remaining_time,condition)
 
-            condition = [{ "entity": "zonestatus", "state_not": '["on", "eco", "pending"]' },{ "entity": zone.config.entity_id, "state": "on" }]
+            condition = [{ "entity": zone.status.entity_id, "state_not": '["on", "eco", "pending"]' },{ "entity": zone.config.entity_id, "state": "on" }]
             card += add_entity(zone.last_ran,condition)
 
             condition = [{ "entity": zone.config.entity_id, "state": "on" }]
@@ -251,7 +257,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         #create the persistent notification
         async_create(
-                hass,
+                self._hass,
                 message=card,
                 title="Irrigation Controller"
             )

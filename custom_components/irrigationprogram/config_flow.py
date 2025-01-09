@@ -335,6 +335,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data['water_max'] = user_input['water_max']
                 self._data['water_step'] = user_input['water_step']
                 self._data['parallel'] = user_input['parallel']
+                self._data['card_yaml'] = user_input['card_yaml']
                 return await self.async_step_menu()
 
         if user_input:
@@ -352,6 +353,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 vol.Optional('water_max', description={"suggested_value": default_input.get('water_max',30)}): sel.NumberSelector({"min":1, "max":9999, "mode":"box"}),
                 vol.Optional('water_step', description={"suggested_value": default_input.get('water_step',1)}): sel.NumberSelector({"min":1, "max":100, "mode":"box"}),
                 vol.Optional('parallel', description={"suggested_value": default_input.get('parallel',1)}): sel.NumberSelector({"min":1, "max":10, "mode":"box"}),
+                vol.Optional('card_yaml', description={"suggested_value": default_input.get('card_yaml',False)}): cv.boolean,
             }
         )
 
@@ -471,6 +473,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata['water_max'] = user_input['water_max']
                 newdata['water_step'] = user_input['water_step']
                 newdata['parallel'] = user_input['parallel']
+                newdata['card_yaml'] = user_input['card_yaml']
                 # Return the form of the next step.
                 self._data = newdata
                 if user_input[ATTR_START_TYPE] not in ["sunset"]:
@@ -501,6 +504,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional('water_max', description={"suggested_value": default_input.get('water_max',30)}): sel.NumberSelector({"min":1, "max":9999, "mode":"box"}),
                 vol.Optional('water_step', description={"suggested_value": default_input.get('water_step',1)}): sel.NumberSelector({"min":1, "max":100, "mode":"box"}),
                 vol.Optional('parallel', description={"suggested_value": default_input.get('parallel',1)}): sel.NumberSelector({"min":1, "max":10, "mode":"box"}),
+                vol.Optional('card_yaml', description={"suggested_value": default_input.get('card_yaml',1)}): cv.boolean,
             }
         )
         return self.async_show_form(

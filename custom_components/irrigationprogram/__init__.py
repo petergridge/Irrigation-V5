@@ -106,6 +106,7 @@ class IrrigationProgram:
     water_max: int
     water_step: int
     parallel: int
+    card_yaml: bool
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -138,7 +139,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         zone_count = len(config.get(ATTR_ZONES)),
         water_max = config.get('water_max',30),
         water_step = config.get('water_step',1),
-        parallel = config.get('parallel',1)
+        parallel = config.get('parallel',1),
+        card_yaml = config.get('card_yaml',False)
         )
 
     zone_data=[]
@@ -222,7 +224,11 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     #clean up any related helpers
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        #remove the instance of component
+        hass.data[DOMAIN].pop(entry.entry_id)
+    return unload_ok
 
 async def async_stop_programs(hass,ignore_program):
     '''Stop all running programs.'''
