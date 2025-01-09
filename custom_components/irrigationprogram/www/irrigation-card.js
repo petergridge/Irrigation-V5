@@ -1,13 +1,30 @@
 class IrrigationCard extends HTMLElement {
 
+  setConfig(config) {
+    if (this.lastElementChild) this.removeChild(this.lastElementChild);
+    const cardConfig = Object.assign({}, config);
+    if (!cardConfig.card) cardConfig.card = {};
+    if (!cardConfig.card.type) cardConfig.card.type = "entities";
+    if (!cardConfig.entities_vars)
+       cardConfig.entities_vars = { type: "entity" };
+    const element = document.createElement('hui-entities-card');
+    this._config = JSON.parse(JSON.stringify(cardConfig));
+    customElements.whenDefined("card-mod").then(() => {
+      customElements
+        .get("card-mod")
+        .applyToElement(element, "card-mod-card", this._config.card_mod.style);
+    });
+    this.appendChild(element);
+  }
+
   set hass(hass) {
     const config = this._config;
     config.card.title = config.title;
     // https://www.home-assistant.io/lovelace/header-footer/
-    // config.card.header = config.header;
-    // config.card.footer = config.footer;
-    // config.card.icon = config.icon;
-    // config.card.theme = config.theme;
+    config.card.header = config.header;
+    config.card.footer = config.footer;
+    config.card.icon = config.icon;
+    config.card.theme = config.theme;
     config.card.show_header_toggle = false;
     config.card.state_color = true;
     let doErrors = [];
@@ -15,8 +32,6 @@ class IrrigationCard extends HTMLElement {
 
     let zones = [];
     let entities = [];
-
-    console.log("card:constructor()");
 
     const x = hass.states[config.program];
     if (!x) {
@@ -27,7 +42,7 @@ class IrrigationCard extends HTMLElement {
       });
     } else {
       validconfig = "valid";
-      console.log("valide program");
+      console.log("valid program");
     }
 
     if (validconfig === "valid") {
@@ -278,23 +293,6 @@ class IrrigationCard extends HTMLElement {
 
   }
 
-  setConfig(config) {
-    if (this.lastElementChild) this.removeChild(this.lastElementChild);
-    const cardConfig = Object.assign({}, config);
-    if (!cardConfig.card) cardConfig.card = {};
-    if (!cardConfig.card.type) cardConfig.card.type = "entities";
-     if (!cardConfig.entities_vars)
-       cardConfig.entities_vars = { type: "entity" };
-    const element = document.createElement('hui-entities-card');
-    this._config = JSON.parse(JSON.stringify(cardConfig));
-    customElements.whenDefined("card-mod").then(() => {
-      customElements
-        .get("card-mod")
-        .applyToElement(element, "card-mod-card", this._config.card_mod.style);
-    });
-    this.appendChild(element);
-  }
-
   static getConfigElement() {
     return document.createElement("irrigation-card-editor");
   }
@@ -516,6 +514,6 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "irrigation-card",
   name: "Irrigation Card",
-  preview: true, // Optional - defaults to false
+  preview: false, // Optional - defaults to false
   description: "Custom card companion to Irrigation Custom Component", // Optional
 });

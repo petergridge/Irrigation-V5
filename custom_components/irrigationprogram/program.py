@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 import logging
 from zoneinfo import ZoneInfo
 
+from homeassistant.components.persistent_notification import async_create
 from homeassistant.components.switch import ENTITY_ID_FORMAT, SwitchEntity
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, MATCH_ALL
 from homeassistant.core import HomeAssistant, callback
@@ -82,6 +83,178 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._extra_attrs = {}
 
         self._localtimezone = ZoneInfo(self._hass.config.time_zone)
+
+#    def generate_card (self):
+        """Create card config."""
+
+        def add_entity(object,conditions,simple=False):
+            if object:
+                data = ""
+                data += "- type: conditional" + chr(10)
+                data += "  conditions:" + chr(10)
+                for condition in conditions:
+                    x = 1
+                    for k, v in condition.items():
+                        if x == 1:
+                            data += "  - "
+                            x=2
+                        else:
+                            data += "    "
+                        data +=  k + ": " + v + chr(10)
+                data += "  row:" + chr(10)
+                if simple:
+                    data += "    type: " + "simple-entity"  + chr(10)
+                data += "    entity: " + object.entity_id  + chr(10)
+
+                return data
+            return ""
+
+        def add_entity_2(object,conditions,simple=False):
+            if object:
+                data = ""
+                data += "- type: conditional" + chr(10)
+                data += "  conditions:" + chr(10)
+                for condition in conditions:
+                    x = 1
+                    for k, v in condition.items():
+                        if x == 1:
+                            data += "  - "
+                            x=2
+                        else:
+                            data += "    "
+                        data +=  k + ": " + v + chr(10)
+                data += "  row:" + chr(10)
+                if simple:
+                    data += "    type: " + "simple-entity"  + chr(10)
+                data += "    entity: " + object  + chr(10)
+
+                return data
+            return ""
+
+        card:str = "### Copy into manual card"+chr(10)
+        card += "```"+chr(10)
+        card += "type: entities" + chr(10)
+        card += "entities:"  + chr(10)
+        card += "- type: conditional" + chr(10)
+        card += "  conditions:" + chr(10)
+        card += "  - entity: " + self._device_id + chr(10)
+        card += "    state: off" + chr(10)
+        card += "  row:" + chr(10)
+        card += "    type: buttons"   + chr(10)
+        card += "    entities: " + chr(10)
+        card += "    - entity: " + self._device_id+ chr(10)
+        card += "      show_name: true" + chr(10)
+        card += "    - entity: " + self._program.config.entity_id + chr(10)
+        card += "      show_name: true" + chr(10)
+        card += "- type: conditional" + chr(10)
+        card += "  conditions:" + chr(10)
+        card += "  - entity: " + self._device_id + chr(10)
+        card += "    state: on" + chr(10)
+        card += "  row:" + chr(10)
+        card += "    type: buttons"   + chr(10)
+        card += "    entities: " + chr(10)
+        card += "    - entity: " + self._device_id + chr(10)
+        card += "      show_name: true" + chr(10)
+        card += "    - entity: " + self._program.config.entity_id + chr(10)
+        card += "      show_name: true" + chr(10)
+        card += "    - entity: " + self._program.pause.entity_id + chr(10)
+        card += "      show_name: true" + chr(10)
+
+        condition = [{ "entity": self._program.config.entity_id, "state_not": "on" },{ "entity": "showconfig", "state_not": "on" }]
+        card += add_entity(self._program.start_time,condition,True)
+
+        condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
+        if self._program.sunrise_offset or self._program.sunset_offset:
+            card += add_entity(self._program.start_time,condition,True)
+        else:
+            card += add_entity(self._program.start_time,condition)
+        card += add_entity(self._program.sunrise_offset,condition)
+        card += add_entity(self._program.sunset_offset,condition)
+
+        condition = [{ "entity": self._device_id, "state": "on" }]
+        card += add_entity(self._program.remaining_time,condition)
+
+        condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
+        card += add_entity(self._program.enabled,condition)
+        card += add_entity(self._program.frequency,condition)
+        card += add_entity(self._program.inter_zone_delay,condition)
+
+        #now process the zones
+        for zone in self._zones:
+            card += "- type: section" + chr(10)
+            card += "  label: ''" + chr(10)
+
+            card += "- type: conditional" + chr(10)
+            card += "  conditions:" + chr(10)
+            card += "  - entity: " + zone.zone + chr(10)
+            card += "    state: off" + chr(10)
+            card += "  row:" + chr(10)
+            card += "    type: buttons"   + chr(10)
+            card += "    entities: " + chr(10)
+            card += "    - entity: " + zone.zone + chr(10)
+            card += "      show_name: true" + chr(10)
+            card += "      show_icon: true" + chr(10)
+            card += "      tap_action: " + chr(10)
+            card += "        action: call-service" + chr(10)
+            card += "        service: switch.toggle" + chr(10)
+            card += "        service_data:" + chr(10)
+            card += "          entity_id: " + zone.zone + chr(10)
+            card += "    - entity: " + zone.config.entity_id + chr(10)
+            card += "      show_name: true" + chr(10)
+
+
+            card += "- type: conditional" + chr(10)
+            card += "  conditions:" + chr(10)
+            card += "  - entity: " + zone.zone + chr(10)
+            card += "    state_not: off" + chr(10)
+            card += "  row:" + chr(10)
+            card += "    type: buttons"   + chr(10)
+            card += "    entities: " + chr(10)
+            card += "    - entity: " + zone.zone + chr(10)
+            card += "      show_name: true" + chr(10)
+            card += "      show_icon: true" + chr(10)
+            card += "      tap_action: " + chr(10)
+            card += "        action: call-service" + chr(10)
+            card += "        service: switch.toggle" + chr(10)
+            card += "        service_data:" + chr(10)
+            card += "          entity_id: " + zone.zone + chr(10)
+            card += "    - entity: " + zone.config.entity_id + chr(10)
+            card += "      show_name: true" + chr(10)
+            card += "    - entity: " + zone.status.entity_id + chr(10)
+            card += "      show_name: false" + chr(10)
+
+            condition = [{ "entity": "zonestatus", "state": '["off"]'}        ]
+            card += add_entity(zone.next_run,condition)
+
+            condition = [{ "entity": "zonestatus", "state_not": '["off", "on", "pending", "eco"]'}        ]
+            card += add_entity(zone.status,condition)
+
+            condition = [{ "entity": "zonestatus", "state": '["on","eco","pending"]'}        ]
+            card += add_entity(zone.switch,condition)
+
+            condition = [{ "entity": "zonestatus", "state_not": '["on", "eco", "pending"]' },{ "entity": zone.config.entity_id, "state": "on" }]
+            card += add_entity(zone.last_ran,condition)
+
+            condition = [{ "entity": zone.config.entity_id, "state": "on" }]
+            card += add_entity(zone.enabled,condition)
+            card += add_entity(zone.frequency,condition)
+            card += add_entity(zone.water,condition)
+            card += add_entity(zone.wait,condition)
+            card += add_entity(zone.repeat,condition)
+            card += add_entity_2(zone.flow_sensor,condition)
+            card += add_entity_2(zone.adjustment,condition)
+            card += add_entity_2(zone.rain_sensor,condition)
+            card += add_entity_2(zone.water_source,condition)
+            card += add_entity(zone.ignore_sensors,condition)
+
+        card += "```" + chr(10)
+
+        #create the persistent notification
+        async_create(
+                hass,
+                message=card,
+                title="Irrigation Controller"
+            )
 
     async def async_will_remove_from_hass(self) -> None:
         """Cancel next update."""
