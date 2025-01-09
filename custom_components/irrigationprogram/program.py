@@ -61,7 +61,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._program:ProgramData = runtime_data.program
         self._zones:list[ZoneData] = runtime_data.zone_data
 
-        self._device_id = async_generate_entity_id(
+        self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, device_id, hass=hass
         )
         self._scheduled = False
@@ -144,30 +144,30 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "entities:"  + chr(10)
         card += "- type: conditional" + chr(10)
         card += "  conditions:" + chr(10)
-        card += "  - entity: " + self._device_id + chr(10)
+        card += "  - entity: " + self.entity_id + chr(10)
         card += "    state: off" + chr(10)
         card += "  row:" + chr(10)
         card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
-        card += "    - entity: " + self._device_id + chr(10)
+        card += "    - entity: " + self.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
         card += "    - entity: " + self._program.config.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
         card += "- type: conditional" + chr(10)
         card += "  conditions:" + chr(10)
-        card += "  - entity: " + self._device_id + chr(10)
+        card += "  - entity: " + self.entity_id + chr(10)
         card += "    state: on" + chr(10)
         card += "  row:" + chr(10)
         card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
-        card += "    - entity: " + self._device_id + chr(10)
+        card += "    - entity: " + self.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
         card += "    - entity: " + self._program.config.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
         card += "    - entity: " + self._program.pause.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
 
-        condition = [{ "entity": self._device_id, "state_not": "on" },{ "entity": self._program.config.entity_id, "state_not": "on" }]
+        condition = [{ "entity": self.entity_id, "state_not": "on" },{ "entity": self._program.config.entity_id, "state_not": "on" }]
         card += add_entity(self._program.start_time,condition,True)
 
         condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
@@ -178,7 +178,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += add_entity(self._program.sunrise_offset,condition)
         card += add_entity(self._program.sunset_offset,condition)
 
-        condition = [{ "entity": self._device_id, "state": "on" }]
+        condition = [{ "entity": self.entity_id, "state": "on" }]
         card += add_entity(self._program.remaining_time,condition)
 
         condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
