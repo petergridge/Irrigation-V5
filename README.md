@@ -1,5 +1,5 @@
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2025.01.03b1/total)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/V2025.01.03b2/total)
 
 # IrrigationProgram Custom Component
 
@@ -44,6 +44,7 @@ V2025.01.03 provides the yaml to recreate the custom card as an entities card. T
 - The script is regenerated each time you modify the configuration and on restart.
 - Copy the script to a manual card.
 - [More detail here](https://github.com/petergridge/Irrigation-V5/issues/103#issuecomment-2579184201)
+- You need to enable the feature in the advanced setting of the program.
 
 ## Note:
 - You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
@@ -452,6 +453,11 @@ These options change the default settings for the slider to enter time/volume in
 
 ### Zone parallel execution
 This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone transition is not available.
+
+### Entities Card yaml generation
+This setting enables the production of yaml to implement the equivalent to the custom card. Some users are experiencing issues with the custom card requiring this alternative. The custom card is also based on the entities cards.
+The yaml is generated on start and when a program configuration is created or modified.
+Insert the generated yaml into a Manual Card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ### V2024.12.01
