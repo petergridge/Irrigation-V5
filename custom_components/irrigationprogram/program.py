@@ -704,7 +704,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # raise event when the program starts
             event_data = {
                 "action": "program_turned_on",
-                "device_id": self._device_id,
+                "device_id": self.entity_id,
                 "scheduled": self._scheduled,
                 "program": self.name,
             }
@@ -745,7 +745,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         event_data = {
             "action": "program_turned_off",
-            "device_id": self._device_id,
+            "device_id": self.entity_id,
             "program": self.name,
         }
         self._hass.bus.async_fire("irrigation_event", event_data)
