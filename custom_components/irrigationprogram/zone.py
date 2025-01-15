@@ -279,7 +279,7 @@ class Zone(SwitchEntity, RestoreEntity):
             return False
         if not scheduled:
             return True
-        if self.next_run.native_value > dt_util.as_local(dt_util.now()): 
+        if self.next_run.native_value > dt_util.as_local(dt_util.now()):
             return False
 
         return True
@@ -523,8 +523,10 @@ class Zone(SwitchEntity, RestoreEntity):
         if await self.check_switch_state() is False:
             if self.controller_type == 'rainbird':
                 # RAINBIRD controller requires a different service call
+                rainbird_duration = await self.calc_run_time(repeats=self.repeat,
+                                                            scheduled=self.scheduled)
                 await self.hass.services.async_call(
-                    RAINBIRD, RAINBIRD_TURN_ON, {ATTR_ENTITY_ID: self.solenoid, RAINBIRD_DURATION: self.water}
+                    RAINBIRD, RAINBIRD_TURN_ON, {ATTR_ENTITY_ID: self.solenoid, RAINBIRD_DURATION: rainbird_duration}
                 )
             elif self.entity_type == CONST_VALVE:
                 #valve
