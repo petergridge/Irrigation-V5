@@ -84,8 +84,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._localtimezone = ZoneInfo(self._hass.config.time_zone)
 
-        if self._program.card_yaml:
-            self.generate_card()
 
     def generate_card (self):
         """Create card config yaml."""
@@ -404,6 +402,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hass_shutdown)
 
         await super().async_added_to_hass()
+
+        # generate the entities card yaml to replicate the custom card
+        if self._program.card_yaml:
+            self.generate_card()
 
     @callback
     def set_up_entity_monitoring(self):
