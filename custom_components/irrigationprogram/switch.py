@@ -12,7 +12,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import slugify
 
 from . import IrrigationData
-from .const import CONST_CLOSED, CONST_LATENCY, CONST_OFF, CONST_ON, CONST_OPEN
+from .const import CONST_START_LATENCY
 from .program import IrrigationProgram
 from .zone import Zone
 
@@ -45,7 +45,7 @@ async def async_setup_entry(
     for i, zone in enumerate(zones):
         #check if the switch is ready
         switch_not_ready = True
-        for _ in range(CONST_LATENCY):
+        for _ in range(CONST_START_LATENCY):
             try:
                 friendly_name = hass.states.get(zone.zone).attributes.get('friendly_name')
                 switch_not_ready = False
