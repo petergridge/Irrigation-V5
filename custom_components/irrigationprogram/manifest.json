@@ -8,5 +8,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/petergridge/irrigation-v5/issues",
   "requirements": [],
-  "version": "V2025.03.02"
+  "version": "V2025.03.03"
 }

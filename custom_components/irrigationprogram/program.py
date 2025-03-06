@@ -23,7 +23,7 @@ from . import (
     IrrigationProgram as ProgramData,
     IrrigationZoneData as ZoneData,
     async_stop_programs,
-    async_stop_programs_new,
+#    async_stop_programs_new,
 )
 from .const import (
     ATTR_DELAY,
