@@ -23,6 +23,7 @@ from . import (
     IrrigationProgram as ProgramData,
     IrrigationZoneData as ZoneData,
     async_stop_programs,
+    async_stop_programs_new,
 )
 from .const import (
     ATTR_DELAY,
@@ -536,6 +537,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         return self._program.enabled.state
 
     @property
+    def interlock(self):
+        """Zone  entity value."""
+        return self._program.interlock
+
+    @property
     def start_time_value(self):
         """Start time entity value."""
         value = None
@@ -718,6 +724,23 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._state = True
         self._finished = False
         self.async_schedule_update_ha_state()
+
+        #------ New Feature under construction  ------
+        # check the extended interlock states
+        # turn action other running program accordingly
+        # Interlock states
+        # 1 - Strict
+        #     turn off other programs when starting
+        #     turn off when another program starts
+        # 2 - loose
+        #     turn off all other programs when starting
+        #     stay running unless a 'strict' program starts
+        # 3 - off
+        #     turn off 'strict' programs only
+        #     stay running unless a 'strict' program starts
+        # await async_stop_programs_new(self._hass, self)
+
+
         # stop all running programs except the calling program
         if self._program.interlock:
             await async_stop_programs(self._hass, self.name)

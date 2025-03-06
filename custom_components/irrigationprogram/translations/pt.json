@@ -1,0 +1,293 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Genérico",
+				"rainbird": "RainBird"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Seletor de Horário",
+				"multistart":"Diversos Horários",
+				"sunrise":"Nascer do sol com ajuste",
+				"sunset":"Pôr do sol com ajuste"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Parar o programa",
+				"continue": "Continuar o programa até ao fim"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"Estado da zona",
+				"state": {
+					"off": "Desligado",
+					"on": "Ligado",
+					"disabled": "Desativado",
+					"pending": "Suspenso",
+					"eco": "Ecológico",
+					"program_disabled": "Programa desativado",
+					"controller_disabled": "Controlador desativado",
+					"unavailable": "Indisponível",
+					"raining": "A chuver",
+					"adjusted_off": "Ajustes desligados",
+					"no_water_source": "Nenhuma fonte de água detetada",
+					"zone_disabled": "Zona desativada",
+					"paused": "Programa em espera"
+				}
+			},
+			"zone_next_run":{
+				"name":"Próximo arranque"
+			},
+			"zone_last_ran":{
+				"name":"Último arranque"
+			},
+			"remaining_time":{
+				"name":"Tempo restante"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Tempo de rega"
+			},
+			"volume":{
+				"name":"Volume de rega"
+			},
+			"wait":{
+				"name":"Tempo de espera"
+			},
+			"repeat":{
+				"name":"Repetições"
+			},
+			"inter_zone_delay":{
+				"name":"Transição de zona"
+			},
+			"sunrise_offset":{
+				"name":"Ajustes do Nascer do Sol"
+			},
+			"sunset_offset":{
+				"name":"Ajustes do Pôr do Sol"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Hora de início"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Horários de início"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignorar o sensor"
+			},
+			"enable_program":{
+				"name":"Ativar o programa"
+			},
+			"enable_zone":{
+				"name":"Ativar a zona"
+			},
+			"config":{
+				"name": "Definições"
+			},
+			"zone":{
+				"name": "{nome_zona}"
+			},
+			"pause":{
+				"name": "Pausa"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Intervalo de rega"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "O comando da zona selecionado já está definido neste programa de rega",
+			"mandatory": "Campo obrigatório não preenchido",
+			"zone_required": "Pelo menos uma zona deve ser definida",
+			"invalid_days_group": "Os intervalos de rega na lista devem ser Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
+			"invalid_option": "O intervalo de rega deve ser numérico ou Seg, Ter, Qua, Qui, Sex, Sáb, Dom"
+		},
+		"step": {
+			"user": {
+				"title": "Informação do programa",
+				"description": "Defina o programa",
+				"data": {
+					"name": "Nome",
+					"freq": "Ativar o intervalo de rega do programa",
+					"freq_options": "Selecione ou adicione opções do intervalo de rega",
+					"controller_monitor": "Monitorizar o sensor binário do controlador",
+					"device_type": "Tipo de controlador"
+				}
+			},
+			"add_zone": {
+				"title": "Zonas do programa",
+				"description": "Configurações da zona",
+				"data": {
+					"zone": "Comando da zona",
+					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
+					"eco": "Ativar o modo Ecológico espera e repetição",
+					"pump": "Comando da bomba",
+					"flow_sensor": "Sensor de fluxo",
+					"water_adjustment": "Sensor de ajuste do tempo de rega",
+					"rain_sensor": "Sensor binário de chuva",
+					"water_source_active": "Sensor binário da fonte de água",
+					"order": "Ordem de execução da zona"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuração da zona",
+				"description": "",
+				"data": {
+					"zone": "Selecionar a zona para eliminar"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuração da zona",
+				"description": "Atualizar a zona",
+				"data": {
+					"zone": "Comando da zona",
+					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
+					"eco": "Ativar o modo Ecológico espera e repetição",
+					"pump": "Comando da bomba",
+					"flow_sensor": "Sensor de fluxo",
+					"water_adjustment": "Sensor de ajuste do tempo de rega",
+					"rain_sensor": "Sensor binário de chuva",
+					"water_source_active": "Sensor binário da fonte de água",
+					"order": "Ordem de execução da zona"
+				}
+			},
+			"update_zone": {
+				"title": "Configuração da zona",
+				"description": "",
+				"data": {
+					"zone": "Selecionar a zona para atualizar"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Atualizar o programa",
+					"add_zone": "Adicionar a zona",
+					"update_zone": "Atualizar a zona",
+					"delete_zone": "Eliminar a zona",
+					"finalise": "Aplicar",
+					"advanced": "Opções Avançadas"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Opções Avançadas",
+				"data": {
+					"start_type":"Opções de hora de início",
+					"interlock": "Impedir que os programas sejam executados em simultâneo",
+					"rain_behaviour": "Comportamento do sensor de chuva",
+					"water_max": "Tempo/volume máximo de rega",
+					"water_step": "Passo de Tempo/volume",
+					"parallel": "Execução de zonas em paralelo",
+					"card_yaml": "Permitir a criação de cartão de entidades em yaml"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "O comando da zona selecionado já está definido neste programa de rega",
+			"mandatory": "Campo obrigatório não preenchido",
+			"zone_required": "Pelo menos uma zona deve ser definida",
+			"invalid_days_group": "Os intervalos de rega na lista devem ser Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
+			"invalid_option": "O intervalo de rega deve ser numérico ou Seg, Ter, Qua, Qui, Sex, Sáb, Dom"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "Atualizar o programa",
+					"update_zone": "Atualizar a zona",
+					"delete_zone": "Eliminar a zona",
+					"add_zone": "Adicionar a zona",
+					"finalise": "Aplicar",
+					"advanced": "Opções Avançadas"
+				}
+			},
+			"advanced": {
+				"title": "Opções Avançadas",
+				"description": "",
+				"data": {
+					"start_type":"Opções de hora de início",
+					"interlock": "Impedir que os programas sejam executados em simultâneo",
+					"rain_behaviour": "Comportamento do sensor de chuva",
+					"water_max": "Tempo/volume máximo de rega",
+					"water_step": "Passo de Tempo/volume",
+					"parallel": "Execução de zonas em paralelo",
+					"card_yaml": "Permitir a criação de cartão de entidades em yaml"
+				}
+			},
+			"update_program": {
+				"title": "Informação do programa",
+				"description": "Atualizar o programa",
+				"data": {
+					"program": "Ativar a frequência de rega em todo o programa",
+					"freq": "Ativar o intervalo de rega do programa",
+					"freq_options": "Selecione ou adicione opções do intervalo de rega",
+					"controller_monitor": "Monitorizar o sensor binário do controlador",
+					"device_type": "Tipo de controlador"
+				}
+			},
+			"add_zone": {
+				"title": "Configuração da zona",
+				"description": "Adicionar zona",
+				"data": {
+					"zone": "Comando da zona",
+					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
+					"eco": "Ativar o modo Ecológico espera e repetição",
+					"pump": "Comando da bomba",
+					"flow_sensor": "Sensor de fluxo",
+					"water_adjustment": "Sensor de ajuste do tempo de rega",
+					"rain_sensor": "Sensor binário de chuva",
+					"water_source_active": "Sensor binário da fonte de água",
+					"order": "Ordem de execução da zona"
+				}
+			},
+			"update_zone_data": {
+				"title": "Configuração da Zona",
+				"description": "Atualizar a zona",
+				"data": {
+					"zone": "Comando da zona",
+					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
+					"eco": "Ativar o modo Ecológico espera e repetição",
+					"pump": "Comando da bomba",
+					"flow_sensor": "Sensor de fluxo",
+					"water_adjustment": "Sensor de ajuste do tempo de rega",
+					"rain_sensor": "Sensor binário de chuva",
+					"water_source_active": "Sensor binário da fonte de água",
+					"order": "Ordem de execução da zona"
+				}
+			},
+			"delete_zone": {
+				"title": "Configuração da zona",
+				"description": "",
+				"data": {
+					"zone": "Selecionar a zona para eliminar"
+				}
+			},
+			"update_zone": {
+				"title": "Configuração da zona",
+				"description": "",
+				"data": {
+					"zone": "Selecionar a zona para atualizar"
+				}
+			}
+		}
+	}
+}
