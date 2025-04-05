@@ -192,6 +192,9 @@ This section provides details of how the program operates.
 ### Are Rain Bird controllers supported?
 Controllers supported by the [Rain Bird](https://www.home-assistant.io/integrations/rainbird/) Home Assistant integration are supported. The RainBird API will be used to start the zones bypassing the default runtime limitation. There have been reports of issues with the Rain Bird implementation not updating the state of the switch in some circumstances. This will result in a notification indicating a latency problem. This has been noted when using a negative zone transition value.
 
+### Are B-Hyve controllers supported?
+Controllers supported by the [Orbit B-Hyve](https://github.com/sebr/bhyve-home-assistant) from HACS are supported. The B-HYVEAPI will be used to start the zones bypassing the default runtime limitation. There may be issues with using a negative zone transition values.
+
 ### What time will the program start?
 Four options are available to configure the start time. These can be selected from the [Advanced option](#advanced-options) menu in the configuration.
 - Selector
@@ -460,6 +463,9 @@ The yaml is generated on start and when a program configuration is created or mo
 Insert the generated yaml into a Manual Card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+###  V2025.04.01
+- Add Dutch translations
+- Add support for B-Hyve
 ### V2024.12.01
 **Breaking Change**
 - Recommend removing and re-adding the configuration
