@@ -465,7 +465,9 @@ Insert the generated yaml into a Manual Card.
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ###  V2025.04.01
 - Add Dutch translations
-- Add support for B-Hyve
+- Add support for B-Hyve (Beta)
+- Change remaining time from Duration to Date, renders sensor as h:mm:ss now.
+
 ### V2024.12.01
 **Breaking Change**
 - Recommend removing and re-adding the configuration
