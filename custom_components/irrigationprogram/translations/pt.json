@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"min_sec": {
+			"options": {
+				"minutes": "Minutes",
+				"seconds": "Seconds"
+			}
+		},
 		"start_type": {
 			"options": {
 				"selector":"Seletor de Horário",
@@ -18,6 +24,13 @@
 			"options": {
 				"stop": "Parar o programa",
 				"continue": "Continuar o programa até ao fim"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
+				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
+				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
 			}
 		}
 	},
@@ -192,6 +205,7 @@
 					"start_type":"Opções de hora de início",
 					"interlock": "Impedir que os programas sejam executados em simultâneo",
 					"rain_behaviour": "Comportamento do sensor de chuva",
+					"min_sec": "Watering time unit",
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
@@ -227,6 +241,7 @@
 					"start_type":"Opções de hora de início",
 					"interlock": "Impedir que os programas sejam executados em simultâneo",
 					"rain_behaviour": "Comportamento do sensor de chuva",
+					"min_sec": "Watering time unit",
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
