@@ -27,6 +27,7 @@ from .const import (
     ATTR_FLOW_SENSOR,
     ATTR_GROUPS,
     ATTR_INTERLOCK,
+    ATTR_MIN_SEC,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_SENSOR,
@@ -119,6 +120,7 @@ class IrrigationProgram:
     inter_zone_delay: NumberEntity  # generated
     interlock: bool
     zone_count: int
+    min_sec: str  # minutes|seconds
     water_max: int
     water_step: int
     parallel: int
@@ -153,6 +155,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         inter_zone_delay=None,
         interlock=config.get(ATTR_INTERLOCK, True),
         zone_count=len(config.get(ATTR_ZONES)),
+        min_sec=config.get(ATTR_MIN_SEC, "minutes"),
         water_max=config.get("water_max", 30),
         water_step=config.get("water_step", 1),
         parallel=config.get("parallel", 1),
@@ -204,7 +207,7 @@ def exclude(hass: HomeAssistant):
     output = []
     for e in hass.config_entries.async_entries(DOMAIN):
         if e.state == ConfigEntryState.NOT_LOADED:
-            #this config is disabled
+            # this config is disabled
             continue
         i: IrrigationData = e.runtime_data
         p: IrrigationProgram = i.program
@@ -266,78 +269,81 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_stop_programs(hass, ignore_program):
-    """Stop all running programs."""
-
-    for n, data in enumerate(hass.data[DOMAIN].values()):
-        if data.get(ATTR_NAME) == ignore_program:
-            continue
-        device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME, "unknown")))
-        servicedata = {ATTR_ENTITY_ID: device}
-        # warn if the program is terminated
-        await asyncio.sleep(n)
-
-        if hass.states.get(device).state == "on":
-            async_create(
-                hass,
-                message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {ignore_program}",
-                title="Irrigation Controller",
-            )
-            await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
-
-# async def async_stop_programs_new(hass, calling_program):
+# async def async_stop_programs(hass, ignore_program):
 #     """Stop all running programs."""
-#     async def stop_program():
+
+#     for n, data in enumerate(hass.data[DOMAIN].values()):
+#         if data.get(ATTR_NAME) == ignore_program:
+#             continue
 #         device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME, "unknown")))
 #         servicedata = {ATTR_ENTITY_ID: device}
+#         # warn if the program is terminated
+#         await asyncio.sleep(n)
+
 #         if hass.states.get(device).state == "on":
 #             async_create(
 #                 hass,
-#                 message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {calling_program.name}",
+#                 message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {ignore_program}",
 #                 title="Irrigation Controller",
 #             )
 #             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
-#     if calling_program.interlock == 'strict':
-#         # turn off all running programs
-#         pass
 
-#     match calling_program.interlock:
-#         case 'OFF':
-#             #terminate only 'STRICT' programs
-#             for n, data in enumerate(hass.data[DOMAIN].values()):
-#                 if data.get(ATTR_NAME) == calling_program.name:
-#                     continue
-#                 if data.get(ATTR_INTERLOCK) != 'STRICT':
-#                     continue
-#                 await asyncio.sleep(n)
-#                 await stop_program()
-#         case _:
-#             #terminate all running programs
-#             for n, data in enumerate(hass.data[DOMAIN].values()):
-#                 if data.get(ATTR_NAME) == calling_program.name:
-#                     continue
-#                 await asyncio.sleep(n)
-#                 await stop_program()
+async def async_stop_programs_new(hass, calling_program):
+    """Stop all running programs."""
+
+    async def stop_program():
+        device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME, "unknown")))
+        servicedata = {ATTR_ENTITY_ID: device}
+        if hass.states.get(device).state == "on":
+            async_create(
+                hass,
+                message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {calling_program.name}",
+                title="Irrigation Controller",
+            )
+            await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
+
+    match calling_program.interlock:
+        case "off":
+            # terminate only 'STRICT' programs
+            for n, data in enumerate(hass.data[DOMAIN].values()):
+                if data.get(ATTR_NAME) == calling_program.name:
+                    continue
+                if data.get(ATTR_INTERLOCK) != "strict":
+                    continue
+                await asyncio.sleep(n)
+                await stop_program()
+        case _:
+            # terminate all running programs
+            for n, data in enumerate(hass.data[DOMAIN].values()):
+                if data.get(ATTR_NAME) == calling_program.name:
+                    continue
+                await asyncio.sleep(n)
+                await stop_program()
+
 
 async def async_setup(hass: HomeAssistant, config):
     """Irrigation object."""
-    hass.data.setdefault(DOMAIN, {})
 
+    hass.data.setdefault(DOMAIN, {})
+    #    if not config.get("card_yaml", False):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
-    utils.register_static_path(
-        hass.http.app,
-        "/irrigationprogram/www/irrigation-card.js",
-        path / "irrigation-card.js",
-    )
 
-    # 2. Add card to resources
-    version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
-    await utils.init_resource(
-        hass, "/irrigationprogram/www/irrigation-card.js", str(version)
-    )
+    try:
+        utils.register_static_path(
+            hass.http.app,
+            "/irrigationprogram/www/irrigation-card.js",
+            path / "irrigation-card.js",
+        )
 
+        # 2. Add card to resources
+        version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
+        await utils.init_resource(
+            hass, "/irrigationprogram/www/irrigation-card.js", str(version)
+        )
+    except:
+        pass
     return True
 
 
@@ -495,10 +501,18 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
         hass.config_entries.async_update_entry(config_entry, data=new, version=6)
 
-    # if config_entry.version == 6:
+    if config_entry.version == 6:
+        if config_entry.options == {}:
+            new = {**config_entry.data}
+        else:
+            new = {**config_entry.options}
 
-    #     hass.config_entries.async_update_entry(config_entry, data=new, version=7)
-
+        if new.get(ATTR_INTERLOCK, True):
+            new.update({ATTR_INTERLOCK: "strict"})
+        else:
+            new.update({ATTR_INTERLOCK: "off"})
+        new[ATTR_MIN_SEC] = "minutes"
+        hass.config_entries.async_update_entry(config_entry, data=new, version=7)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True

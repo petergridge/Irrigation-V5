@@ -24,6 +24,7 @@ from .const import (
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
     ATTR_INTERLOCK,
+    ATTR_MIN_SEC,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_SENSOR,
@@ -37,21 +38,19 @@ from .const import (
 )
 from .utils import bubble_sort
 
-OPTIONS_DAYS_GROUPED:list =[
-           'Wed,Sat',
-           'Thu,Sun']
-OPTIONS_DAYS_OF_WEEK:list = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-OPTIONS_DAYS:list = ['1','2','3','4','5']
+OPTIONS_DAYS_GROUPED: list = ["Wed,Sat", "Thu,Sun"]
+OPTIONS_DAYS_OF_WEEK: list = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+OPTIONS_DAYS: list = ["1", "2", "3", "4", "5"]
 
 _LOGGER = logging.getLogger(__name__)
 
-@config_entries.HANDLERS.register(DOMAIN)
 
+@config_entries.HANDLERS.register(DOMAIN)
 class IrrigationFlowHandler(config_entries.ConfigFlow):
     """FLow handler."""
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
-    VERSION = 6
+    VERSION = 7
 
     def __init__(self) -> None:
         """Initialise."""
@@ -63,17 +62,15 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         self._exclude = []
         self.zoneselect = None
 
-    async def async_step_user(
-        self, user_input=None
-    ):
+    async def async_step_user(self, user_input=None):
         """Initiate a flow via the user interface."""
         self._exclude = exclude(self.hass)
-        for zone in self._data.get(ATTR_ZONES,[]):
+        for zone in self._data.get(ATTR_ZONES, []):
             self._exclude.append(zone.get(ATTR_ZONE))
 
         errors: dict[str, str] = {}
         if user_input is not None:
-            #validate freq options
+            # validate freq options
             # 1 or 'mon,tue,fri' formats are valid
             # if list must be in mon, tue, wed, thu, fri, sat, sun
             # if not list must be numeric or mon, tue, wed, thu, fri, sat, sun
@@ -86,7 +83,14 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         cleanoptions.append(option)
                         continue
                 except ValueError:
-                    optionlist = option.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
+                    optionlist = (
+                        option.replace(" ", "")
+                        .replace("\n", "")
+                        .replace("'", "")
+                        .replace('"', "")
+                        .strip("[]'")
+                        .split(",")
+                    )
                     optionlist = [x.capitalize() for x in optionlist]
                     if len(optionlist) > 1:
                         for item in optionlist:
@@ -94,7 +98,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                                 errors["freq_options"] = "invalid_days_group"
                                 break
                         else:
-                            cleanoptions.append(', '.join(item))
+                            cleanoptions.append(", ".join(item))
                             continue
                     if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
                         cleanoptions.append(optionlist[0])
@@ -109,10 +113,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 # Input is valid, set data.
                 for attr in user_input:
                     self._data[attr] = user_input[attr]
-                self._data[ATTR_START_TYPE] = self._data.get(ATTR_START_TYPE,"selector")
-                self._data[ATTR_INTERLOCK] = self._data.get(ATTR_INTERLOCK,True)
+                self._data[ATTR_START_TYPE] = self._data.get(
+                    ATTR_START_TYPE, "selector"
+                )
+                self._data[ATTR_INTERLOCK] = self._data.get(ATTR_INTERLOCK, "strict")
                 # Return the form of the next step.
-                if len(self._data.get(ATTR_ZONES,[])) == 0:
+                if len(self._data.get(ATTR_ZONES, [])) == 0:
                     return await self.async_step_add_zone()
                 return await self.async_step_menu()
 
@@ -126,45 +132,64 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_NAME,description={"suggested_value":default_input.get(CONF_NAME,None)}): str,
-                vol.Optional("freq", description={"suggested_value":default_input.get("freq",True)}): cv.boolean,
-                vol.Required("freq_options",description={"suggested_value":default_input.get("freq_options",OPTIONS_DAYS)}): sel.SelectSelector ({
-                    "options": OPTIONS_DAYS+OPTIONS_DAYS_OF_WEEK+OPTIONS_DAYS_GROUPED,
-                    "multiple": True,
-                    "custom_value": True,
-                    "translation_key": "freq_options"
-                }),
-                vol.Optional(ATTR_DEVICE_TYPE,default=default_input.get(ATTR_DEVICE_TYPE,"generic")): sel.SelectSelector({"options": ["generic", "rainbird"], "translation_key":ATTR_DEVICE_TYPE}),
+                vol.Required(
+                    CONF_NAME,
+                    description={"suggested_value": default_input.get(CONF_NAME, None)},
+                ): str,
+                vol.Optional(
+                    "freq",
+                    description={"suggested_value": default_input.get("freq", True)},
+                ): cv.boolean,
+                vol.Required(
+                    "freq_options",
+                    description={
+                        "suggested_value": default_input.get(
+                            "freq_options", OPTIONS_DAYS
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": OPTIONS_DAYS
+                        + OPTIONS_DAYS_OF_WEEK
+                        + OPTIONS_DAYS_GROUPED,
+                        "multiple": True,
+                        "custom_value": True,
+                        "translation_key": "freq_options",
+                    }
+                ),
+                vol.Optional(
+                    ATTR_DEVICE_TYPE,
+                    default=default_input.get(ATTR_DEVICE_TYPE, "generic"),
+                ): sel.SelectSelector(
+                    {
+                        "options": ["generic", "rainbird", "bhyve"],
+                        "translation_key": ATTR_DEVICE_TYPE,
+                    }
+                ),
             }
         )
 
-        return self.async_show_form(
-            step_id="user", data_schema=schema, errors=errors
-        )
+        return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
     async def async_step_menu(self, user_input=None):
-        '''Add or finalise the flow.'''
+        """Add or finalise the flow."""
         self._exclude = exclude(self.hass)
-        for zone in self._data.get(ATTR_ZONES,[]):
+        for zone in self._data.get(ATTR_ZONES, []):
             self._exclude.append(zone.get(ATTR_ZONE))
 
-        xmenu_options = ["user","add_zone"]
-        if len(self._data.get(ATTR_ZONES,[])) > 0:
+        xmenu_options = ["user", "add_zone"]
+        if len(self._data.get(ATTR_ZONES, [])) > 0:
             xmenu_options.extend(["update_zone"])
-        if len(self._data.get(ATTR_ZONES,[])) > 1:
+        if len(self._data.get(ATTR_ZONES, [])) > 1:
             xmenu_options.extend(["delete_zone"])
-        xmenu_options.extend(["advanced","finalise"])
+        xmenu_options.extend(["advanced", "finalise"])
 
-        return self.async_show_menu(
-            step_id="menu",
-            menu_options=xmenu_options
-        )
+        return self.async_show_menu(step_id="menu", menu_options=xmenu_options)
 
     async def async_step_add_zone(self, user_input=None):
         """Add a zone step."""
         errors = {}
         if user_input is not None:
-
             if user_input.get(ATTR_ZONE) is None:
                 errors[ATTR_ZONE] = "mandatory"
 
@@ -176,9 +201,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 # add zone to the exclusion list
                 self._exclude.append(user_input.get(ATTR_ZONE))
 
-                if self._data.get(ATTR_ZONES,[]) == []:
-                    #first zone
-                    self._data[ATTR_ZONES]=[]
+                if self._data.get(ATTR_ZONES, []) == []:
+                    # first zone
+                    self._data[ATTR_ZONES] = []
                 self._data[ATTR_ZONES].append(zone_data)
                 return await self.async_step_menu()
 
@@ -188,19 +213,72 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         else:
             default_input = user_input
 
-        default_order = (len(self._data.get(ATTR_ZONES,[]))+1)*10 #increment by 10
+        default_order = (
+            len(self._data.get(ATTR_ZONES, [])) + 1
+        ) * 10  # increment by 10
 
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE, description={"suggested_value": default_input.get(ATTR_ZONE)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional("freq", description={"suggested_value": default_input.get("freq",False)}): cv.boolean,
-                vol.Optional("eco", description={"suggested_value":default_input.get("eco",False)}): cv.boolean,
-                vol.Optional(ATTR_PUMP, description={"suggested_value": default_input.get(ATTR_PUMP)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_FLOW_SENSOR, description={"suggested_value": default_input.get(ATTR_FLOW_SENSOR)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_ADJUST, description={"suggested_value": default_input.get(ATTR_WATER_ADJUST)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_RAIN_SENSOR, description={"suggested_value": default_input.get(ATTR_RAIN_SENSOR)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_SOURCE, description={"suggested_value": default_input.get(ATTR_WATER_SOURCE)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_ZONE_ORDER, description={"suggested_value": default_input.get(ATTR_ZONE_ORDER,default_order)}): sel.NumberSelector({"min":1, "max":999, "mode":"box"}),
+                vol.Optional(
+                    ATTR_ZONE,
+                    description={"suggested_value": default_input.get(ATTR_ZONE)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    "freq",
+                    description={"suggested_value": default_input.get("freq", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    "eco",
+                    description={"suggested_value": default_input.get("eco", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_PUMP,
+                    description={"suggested_value": default_input.get(ATTR_PUMP)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_FLOW_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_ADJUST,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_ADJUST)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_RAIN_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_SOURCE)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_ZONE_ORDER,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_ZONE_ORDER, default_order
+                        )
+                    },
+                ): sel.NumberSelector({"min": 1, "max": 999, "mode": "box"}),
             }
         )
 
@@ -211,12 +289,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_delete_zone(self, user_input=None):
-        '''Delete a zone.'''
+        """Delete a zone."""
         errors = {}
 
         if user_input is not None:
             if user_input == {}:
-                #no data provided return to the menu
+                # no data provided return to the menu
                 return await self.async_step_menu()
 
             zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
@@ -226,12 +304,16 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         # build list of zones
         zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
         # build the options list
-        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        optionslist = [
+            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        ]
         list_schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
-                    "options": optionslist,
-                })
+                vol.Optional(ATTR_ZONE): sel.SelectSelector(
+                    {
+                        "options": optionslist,
+                    }
+                )
             }
         )
         return self.async_show_form(
@@ -239,29 +321,33 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_update_zone(self, user_input=None):
-        '''List zones for Update.'''
+        """List zones for Update."""
         errors = {}
 
         if user_input is not None:
             if user_input == {}:
-                #no data provided return to the menu
+                # no data provided return to the menu
                 return await self.async_step_menu()
             # Input is valid, set data.
             self.zoneselect = user_input
             # Return the form of the next step.
             return await self.async_step_update_zone_data()
 
-        #sort and display the selection list
+        # sort and display the selection list
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
         # build list of zones
         zones = [zone[ATTR_ZONE] for zone in sortedzones]
         # build the options list
-        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        optionslist = [
+            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        ]
         list_schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
-                    "options": optionslist,
-                })
+                vol.Optional(ATTR_ZONE): sel.SelectSelector(
+                    {
+                        "options": optionslist,
+                    }
+                )
             }
         )
 
@@ -270,7 +356,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         )
 
     async def async_step_update_zone_data(self, user_input=None):
-        '''Update zone.'''
+        """Update zone."""
         errors = {}
         newdata = {}
         newdata.update(self._data)
@@ -305,15 +391,64 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         zone_exclude.pop(zone_exclude.index(this_zone.get(ATTR_ZONE)))
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE, description={"suggested_value":default_input.get(ATTR_ZONE)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":zone_exclude}),
-                vol.Optional("freq", description={"suggested_value":default_input.get("freq",False)}): cv.boolean,
-                vol.Optional("eco", description={"suggested_value":default_input.get("eco",False)}): cv.boolean,
-                vol.Optional(ATTR_PUMP, description={"suggested_value":default_input.get(ATTR_PUMP)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_FLOW_SENSOR, description={"suggested_value":default_input.get(ATTR_FLOW_SENSOR)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_ADJUST, description={"suggested_value":default_input.get(ATTR_WATER_ADJUST)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_RAIN_SENSOR, description={"suggested_value":default_input.get(ATTR_RAIN_SENSOR)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_SOURCE, description={"suggested_value":default_input.get(ATTR_WATER_SOURCE)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_ZONE_ORDER, description={"suggested_value":default_input.get(ATTR_ZONE_ORDER,10)}): sel.NumberSelector({"min":1, "max":999, "mode":"box"}),
+                vol.Optional(
+                    ATTR_ZONE,
+                    description={"suggested_value": default_input.get(ATTR_ZONE)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": zone_exclude}
+                ),
+                vol.Optional(
+                    "freq",
+                    description={"suggested_value": default_input.get("freq", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    "eco",
+                    description={"suggested_value": default_input.get("eco", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_PUMP,
+                    description={"suggested_value": default_input.get(ATTR_PUMP)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_FLOW_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_ADJUST,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_ADJUST)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_RAIN_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_SOURCE)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_ZONE_ORDER,
+                    description={
+                        "suggested_value": default_input.get(ATTR_ZONE_ORDER, 10)
+                    },
+                ): sel.NumberSelector({"min": 1, "max": 999, "mode": "box"}),
             }
         )
 
@@ -323,7 +458,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             errors=errors,
         )
 
-
     async def async_step_advanced(self, user_input=None):
         """Add a zone step."""
         errors = {}
@@ -332,10 +466,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
                 self._data[ATTR_START_TYPE] = user_input[ATTR_START_TYPE]
                 self._data[ATTR_RAIN_BEHAVIOUR] = user_input[ATTR_RAIN_BEHAVIOUR]
-                self._data['water_max'] = user_input['water_max']
-                self._data['water_step'] = user_input['water_step']
-                self._data['parallel'] = user_input['parallel']
-                self._data['card_yaml'] = user_input['card_yaml']
+                self._data["water_max"] = user_input["water_max"]
+                self._data["water_step"] = user_input["water_step"]
+                self._data["parallel"] = user_input["parallel"]
+                self._data["card_yaml"] = user_input["card_yaml"]
                 return await self.async_step_menu()
 
         if user_input:
@@ -347,13 +481,87 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_INTERLOCK, description={"suggested_value": default_input.get(ATTR_INTERLOCK,True)}): cv.boolean,
-                vol.Optional(ATTR_START_TYPE, description={"suggested_value": default_input.get(ATTR_START_TYPE,"selector")}): sel.SelectSelector({"options": ["selector","multistart","sunrise", "sunset"], "translation_key":ATTR_START_TYPE}),
-                vol.Optional(ATTR_RAIN_BEHAVIOUR, description={"suggested_value": default_input.get(ATTR_RAIN_BEHAVIOUR,"stop")}): sel.SelectSelector({"options": ["stop","continue"], "translation_key":ATTR_RAIN_BEHAVIOUR}),
-                vol.Optional('water_max', description={"suggested_value": default_input.get('water_max',30)}): sel.NumberSelector({"min":1, "max":9999, "mode":"box"}),
-                vol.Optional('water_step', description={"suggested_value": default_input.get('water_step',1)}): sel.NumberSelector({"min":1, "max":100, "mode":"box"}),
-                vol.Optional('parallel', description={"suggested_value": default_input.get('parallel',1)}): sel.NumberSelector({"min":1, "max":10, "mode":"box"}),
-                vol.Optional('card_yaml', description={"suggested_value": default_input.get('card_yaml',False)}): cv.boolean,
+                # vol.Optional(
+                #     ATTR_INTERLOCK,
+                #     description={
+                #         "suggested_value": default_input.get(ATTR_INTERLOCK, True)
+                #     },
+                # ): cv.boolean,
+                # 1 - Strict
+                #     turn off other programs when starting
+                #     turn off when another program starts
+                # 2 - loose
+                #     turn off all other programs when starting
+                #     stay running unless a 'strict' program starts
+                # 3 - off
+                #     turn off 'strict' programs only
+                #     stay running unless a 'strict' program starts
+                vol.Optional(
+                    ATTR_INTERLOCK,
+                    description={
+                        "suggested_value": default_input.get(ATTR_INTERLOCK, "strict")
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["strict", "loose", "off"],
+                        "translation_key": ATTR_INTERLOCK,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_START_TYPE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_START_TYPE, "selector"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["selector", "multistart", "sunrise", "sunset"],
+                        "translation_key": ATTR_START_TYPE,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_RAIN_BEHAVIOUR,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_RAIN_BEHAVIOUR, "stop"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["stop", "continue"],
+                        "translation_key": ATTR_RAIN_BEHAVIOUR,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_MIN_SEC,
+                    description={
+                        "suggested_value": default_input.get(ATTR_MIN_SEC, "minutes")
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["minutes", "seconds"],
+                        "translation_key": ATTR_MIN_SEC,
+                    }
+                ),
+                vol.Optional(
+                    "water_max",
+                    description={"suggested_value": default_input.get("water_max", 30)},
+                ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
+                vol.Optional(
+                    "water_step",
+                    description={"suggested_value": default_input.get("water_step", 1)},
+                ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
+                vol.Optional(
+                    "parallel",
+                    description={"suggested_value": default_input.get("parallel", 1)},
+                ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
+                vol.Optional(
+                    "card_yaml",
+                    description={
+                        "suggested_value": default_input.get("card_yaml", False)
+                    },
+                ): cv.boolean,
             }
         )
 
@@ -365,9 +573,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
     async def async_step_finalise(self, user_input=None):
         """Second step in config flow to add a repo to watch."""
-        errors={}
-        #must have at least one zone defined
-        if self._data.get(ATTR_ZONES,[])==[]:
+        errors = {}
+        # must have at least one zone defined
+        if self._data.get(ATTR_ZONES, []) == []:
             errors["base"] = "zone_required"
             return self.async_show_form(
                 step_id="menu",
@@ -375,22 +583,22 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             )
 
         # User is done adding, create the config entry.
-        return self.async_create_entry(
-            title=self._data.get(CONF_NAME), data=self._data
-        )
+        return self.async_create_entry(title=self._data.get(CONF_NAME), data=self._data)
 
-#--- Options Flow ----------------------------------------------
+    # --- Options Flow ----------------------------------------------
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
         """Create option flow handler."""
         return OptionsFlowHandler(config_entry)
 
+
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    '''Option flow.'''
+    """Option flow."""
 
     VERSION = 5
-    def __init__(self, config_entry:config_entries.ConfigEntry) -> None:
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialise option flow."""
         self._name = config_entry.data.get(CONF_NAME)
         self.zoneselect = None
@@ -405,14 +613,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self._delete = []
 
     async def async_step_user(self, user_input=None):
-        '''Initialise step? work around from HA v2023.11.'''
-        #does nothing but must be there, go figure
+        """Initialise step? work around from HA v2023.11."""
+        # does nothing but must be there, go figure
         return
 
     async def async_step_init(self, user_input=None):
-        '''Initialise step.'''
+        """Initialise step."""
         self._exclude = []
-        for zone in self._data.get(ATTR_ZONES,[]):
+        for zone in self._data.get(ATTR_ZONES, []):
             self._exclude.append(zone.get(ATTR_ZONE))
         self._exclude.extend(exclude(self.hass))
 
@@ -423,7 +631,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         zones = [zone for zone in zones if zone not in self._delete]
         if len(zones) > 1:
             xmenu_options.extend(["delete_zone"])
-        xmenu_options.extend(["advanced","finalise"])
+        xmenu_options.extend(["advanced", "finalise"])
         return self.async_show_menu(
             step_id="user",
             menu_options=xmenu_options,
@@ -438,27 +646,27 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             sortedzones.pop(zonenumber)
 
         for zone in sortedzones:
-            if zone['freq'] is False:
+            if zone["freq"] is False:
                 # ensure defaulted freq is removed
                 friendlyname = zone.get(ATTR_ZONE).split(".")[1]
-                await self.get_er('select', slugify(f'{self._uid}_{friendlyname}_frequency'))
+                await self.get_er(
+                    "select", slugify(f"{self._uid}_{friendlyname}_frequency")
+                )
 
-        newdata.update({ATTR_ZONES:sortedzones})
-        #the top level of the dictionary needs to change
+        newdata.update({ATTR_ZONES: sortedzones})
+        # the top level of the dictionary needs to change
         localtimezone = ZoneInfo(self.hass.config.time_zone)
         updated = datetime.now(localtimezone).strftime("%Y-%m-%d %H:%M:%S.%f")
-        newdata.update({'updated': updated})
+        newdata.update({"updated": updated})
 
         if len(sortedzones) == 1:
-            await self.get_er('number', slugify(f'{self._uid}_inter_zone_delay'))
-        #remove entities for deleted zones
+            await self.get_er("number", slugify(f"{self._uid}_inter_zone_delay"))
+        # remove entities for deleted zones
         for delete in self._remove:
             er.async_get(self.hass).async_remove(delete)
 
         # User is done adding, create the config entry.
-        return self.async_create_entry(
-            title=self._data.get(CONF_NAME), data=newdata
-        )
+        return self.async_create_entry(title=self._data.get(CONF_NAME), data=newdata)
 
     async def async_step_advanced(self, user_input=None):
         """Add a zone step."""
@@ -469,21 +677,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if not errors:
                 newdata[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
                 newdata[ATTR_START_TYPE] = user_input[ATTR_START_TYPE]
-                newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(ATTR_RAIN_BEHAVIOUR,'stop')
-                newdata['water_max'] = user_input['water_max']
-                newdata['water_step'] = user_input['water_step']
-                newdata['parallel'] = user_input['parallel']
-                newdata['card_yaml'] = user_input['card_yaml']
+                newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
+                    ATTR_RAIN_BEHAVIOUR, "stop"
+                )
+                newdata[ATTR_MIN_SEC] = user_input[ATTR_MIN_SEC]
+                newdata["water_max"] = user_input["water_max"]
+                newdata["water_step"] = user_input["water_step"]
+                newdata["parallel"] = user_input["parallel"]
+                newdata["card_yaml"] = user_input["card_yaml"]
                 # Return the form of the next step.
                 self._data = newdata
                 if user_input[ATTR_START_TYPE] not in ["sunset"]:
-                    await self.get_er('number',slugify(f'{self._uid}_sunset_offset'))
+                    await self.get_er("number", slugify(f"{self._uid}_sunset_offset"))
                 if user_input[ATTR_START_TYPE] not in ["sunrise"]:
-                    await self.get_er('number',slugify(f'{self._uid}_sunrise_offset'))
+                    await self.get_er("number", slugify(f"{self._uid}_sunrise_offset"))
                 if user_input[ATTR_START_TYPE] in ["multistart"]:
-                    await self.get_er('time',slugify(f'{self._uid}_start_time'))
+                    await self.get_er("time", slugify(f"{self._uid}_start_time"))
                 if user_input[ATTR_START_TYPE] not in ["multistart"]:
-                    await self.get_er('text',slugify(f'{self._uid}_start_times'))
+                    await self.get_er("text", slugify(f"{self._uid}_start_times"))
                 return await self.async_step_init()
 
         if user_input:
@@ -496,15 +707,81 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # build a dict including entered values on error
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_INTERLOCK, description={"suggested_value":default_input.get(ATTR_INTERLOCK,True)}): cv.boolean,
-                vol.Optional(ATTR_START_TYPE, description={"suggested_value":default_input.get(ATTR_START_TYPE)}): sel.SelectSelector({
-                    "options": ["selector","multistart","sunrise", "sunset"],
-                    "translation_key":ATTR_START_TYPE}),
-                vol.Optional(ATTR_RAIN_BEHAVIOUR, description={"suggested_value": default_input.get(ATTR_RAIN_BEHAVIOUR,"stop")}): sel.SelectSelector({"options": ["stop","continue"], "translation_key":ATTR_RAIN_BEHAVIOUR}),
-                vol.Optional('water_max', description={"suggested_value": default_input.get('water_max',30)}): sel.NumberSelector({"min":1, "max":9999, "mode":"box"}),
-                vol.Optional('water_step', description={"suggested_value": default_input.get('water_step',1)}): sel.NumberSelector({"min":1, "max":100, "mode":"box"}),
-                vol.Optional('parallel', description={"suggested_value": default_input.get('parallel',1)}): sel.NumberSelector({"min":1, "max":10, "mode":"box"}),
-                vol.Optional('card_yaml', description={"suggested_value": default_input.get('card_yaml',1)}): cv.boolean,
+                # vol.Optional(
+                #     ATTR_INTERLOCK,
+                #     description={
+                #         "suggested_value": default_input.get(ATTR_INTERLOCK, True)
+                #     },
+                # ): cv.boolean,
+                # 1 - Strict
+                #     turn off other programs when starting
+                #     turn off when another program starts
+                # 2 - loose
+                #     turn off all other programs when starting
+                #     stay running unless a 'strict' program starts
+                # 3 - off
+                #     turn off 'strict' programs only
+                #     stay running unless a 'strict' program starts
+                vol.Optional(
+                    ATTR_INTERLOCK,
+                    description={
+                        "suggested_value": default_input.get(ATTR_INTERLOCK, "strict")
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["strict", "loose", "off"],
+                        "translation_key": ATTR_INTERLOCK,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_START_TYPE,
+                    description={"suggested_value": default_input.get(ATTR_START_TYPE)},
+                ): sel.SelectSelector(
+                    {
+                        "options": ["selector", "multistart", "sunrise", "sunset"],
+                        "translation_key": ATTR_START_TYPE,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_RAIN_BEHAVIOUR,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_RAIN_BEHAVIOUR, "stop"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["stop", "continue"],
+                        "translation_key": ATTR_RAIN_BEHAVIOUR,
+                    }
+                ),
+                vol.Optional(
+                    ATTR_MIN_SEC,
+                    description={
+                        "suggested_value": default_input.get(ATTR_MIN_SEC, "minutes")
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["minutes", "seconds"],
+                        "translation_key": ATTR_MIN_SEC,
+                    }
+                ),
+                vol.Optional(
+                    "water_max",
+                    description={"suggested_value": default_input.get("water_max", 30)},
+                ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
+                vol.Optional(
+                    "water_step",
+                    description={"suggested_value": default_input.get("water_step", 1)},
+                ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
+                vol.Optional(
+                    "parallel",
+                    description={"suggested_value": default_input.get("parallel", 1)},
+                ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
+                vol.Optional(
+                    "card_yaml",
+                    description={"suggested_value": default_input.get("card_yaml", 1)},
+                ): cv.boolean,
             }
         )
         return self.async_show_form(
@@ -520,7 +797,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
 
         if user_input is not None:
-
             newdata.update(user_input)
             cleanoptions = []
 
@@ -530,7 +806,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         cleanoptions.append(option)
                         continue
                 except ValueError:
-                    optionlist = option.replace(" ","").replace("\n","").replace("'","").replace('"',"").strip("[]'").split(",")
+                    optionlist = (
+                        option.replace(" ", "")
+                        .replace("\n", "")
+                        .replace("'", "")
+                        .replace('"', "")
+                        .strip("[]'")
+                        .split(",")
+                    )
                     optionlist = [x.capitalize() for x in optionlist]
                     if len(optionlist) > 1:
                         for item in optionlist:
@@ -538,7 +821,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                                 errors["freq_options"] = "invalid_days_group"
                                 break
                         else:
-                            cleanoptions.append(', '.join(optionlist))
+                            cleanoptions.append(", ".join(optionlist))
                             continue
                     if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
                         cleanoptions.append(optionlist[0])
@@ -550,10 +833,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             newdata["freq_options"] = cleanoptions
 
             if not errors:
-                if user_input['freq'] is False:
-                    await self.get_er('select', slugify(f'{self._uid}_frequency'))
+                if user_input["freq"] is False:
+                    await self.get_er("select", slugify(f"{self._uid}_frequency"))
 
-            # Return the form of the next step.
+                # Return the form of the next step.
                 self._data = newdata
                 return await self.async_step_init()
 
@@ -566,17 +849,39 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = vol.Schema(
             {
-                #vol.Required(CONF_NAME): str,
-                vol.Optional("freq", description={"suggested_value":default_input.get("freq",True)}): cv.boolean,
-                vol.Required("freq_options",description={"suggested_value":default_input.get("freq_options",None)}): sel.SelectSelector ({
-                    "options": OPTIONS_DAYS+OPTIONS_DAYS_OF_WEEK+OPTIONS_DAYS_GROUPED,
-                    "multiple": True,
-                    "custom_value": True,
-                    "translation_key": "freq_options"
-                }),
-                vol.Optional(ATTR_DEVICE_TYPE,description={"suggested_value": default_input.get(ATTR_DEVICE_TYPE,"generic")}): sel.SelectSelector({
-                    "options": ["generic", "rainbird"],
-                    "translation_key":ATTR_DEVICE_TYPE}),
+                # vol.Required(CONF_NAME): str,
+                vol.Optional(
+                    "freq",
+                    description={"suggested_value": default_input.get("freq", True)},
+                ): cv.boolean,
+                vol.Required(
+                    "freq_options",
+                    description={
+                        "suggested_value": default_input.get("freq_options", None)
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": OPTIONS_DAYS
+                        + OPTIONS_DAYS_OF_WEEK
+                        + OPTIONS_DAYS_GROUPED,
+                        "multiple": True,
+                        "custom_value": True,
+                        "translation_key": "freq_options",
+                    }
+                ),
+                vol.Optional(
+                    ATTR_DEVICE_TYPE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_DEVICE_TYPE, "generic"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["generic", "rainbird", "bhyve"],
+                        "translation_key": ATTR_DEVICE_TYPE,
+                    }
+                ),
             }
         )
 
@@ -588,21 +893,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def get_er(self, domain, uid):
         """Get the entity_id from the unique id."""
-        entity_id =  er.async_get(self.hass).async_get_entity_id(
-            domain=domain,
-            platform='irrigationprogram',
-            unique_id=uid)
+        entity_id = er.async_get(self.hass).async_get_entity_id(
+            domain=domain, platform="irrigationprogram", unique_id=uid
+        )
         if entity_id:
             self._remove.append(entity_id)
 
-
     async def async_step_delete_zone(self, user_input=None):
-        '''Delete a zone.'''
+        """Delete a zone."""
         errors = {}
 
         if user_input is not None:
             if user_input == {}:
-                #no data provided return to the menu
+                # no data provided return to the menu
                 return await self.async_step_init()
             # find the position of the zone in the zones.
             zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
@@ -610,17 +913,25 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self._delete.append(user_input.get(ATTR_ZONE))
             # set up to remove entities when finalising
             friendlyname = user_input.get(ATTR_ZONE).split(".")[1]
-            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_config'))
-            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_ignore_sensors'))
-            await self.get_er('switch',slugify(f'{self._uid}_{friendlyname}_enable_zone'))
-            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_status'))
-            await self.get_er('select',slugify(f'{self._uid}_{friendlyname}_frequency'))
-            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_water'))
-            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_wait'))
-            await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_repeat'))
-            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_next_run'))
-            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_last_ran'))
-            await self.get_er('sensor',slugify(f'{self._uid}_{friendlyname}_remaining_time'))
+            await self.get_er("switch", slugify(f"{self._uid}_{friendlyname}_config"))
+            await self.get_er(
+                "switch", slugify(f"{self._uid}_{friendlyname}_ignore_sensors")
+            )
+            await self.get_er(
+                "switch", slugify(f"{self._uid}_{friendlyname}_enable_zone")
+            )
+            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_status"))
+            await self.get_er(
+                "select", slugify(f"{self._uid}_{friendlyname}_frequency")
+            )
+            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_water"))
+            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_wait"))
+            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_repeat"))
+            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_next_run"))
+            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_last_ran"))
+            await self.get_er(
+                "sensor", slugify(f"{self._uid}_{friendlyname}_remaining_time")
+            )
             return await self.async_step_init()
 
         # build list of zones
@@ -628,12 +939,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # remove zones already flagged for deletion
         zones = [zone for zone in zones if zone not in self._delete]
         # build the options list
-        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        optionslist = [
+            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        ]
         list_schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
-                    "options": optionslist,
-                })
+                vol.Optional(ATTR_ZONE): sel.SelectSelector(
+                    {
+                        "options": optionslist,
+                    }
+                )
             }
         )
         return self.async_show_form(
@@ -641,30 +956,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_zone(self, user_input=None):
-        '''List zones for Update.'''
+        """List zones for Update."""
         errors = {}
         if user_input is not None:
             if user_input == {}:
-                #no data provided return to the menu
+                # no data provided return to the menu
                 return await self.async_step_init()
             # Input is valid, set data.
             self.zoneselect = user_input
             # Return the form of the next step.
             return await self.async_step_update_zone_data()
 
-        #sort and display the selection list
+        # sort and display the selection list
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
         # build list of zones
         zones = [zone[ATTR_ZONE] for zone in sortedzones]
         # remove zones already flagged for deletion
         zones = [zone for zone in zones if zone not in self._delete]
         # build the options list
-        optionslist = [{'label':self.hass.states.get(zone).name, 'value':zone} for zone in zones]
+        optionslist = [
+            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        ]
         list_schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE): sel.SelectSelector ({
-                    "options": optionslist,
-                })
+                vol.Optional(ATTR_ZONE): sel.SelectSelector(
+                    {
+                        "options": optionslist,
+                    }
+                )
             }
         )
 
@@ -673,7 +992,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_update_zone_data(self, user_input=None):
-        '''Update zone.'''
+        """Update zone."""
         errors = {}
         newdata = {}
         newdata.update(self._data)
@@ -695,13 +1014,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 # update with the new data into the list of zones
                 newdata.get(ATTR_ZONES)[zone_pos] = zone_data
                 self._data = newdata
-                #remove the wait and repeate if ECO is disabled
+                # remove the wait and repeate if ECO is disabled
                 friendlyname = user_input[ATTR_ZONE].split(".")[1]
-                if user_input['eco'] is False:
-                    await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_wait_time'))
-                    await self.get_er('number',slugify(f'{self._uid}_{friendlyname}_repeat'))
-                if user_input['freq'] is False:
-                    await self.get_er('select', slugify(f'{self._uid}_{friendlyname}_frequency'))
+                if user_input["eco"] is False:
+                    await self.get_er(
+                        "number", slugify(f"{self._uid}_{friendlyname}_wait_time")
+                    )
+                    await self.get_er(
+                        "number", slugify(f"{self._uid}_{friendlyname}_repeat")
+                    )
+                if user_input["freq"] is False:
+                    await self.get_er(
+                        "select", slugify(f"{self._uid}_{friendlyname}_frequency")
+                    )
 
                 return await self.async_step_update_zone()
 
@@ -717,17 +1042,64 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         zone_exclude.pop(zone_exclude.index(this_zone.get(ATTR_ZONE)))
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE, description={"suggested_value":default_input.get(ATTR_ZONE)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":zone_exclude}),
-                vol.Optional("freq", description={"suggested_value":default_input.get("freq",False)}): cv.boolean,
-                vol.Optional("eco", description={"suggested_value":default_input.get("eco",False)}): cv.boolean,
-                vol.Optional(ATTR_PUMP, description={"suggested_value":default_input.get(ATTR_PUMP)}): sel.EntitySelector({"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_FLOW_SENSOR,
-                             description={"suggested_value":default_input.get(ATTR_FLOW_SENSOR)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_ADJUST,
-                              description={"suggested_value":default_input.get(ATTR_WATER_ADJUST)}): sel.EntitySelector({"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_RAIN_SENSOR, description={"suggested_value":default_input.get(ATTR_RAIN_SENSOR)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_SOURCE, description={"suggested_value":default_input.get(ATTR_WATER_SOURCE)}): sel.EntitySelector({"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_ZONE_ORDER, description={"suggested_value":default_input.get(ATTR_ZONE_ORDER,10)}): sel.NumberSelector({"min":1, "max":999, "mode":"box"}),
+                vol.Optional(
+                    ATTR_ZONE,
+                    description={"suggested_value": default_input.get(ATTR_ZONE)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": zone_exclude}
+                ),
+                vol.Optional(
+                    "freq",
+                    description={"suggested_value": default_input.get("freq", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    "eco",
+                    description={"suggested_value": default_input.get("eco", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_PUMP,
+                    description={"suggested_value": default_input.get(ATTR_PUMP)},
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_FLOW_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_ADJUST,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_ADJUST)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_RAIN_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_SOURCE)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_ZONE_ORDER,
+                    description={
+                        "suggested_value": default_input.get(ATTR_ZONE_ORDER, 10)
+                    },
+                ): sel.NumberSelector({"min": 1, "max": 999, "mode": "box"}),
             }
         )
 
@@ -738,13 +1110,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_add_zone(self, user_input=None):
-        '''Add zone.'''
+        """Add zone."""
         errors = {}
         newdata = {}
         newdata.update(self._data)
         if user_input is not None:
             if user_input == {}:
-                #not data input return to the menu
+                # not data input return to the menu
                 return await self.async_step_init()
 
             if user_input.get(ATTR_ZONE) is None:
@@ -752,7 +1124,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
             if not errors:
                 if user_input == {}:
-                    #not data input return to the menu
+                    # not data input return to the menu
                     return await self.async_step_init()
                 # Input is valid, set data.
                 zone_data = {}
@@ -769,35 +1141,67 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         else:
             default_input = user_input
 
-        default_order = (len(newdata.get(ATTR_ZONES))+1)*10 #increment by 10
+        default_order = (len(newdata.get(ATTR_ZONES)) + 1) * 10  # increment by 10
 
         schema = vol.Schema(
             {
-                vol.Optional(ATTR_ZONE,
-                             default=default_input.get(ATTR_ZONE,None)): sel.EntitySelector(
-                                {"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional("freq",
-                             default=default_input.get("freq",False)): cv.boolean,
-                vol.Optional("eco",
-                             description={"suggested_value":default_input.get("eco",False)}): cv.boolean,
-                vol.Optional(ATTR_PUMP,
-                             description=default_input.get(ATTR_PUMP,None)): sel.EntitySelector(
-                                {"domain": ["switch","valve"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_FLOW_SENSOR,
-                             description={"suggested_value":default_input.get(ATTR_FLOW_SENSOR,None)}): sel.EntitySelector(
-                                {"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_ADJUST,
-                             description={"suggested_value":default_input.get(ATTR_WATER_ADJUST,None)}): sel.EntitySelector(
-                                {"domain": ["sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_RAIN_SENSOR,
-                             description={"suggested_value":default_input.get(ATTR_RAIN_SENSOR,None)}): sel.EntitySelector(
-                                {"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_WATER_SOURCE,
-                             description={"suggested_value":default_input.get(ATTR_WATER_SOURCE,None)}): sel.EntitySelector(
-                                {"domain": ["binary_sensor"],"exclude_entities":self._exclude}),
-                vol.Optional(ATTR_ZONE_ORDER,
-                             description={"suggested_value":default_input.get(ATTR_ZONE_ORDER,default_order)}): sel.NumberSelector(
-                                {"min":1, "max":999,"mode":"box"}),
+                vol.Optional(
+                    ATTR_ZONE, default=default_input.get(ATTR_ZONE, None)
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    "freq", default=default_input.get("freq", False)
+                ): cv.boolean,
+                vol.Optional(
+                    "eco",
+                    description={"suggested_value": default_input.get("eco", False)},
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_PUMP, description=default_input.get(ATTR_PUMP, None)
+                ): sel.EntitySelector(
+                    {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_FLOW_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_FLOW_SENSOR, None)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_ADJUST,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_ADJUST, None)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_RAIN_SENSOR,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_SENSOR, None)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_SOURCE, None)
+                    },
+                ): sel.EntitySelector(
+                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                ),
+                vol.Optional(
+                    ATTR_ZONE_ORDER,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_ZONE_ORDER, default_order
+                        )
+                    },
+                ): sel.NumberSelector({"min": 1, "max": 999, "mode": "box"}),
             }
         )
 

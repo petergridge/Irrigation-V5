@@ -22,8 +22,8 @@ from . import (
     IrrigationData,
     IrrigationProgram as ProgramData,
     IrrigationZoneData as ZoneData,
-    async_stop_programs,
-#    async_stop_programs_new,
+    #    async_stop_programs,
+    async_stop_programs_new,
 )
 from .const import (
     ATTR_DELAY,
@@ -42,25 +42,26 @@ from .pump import PumpClass
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class IrrigationProgram(SwitchEntity, RestoreEntity):
     """Representation of an Irrigation program."""
 
     _attr_has_entity_name = True
     _attr_attribution = "Irrigation Program"
     _unrecorded_attributes = frozenset({MATCH_ALL})
-    _attr_translation_key = 'program'
+    _attr_translation_key = "program"
     _attr_should_poll = False
 
     def __init__(
-        self, hass: HomeAssistant, unique_id, device_id, runtime_data:IrrigationData
+        self, hass: HomeAssistant, unique_id, device_id, runtime_data: IrrigationData
     ) -> None:
         """Initialize a Irrigation program."""
         self._attr_unique_id = unique_id
         self._hass = hass
 
         self._name = runtime_data.program.name
-        self._program:ProgramData = runtime_data.program
-        self._zones:list[ZoneData] = runtime_data.zone_data
+        self._program: ProgramData = runtime_data.program
+        self._zones: list[ZoneData] = runtime_data.zone_data
 
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, device_id, hass=hass
@@ -79,17 +80,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_pause = None
 
         self._pumps = []
-        self._run_zones = [] #list of zones to run
-        self._running_zone = [] #list of currently running zones
+        self._run_zones = []  # list of zones to run
+        self._running_zone = []  # list of currently running zones
         self._extra_attrs = {}
 
         self._localtimezone = ZoneInfo(self._hass.config.time_zone)
 
-
-    def generate_card (self):
+    def generate_card(self):
         """Create card config yaml."""
 
-        def add_entity(object,conditions,simple=False):
+        def add_entity(object, conditions, simple=False):
             if object:
                 data = ""
                 data += "- type: conditional" + chr(10)
@@ -99,19 +99,19 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     for k, v in condition.items():
                         if x == 1:
                             data += "  - "
-                            x=2
+                            x = 2
                         else:
                             data += "    "
-                        data +=  k + ": " + v + chr(10)
+                        data += k + ": " + v + chr(10)
                 data += "  row:" + chr(10)
                 if simple:
-                    data += "    type: " + "simple-entity"  + chr(10)
-                data += "    entity: " + object.entity_id  + chr(10)
+                    data += "    type: " + "simple-entity" + chr(10)
+                data += "    entity: " + object.entity_id + chr(10)
 
                 return data
             return ""
 
-        def add_entity_2(object,conditions,simple=False):
+        def add_entity_2(object, conditions, simple=False):
             if object:
                 data = ""
                 data += "- type: conditional" + chr(10)
@@ -121,26 +121,26 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     for k, v in condition.items():
                         if x == 1:
                             data += "  - "
-                            x=2
+                            x = 2
                         else:
                             data += "    "
-                        data +=  k + ": " + v + chr(10)
+                        data += k + ": " + v + chr(10)
                 data += "  row:" + chr(10)
                 if simple:
-                    data += "    type: " + "simple-entity"  + chr(10)
-                data += "    entity: " + object  + chr(10)
+                    data += "    type: " + "simple-entity" + chr(10)
+                data += "    entity: " + object + chr(10)
 
                 return data
             return ""
 
-        card:str = "### Copy into manual card" + chr(10)
+        card: str = "### Copy into manual card" + chr(10)
         card += "```" + chr(10)
 
         card += "state_color: true" + chr(10)
         card += "show_header_toggle: false" + chr(10)
 
         card += "type: entities" + chr(10)
-        card += "entities:"  + chr(10)
+        card += "entities:" + chr(10)
         card += "- type: conditional" + chr(10)
         card += "  conditions:" + chr(10)
         card += "  - entity: " + self.entity_id + chr(10)
@@ -166,26 +166,29 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "    - entity: " + self._program.pause.entity_id + chr(10)
         card += "      show_name: true" + chr(10)
 
-        condition = [{ "entity": self.entity_id, "state_not": "on" },{ "entity": self._program.config.entity_id, "state_not": "on" }]
-        card += add_entity(self._program.start_time,condition,True)
+        condition = [
+            {"entity": self.entity_id, "state_not": "on"},
+            {"entity": self._program.config.entity_id, "state_not": "on"},
+        ]
+        card += add_entity(self._program.start_time, condition, True)
 
-        condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
+        condition = [{"entity": self._program.config.entity_id, "state": "on"}]
         if self._program.sunrise_offset or self._program.sunset_offset:
-            card += add_entity(self._program.start_time,condition,True)
+            card += add_entity(self._program.start_time, condition, True)
         else:
-            card += add_entity(self._program.start_time,condition)
-        card += add_entity(self._program.sunrise_offset,condition)
-        card += add_entity(self._program.sunset_offset,condition)
+            card += add_entity(self._program.start_time, condition)
+        card += add_entity(self._program.sunrise_offset, condition)
+        card += add_entity(self._program.sunset_offset, condition)
 
-        condition = [{ "entity": self.entity_id, "state": "on" }]
-        card += add_entity(self._program.remaining_time,condition)
+        condition = [{"entity": self.entity_id, "state": "on"}]
+        card += add_entity(self._program.remaining_time, condition)
 
-        condition = [{ "entity": self._program.config.entity_id, "state": "on" }]
-        card += add_entity(self._program.enabled,condition)
-        card += add_entity(self._program.frequency,condition)
-        card += add_entity(self._program.inter_zone_delay,condition)
+        condition = [{"entity": self._program.config.entity_id, "state": "on"}]
+        card += add_entity(self._program.enabled, condition)
+        card += add_entity(self._program.frequency, condition)
+        card += add_entity(self._program.inter_zone_delay, condition)
 
-        #now process the zones
+        # now process the zones
         for zone in self._zones:
             card += "- type: section" + chr(10)
             card += "  label: ''" + chr(10)
@@ -195,7 +198,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             card += "  - entity: " + zone.switch.entity_id + chr(10)
             card += "    state: off" + chr(10)
             card += "  row:" + chr(10)
-            card += "    type: buttons"   + chr(10)
+            card += "    type: buttons" + chr(10)
             card += "    entities: " + chr(10)
             card += "    - entity: " + zone.switch.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
@@ -213,7 +216,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             card += "  - entity: " + zone.switch.entity_id + chr(10)
             card += "    state_not: off" + chr(10)
             card += "  row:" + chr(10)
-            card += "    type: buttons"   + chr(10)
+            card += "    type: buttons" + chr(10)
             card += "    entities: " + chr(10)
             card += "    - entity: " + zone.switch.entity_id + chr(10)
             card += "      show_name: true" + chr(10)
@@ -228,38 +231,47 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             card += "    - entity: " + zone.status.entity_id + chr(10)
             card += "      show_name: false" + chr(10)
 
-            condition = [{ "entity": zone.status.entity_id, "state": '["off"]'}        ]
-            card += add_entity(zone.next_run,condition)
+            condition = [{"entity": zone.status.entity_id, "state": '["off"]'}]
+            card += add_entity(zone.next_run, condition)
 
-            condition = [{ "entity": zone.status.entity_id, "state_not": '["off", "on", "pending", "eco"]'}        ]
-            card += add_entity(zone.status,condition)
+            condition = [
+                {
+                    "entity": zone.status.entity_id,
+                    "state_not": '["off", "on", "pending", "eco"]',
+                }
+            ]
+            card += add_entity(zone.status, condition)
 
-            condition = [{ "entity": zone.status.entity_id, "state": '["on","eco","pending"]'}        ]
-            card += add_entity(zone.remaining_time,condition)
+            condition = [
+                {"entity": zone.status.entity_id, "state": '["on","eco","pending"]'}
+            ]
+            card += add_entity(zone.remaining_time, condition)
 
-            condition = [{ "entity": zone.status.entity_id, "state_not": '["on", "eco", "pending"]' },{ "entity": zone.config.entity_id, "state": "on" }]
-            card += add_entity(zone.last_ran,condition)
+            condition = [
+                {
+                    "entity": zone.status.entity_id,
+                    "state_not": '["on", "eco", "pending"]',
+                },
+                {"entity": zone.config.entity_id, "state": "on"},
+            ]
+            card += add_entity(zone.last_ran, condition)
 
-            condition = [{ "entity": zone.config.entity_id, "state": "on" }]
-            card += add_entity(zone.enabled,condition)
-            card += add_entity(zone.frequency,condition)
-            card += add_entity(zone.water,condition)
-            card += add_entity(zone.wait,condition)
-            card += add_entity(zone.repeat,condition)
-            card += add_entity_2(zone.flow_sensor,condition)
-            card += add_entity_2(zone.adjustment,condition)
-            card += add_entity_2(zone.rain_sensor,condition)
-            card += add_entity_2(zone.water_source,condition)
-            card += add_entity(zone.ignore_sensors,condition)
+            condition = [{"entity": zone.config.entity_id, "state": "on"}]
+            card += add_entity(zone.enabled, condition)
+            card += add_entity(zone.frequency, condition)
+            card += add_entity(zone.water, condition)
+            card += add_entity(zone.wait, condition)
+            card += add_entity(zone.repeat, condition)
+            card += add_entity_2(zone.flow_sensor, condition)
+            card += add_entity_2(zone.adjustment, condition)
+            card += add_entity_2(zone.rain_sensor, condition)
+            card += add_entity_2(zone.water_source, condition)
+            card += add_entity(zone.ignore_sensors, condition)
 
         card += "```" + chr(10)
 
-        #create the persistent notification
-        async_create(
-                self._hass,
-                message=card,
-                title="Irrigation Controller"
-            )
+        # create the persistent notification
+        async_create(self._hass, message=card, title="Irrigation Controller")
 
     async def async_will_remove_from_hass(self) -> None:
         """Cancel next update."""
@@ -269,7 +281,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._unsub_start:
             self._unsub_start()
             self._unsub_start = None
-        #stop monitoring
+        # stop monitoring
         self._unsub_monitor()
         self._unsub_monitor = None
         self._unsub_pause()
@@ -289,8 +301,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Format attribute names."""
         return slugify(f"{part_a}_{part_b}")
 
-    def create_task_loop(self,task):
-        '''Initiate an async call.'''
+    def create_task_loop(self, task):
+        """Initiate an async call."""
         loop = asyncio.get_event_loop()
         background_tasks = set()
         task = loop.create_task(task)
@@ -317,42 +329,52 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if (
             self._state is False
             and time in string_times
-            and self.irrigation_on_value == 'on'
-           ):
+            and self.irrigation_on_value == "on"
+        ):
             self._running_zone = []
             self._scheduled = True
             self.create_task_loop(self.async_turn_on())
         self.async_write_ha_state()
 
     @callback
-    def update_next_run(
-        self, entity=None, old_status=None, new_status=None
-    ):
+    def update_next_run(self, entity=None, old_status=None, new_status=None):
         """Update the next run callback."""
 
         if self._program.sunrise_offset:
-            sunrise = datetime.strptime(self._hass.states.get('sensor.sun_next_rising').state,'%Y-%m-%dT%H:%M:%S%z')
-            d=timedelta(minutes=self._program.sunrise_offset.state)
+            sunrise = datetime.strptime(
+                self._hass.states.get("sensor.sun_next_rising").state,
+                "%Y-%m-%dT%H:%M:%S%z",
+            )
+            d = timedelta(minutes=self._program.sunrise_offset.state)
             sunrise += d
             self.create_task_loop(
-                self._program.start_time.async_set_value(sunrise.astimezone(self._localtimezone).replace(second=00, microsecond=00).time())
+                self._program.start_time.async_set_value(
+                    sunrise.astimezone(self._localtimezone)
+                    .replace(second=00, microsecond=00)
+                    .time()
+                )
             )
         if self._program.sunset_offset:
-            sunset = datetime.strptime(self._hass.states.get('sensor.sun_next_setting').state,'%Y-%m-%dT%H:%M:%S%z')
-            d=timedelta(minutes=self._program.sunset_offset.state)
+            sunset = datetime.strptime(
+                self._hass.states.get("sensor.sun_next_setting").state,
+                "%Y-%m-%dT%H:%M:%S%z",
+            )
+            d = timedelta(minutes=self._program.sunset_offset.state)
             sunset += d
             self.create_task_loop(
-                self._program.start_time.async_set_value(sunset.astimezone(self._localtimezone).replace(second=00, microsecond=00).time())
+                self._program.start_time.async_set_value(
+                    sunset.astimezone(self._localtimezone)
+                    .replace(second=00, microsecond=00)
+                    .time()
+                )
             )
 
         if self._paused:
-            #don't process changes to when attributes change
+            # don't process changes to when attributes change
             return
 
         for zone in self._zones:
-            self.create_task_loop(
-                zone.switch.calc_next_run()
-            )
+            self.create_task_loop(zone.switch.calc_next_run())
         self.async_schedule_update_ha_state()
 
     async def async_added_to_hass(self):
@@ -364,7 +386,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         @callback
         def hass_started(event):
             """HA has started."""
-            #build the zone to pump relationships
+            # build the zone to pump relationships
             pumps = {}
             for zone in self._zones:
                 if zone.pump is not None:
@@ -374,9 +396,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     else:
                         pumps[zone.pump].append(zone.zone)
             # Build Zone Attributes to support the custom card
-            self.create_task_loop(
-                self.define_program_attributes()
-            )
+            self.create_task_loop(self.define_program_attributes())
             # set up to monitor these entities
             self.set_up_entity_monitoring()
 
@@ -396,9 +416,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         def hass_shutdown(event):
             """Make sure everything is shut down."""
             for zone in self._zones:
-                self.create_task_loop(
-                    zone.async_turn_zone_off()
-                )
+                self.create_task_loop(zone.async_turn_zone_off())
+
         # setup the callback to listen for the shut down
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hass_shutdown)
 
@@ -444,17 +463,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._hass, tuple(monitor), self.pause_program
         )
 
-
     async def define_program_attributes(self):
         """Build attributes in run order."""
 
-        #Program attributes
+        # Program attributes
         self._extra_attrs = {}
         self._extra_attrs[ATTR_START] = self._program.start_time.entity_id
-        if self._program.start_type == 'sunrise':
-            self._extra_attrs['sunrise'] = self._program.sunrise_offset.entity_id
-        elif self._program.start_type == 'sunset':
-            self._extra_attrs['sunset'] = self._program.sunset_offset.entity_id
+        if self._program.start_type == "sunrise":
+            self._extra_attrs["sunrise"] = self._program.sunrise_offset.entity_id
+        elif self._program.start_type == "sunset":
+            self._extra_attrs["sunset"] = self._program.sunset_offset.entity_id
         if self._program.frequency:
             self._extra_attrs[ATTR_RUN_FREQ] = self._program.frequency.entity_id
         self._extra_attrs[ATTR_IRRIGATION_ON] = self._program.enabled.entity_id
@@ -474,16 +492,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def entity_toggle_zone(self, zone) -> None:
         """Toggle a specific zone."""
-        #built to handle a list but only one
+        # built to handle a list but only one
         checkzone = None
-        #index the switch to process
+        # index the switch to process
         for czone in self._zones:
             if czone.switch == zone.switch:
                 checkzone = czone
                 break
 
         if self._run_zones == []:
-             #program is not already running
+            # program is not already running
             self._running_zone = zone
             self._scheduled = False
             background_tasks = set()
@@ -493,11 +511,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             background_tasks.add(task)
             task.add_done_callback(background_tasks.discard)
         elif self._run_zones.count(checkzone) == 0:
-            #program is running add the zone to the list to run
+            # program is running add the zone to the list to run
             self._run_zones.append(checkzone)
             await checkzone.switch.prepare_to_run(self._scheduled)
         else:
-            #zone is running/queued turn it off
+            # zone is running/queued turn it off
             await checkzone.switch.async_turn_off_zone()
             if self._run_zones.count(checkzone) > 0:
                 self._run_zones.remove(checkzone)
@@ -505,7 +523,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 await self.async_turn_off()
 
         self.async_schedule_update_ha_state()
-
 
     @property
     def inter_zone_delay(self):
@@ -571,7 +588,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             zones.append(zone)
         return zones
 
-    async def calculate_program_remaining(self, zones,izd_remaining=0):
+    async def calculate_program_remaining(self, zones, izd_remaining=0):
         """Calculate the remaining time for the program."""
 
         class Stream(object):
@@ -586,14 +603,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.sum += item
 
         if self.degree_of_parallel > 1:
-            remaining = [int(zone.remaining_time.native_value) for zone in zones]
+            remaining = [int(zone.remaining_time.numeric_value) for zone in zones]
             streams = []
-            #create the streams
+            # create the streams
             for _ in range(self.degree_of_parallel):
                 stream = Stream()
                 streams.append(stream)
             for time in remaining:
-                #put the time in the stream with the lowest time
+                # put the time in the stream with the lowest time
                 minstream = None
                 for stream in streams:
                     if minstream is None:
@@ -603,19 +620,21 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 minstream.append(time)
             remaining_time = 0
             for stream in streams:
-               #return the max stream time
+                # return the max stream time
                 remaining_time = max(remaining_time, stream.sum)
+
             self._program_remaining = remaining_time
             await self._program.remaining_time.set_value(self._program_remaining)
-        else: #single stream with zone transitions
+        else:  # single stream with zone transitions
             self._program_remaining = 0
-            for program_postion, zone in enumerate(zones,1):
-                if zone.switch.status.state in  (CONST_ON, CONST_PENDING, CONST_ECO):
-                    self._program_remaining +=  int(zone.remaining_time.native_value)
+            for program_postion, zone in enumerate(zones, 1):
+                if zone.switch.status.state in (CONST_ON, CONST_PENDING, CONST_ECO):
+                    self._program_remaining += int(zone.remaining_time.numeric_value)
                     if program_postion < len(zones):
-                        self._program_remaining += self.inter_zone_delay
-            self._program_remaining += izd_remaining
+                        self._program_remaining += int(self.inter_zone_delay)
+            self._program_remaining += int(izd_remaining)
             await self._program.remaining_time.set_value(self._program_remaining)
+
         return self._program_remaining
 
     async def pause_program(self, entity=None, old_status=None, new_status=None):
@@ -640,10 +659,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             return running_zones
 
         if len(running_zones) < self.degree_of_parallel:
-            #add another zone as required
+            # add another zone as required
             pend = (x for x in all_zones if x.status.state == CONST_PENDING)
             for zone in pend:
-                #start the next zone
+                # start the next zone
                 await self.zone_turn_on(zone.switch)
                 running_zones.append(zone.switch)
                 break
@@ -651,32 +670,42 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         rzones = running_zones
 
         for running_zone in rzones:
-            if self.inter_zone_delay <= 0 and running_zone.remaining_time.native_value <= abs(self.inter_zone_delay):
-                #zone has turned off remove from the running zones
+            if (
+                self.inter_zone_delay <= 0
+                and running_zone.remaining_time.numeric_value
+                <= abs(self.inter_zone_delay)
+            ):
+                # zone has turned off remove from the running zones
                 running_zones.remove(running_zone)
-                #start the next zone if there is one
+                # start the next zone if there is one
                 pend = (x for x in all_zones if x.status.state == CONST_PENDING)
                 for zone in pend:
-                    #start the next zone
+                    # start the next zone
                     await self.zone_turn_on(zone.switch)
                     running_zones.append(zone.switch)
                     break
 
-            if running_zone.remaining_time.native_value == 0 and running_zones.count(running_zone) > 0:
+            if (
+                running_zone.remaining_time.numeric_value == 0
+                and running_zones.count(running_zone) > 0
+            ):
                 running_zones.remove(running_zone)
 
-            if self.inter_zone_delay > 0 and running_zone.remaining_time.native_value == 0:
-                #there is a + IZD and there is a zone to follow
+            if (
+                self.inter_zone_delay > 0
+                and running_zone.remaining_time.numeric_value == 0
+            ):
+                # there is a + IZD and there is a zone to follow
                 pend = (x for x in all_zones if x.status.state == CONST_PENDING)
                 if len(list(pend)) > 0:
-                    #start the delay before next
+                    # start the delay before next
                     izd = int(self.inter_zone_delay)
                     for _ in range(int(self.inter_zone_delay)):
                         await asyncio.sleep(1)
                         izd -= 1
-                        await self.calculate_program_remaining(all_zones,izd)
+                        await self.calculate_program_remaining(all_zones, izd)
                 for zone in (x for x in all_zones if x.status.state == CONST_PENDING):
-                    #get the next pending zone and run it
+                    # get the next pending zone and run it
                     await self.zone_turn_on(zone.switch)
                     running_zones.append(zone.switch)
                     break
@@ -685,10 +714,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         await asyncio.sleep(1)
         return running_zones
 
-    async def zone_turn_on(self,zone):
+    async def zone_turn_on(self, zone):
         """Turn on the irrigation zone."""
         await zone.set_scheduled(self._scheduled)
-        #run in the event loop to support independant executions
+        # run in the event loop to support independant executions
         background_tasks = set()
         loop = asyncio.get_event_loop()
         task = loop.create_task(zone.async_turn_on_from_program())
@@ -725,7 +754,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._finished = False
         self.async_schedule_update_ha_state()
 
-        #------ New Feature under construction  ------
+        # ------ New Feature under construction  ------
         # check the extended interlock states
         # turn action other running program accordingly
         # Interlock states
@@ -740,10 +769,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         #     stay running unless a 'strict' program starts
         # await async_stop_programs_new(self._hass, self)
 
-
         # stop all running programs except the calling program
         if self._program.interlock:
-            await async_stop_programs(self._hass, self.name)
+            # await async_stop_programs(self._hass, self.name)
+            await async_stop_programs_new(self._hass, self)
 
         # start pump monitoring
         loop = asyncio.get_event_loop()
@@ -774,7 +803,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             "program": self.name,
         }
         self._hass.bus.async_fire("irrigation_event", event_data)
-        #reset indicators
+        # reset indicators
         self._state = False
         self._scheduled = False
         self._running_zone = []

@@ -1,0 +1,293 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Generic",
+				"rainbird": "RainBird"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Tijd selecteren",
+				"multistart":"Meerdere tijden",
+				"sunrise":"Zonsopgang met een offset",
+				"sunset":"Zonsondergang met een offset"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Stop het programma",
+				"continue": "Sta het complete programma toe"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"Zone status",
+				"state": {
+					"off": "Uit",
+					"on": "Aan",
+					"disabled": "Uitgeschakeld",
+					"pending": "in afwachting",
+					"eco": "ECO",
+					"program_disabled": "Programma uitgeschakeld",
+					"controller_disabled": "Controller uitgeschakeld",
+					"unavailable": "Niet beschikbaar",
+					"raining": "Regen",
+					"adjusted_off": "Aanpassen uit",
+					"no_water_source": "Geen waterbron gevonden",
+					"zone_disabled": "Zone uitegschakeld",
+					"paused": "Programma pauze"
+				}
+			},
+			"zone_next_run":{
+				"name":"Volgende start"
+			},
+			"zone_last_ran":{
+				"name":"Laatste start"
+			},
+			"remaining_time":{
+				"name":"Resterende tijd"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Bewatering tijd"
+			},
+			"volume":{
+				"name":"Water volume"
+			},
+			"wait":{
+				"name":"Wacht tijd"
+			},
+			"repeat":{
+				"name":"Herhalingen"
+			},
+			"inter_zone_delay":{
+				"name":"Zone overgang"
+			},
+			"sunrise_offset":{
+				"name":"Zonsopgang offset"
+			},
+			"sunset_offset":{
+				"name":"Zonsondergang offset"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Start tijd"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Start tijden"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Negeer sensoren"
+			},
+			"enable_program":{
+				"name":"Programma aan"
+			},
+			"enable_zone":{
+				"name":"Zone aan"
+			},
+			"config":{
+				"name": "Instellingen"
+			},
+			"zone":{
+				"name": "{zone_naam}"
+			},
+			"pause":{
+				"name": "Pause"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"frequentie"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Gesceleteerd zone schakelaar is al in het programma geselecteerd",
+			"mandatory": "Verplichte velden zijn niet ingevuld",
+			"zone_required": "Minimaal 1 zone moet zijn ingesteld",
+			"invalid_days_group": "Frequentieopties in de lijst moeten zijn Man,Din,Woe,Don,Vrij,Zat,Zon",
+			"invalid_option": "Frequentie opties moeten een nummer zijn, of Man,Din,Woe,Don,Vrij,Zat,Zon"
+		},
+		"step": {
+			"user": {
+				"title": "Programma data",
+				"description": "Stel het programma in",
+				"data": {
+					"name": "Naam",
+					"freq": "Hoe frequent moet het programma",
+					"freq_options": "Selecteer of voeg toe de  frequentie",
+					"controller_monitor": "Monitor regelaar binary sensor",
+					"device_type": "regelaar type"
+				}
+			},
+			"add_zone": {
+				"title": "Programma Zones",
+				"description": "Zone configuratie",
+				"data": {
+					"zone": "Zone schakelaar",
+					"freq": "Zone frequentie vervangt het programma frequentie",
+					"eco": "Zet wachten aan en herhaal de ECO funtie",
+					"pump": "Pomp schakelaar",
+					"flow_sensor": "Stromings sensor",
+					"water_adjustment": "Looptijd aanpassing sensor",
+					"rain_sensor": "Regen binary sensor",
+					"water_source_active": "Water bron binary sensor",
+					"order": "Zone run volgorde"
+				}
+			},
+			"delete_zone": {
+				"title": "Zone configuratie",
+				"description": "",
+				"data": {
+					"zone": "Selecteer zone om te verwijderen"
+				}
+			},
+			"update_zone_data": {
+				"title": "Zone configuratie",
+				"description": "Update zone",
+				"data": {
+					"zone": "Zone schakelaar",
+					"freq": "Zone frequentie vervangt het programma frequentie",
+					"eco": "Schakel wachten in, en herhaal eco functie",
+					"pump": "Pomp schakelaar",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Sensor voor looptijdaanpassing",
+					"rain_sensor": "Regen binary sensor",
+					"water_source_active": "Water bron binary sensor",
+					"order": "Zone run volgorde"
+				}
+			},
+			"update_zone": {
+				"title": "Zone configuratie",
+				"description": "",
+				"data": {
+					"zone": "Selecteer zone to update"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Update programma",
+					"add_zone": "Voeg zone toe",
+					"update_zone": "Update zone",
+					"delete_zone": "Verwijder zone",
+					"finalise": "Toepassen",
+					"advanced": "Gevanceerde opties"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Gevanceerde opties",
+				"data": {
+					"start_type":"Start tijd opties",
+					"interlock": "Voorkom dat programmas nu starten",
+					"rain_behaviour": "Regen sensor gedrag",
+					"water_max": "Maximale water tijd/volume",
+					"water_step": "Tijd/volume stap",
+					"parallel": "Zone parallel execution",
+					"card_yaml": "Enable creation of entities card yaml"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "Zone-omschakeling is al gedefinieerd in dit irrigatieprogramma",
+			"mandatory": "Verplicht veld niet ingevuld",
+			"zone_required": "Minimaal 1 zone moet econfigureerd zijn",
+			"invalid_days_group": "Frequentie opties moet zijn man,die,woe,don,vrij,zat,zon",
+			"invalid_option": "Frequency optie moet een nummer zijn of man,die,woe,don,vrij,zat,zon"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "Update programma",
+					"update_zone": "Update zone",
+					"delete_zone": "Verwijder zone",
+					"add_zone": "Voeg zone toe",
+					"finalise": "Bevestig",
+					"advanced": "Geavanceerde opties"
+				}
+			},
+			"advanced": {
+				"title": "Geavanceerde opties",
+				"description": "",
+				"data": {
+					"start_type":"Start tijd opties",
+					"interlock": "Voorkom dat programma's gelijktijdig worden uitgevoerd",
+					"rain_behaviour": "Regen sensor gedrag",
+					"water_max": "Maximale water tijd/volume",
+					"water_step": "Tijd/volume stap",
+					"parallel": "Zone parallel uitvoering",
+					"card_yaml": "Enable creation of entities card yaml"
+				}
+			},
+			"update_program": {
+				"title": "Programma Data",
+				"description": "Update programma",
+				"data": {
+					"program": "Programma frequentie inschakelen",
+					"freq": "Schakel programma frequentie in",
+					"freq_options": "Selecteer of voeg programma frequentie toe",
+					"controller_monitor": "Monitor controller binaire sensor",
+					"device_type": "Controller soort"
+				}
+			},
+			"add_zone": {
+				"title": "Zone configuratie",
+				"description": "Voeg zone toe",
+				"data": {
+					"zone": "Zone schakelaar",
+					"freq": "Zone frequentie vervangt programma frequentie",
+					"eco": "Schakel wachten in, en herhaal de eco optie",
+					"pump": "Pomp schakelaar",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Monitor binaire sensor",
+					"rain_sensor": "Regen binary sensor",
+					"water_source_active": "Water bron binar sensor",
+					"order": "Zone start volgorde"
+				}
+			},
+			"update_zone_data": {
+				"title": "Zone configuratie",
+				"description": "Update zone",
+				"data": {
+					"zone": "Zone schakelaar",
+					"freq": "Zone frequentie vervangt programma frequentie",
+					"eco": "Schakel wachten in, en herhaal de eco optie",
+					"pump": "Pomp schakelaar",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Looptijd aanpassing sensor",
+					"rain_sensor": "Regen binari sensor",
+					"water_source_active": "Water bron binari sensor",
+					"order": "Zone start volgorde"
+				}
+			},
+			"delete_zone": {
+				"title": "Zone configuratie",
+				"description": "",
+				"data": {
+					"zone": "Select zone om te verwijderen"
+				}
+			},
+			"update_zone": {
+				"title": "Zone configuratie",
+				"description": "",
+				"data": {
+					"zone": "Selecteer zone om te updaten"
+				}
+			}
+		}
+	}
+}
