@@ -676,7 +676,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if not errors:
                 newdata[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
-                newdata[ATTR_START_TYPE] = user_input[ATTR_START_TYPE]
+                newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE,"selector")
                 newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
                     ATTR_RAIN_BEHAVIOUR, "stop"
                 )

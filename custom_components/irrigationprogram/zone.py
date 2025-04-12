@@ -36,6 +36,7 @@ from .const import (
     ATTR_WATER_ADJUST,
     ATTR_WATER_SOURCE,
     BHYVE,
+    BHYVE_DURATION,
     BHYVE_TURN_ON,
     CONST_ABORTED,
     CONST_ADJUSTED_OFF,
@@ -589,7 +590,7 @@ class Zone(SwitchEntity, RestoreEntity):
         if await self.check_switch_state() is False:
             if self.controller_type == RAINBIRD:
                 # RAINBIRD controller requires a different service call
-                rainbird_duration = await self.calc_run_time(
+                duration = await self.calc_run_time(
                     repeats=self.repeat, scheduled=self.scheduled
                 )
                 await self.hass.services.async_call(
@@ -597,12 +598,12 @@ class Zone(SwitchEntity, RestoreEntity):
                     RAINBIRD_TURN_ON,
                     {
                         ATTR_ENTITY_ID: self.solenoid,
-                        RAINBIRD_DURATION: rainbird_duration,
+                        RAINBIRD_DURATION: duration,
                     },
                 )
             elif self.controller_type == BHYVE:
                 # B-Hyve controller requires a different service call
-                rainbird_duration = await self.calc_run_time(
+                duration = await self.calc_run_time(
                     repeats=self.repeat, scheduled=self.scheduled
                 )
                 await self.hass.services.async_call(
@@ -610,7 +611,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     BHYVE_TURN_ON,
                     {
                         ATTR_ENTITY_ID: self.solenoid,
-                        RAINBIRD_DURATION: rainbird_duration,
+                        BHYVE_DURATION: duration,
                     },
                 )
             elif self.entity_type == CONST_VALVE:

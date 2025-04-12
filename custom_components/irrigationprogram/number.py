@@ -67,7 +67,7 @@ async def async_setup_entry(
     zones = data.zone_data
     for i, zone in enumerate(zones):
         sensor = Water(
-            unique_id, p.name, zone.name, zone.flow_sensor, p.water_max, p.water_step
+            unique_id, p.name, zone.name, zone.flow_sensor, p.water_max, p.water_step, p.min_sec
         )
 
         sensors.append(sensor)
@@ -126,7 +126,7 @@ class Water(RestoreNumber):
 
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, flow_sensor=None, max=1, step=30):
+    def __init__(self, unique_id, pname, zone_name, flow_sensor=None, max=1, step=30, min_sec="minutes"):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_water")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_native_max_value = max
@@ -137,14 +137,11 @@ class Water(RestoreNumber):
             self._attr_native_unit_of_measurement = "L"
             self._attr_translation_key = "volume"
         else:
-            # ----------------
-            self.measurement = "seconds"
-            if self.measurement == "seconds":
+            if min_sec == "seconds":
                 self._attr_native_unit_of_measurement = "s"
-            if self.measurement == "minutes":
+            if min_sec == "minutes":
                 self._attr_native_unit_of_measurement = "min"
             self._attr_device_class = NumberDeviceClass.DURATION
-            #            self._attr_native_unit_of_measurement = "min"
             self._attr_translation_key = "water"
 
     async def async_added_to_hass(self):
