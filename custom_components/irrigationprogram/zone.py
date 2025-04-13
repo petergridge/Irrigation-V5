@@ -174,7 +174,7 @@ class Zone(SwitchEntity, RestoreEntity):
         """Water entity number."""
 
         # allow seconds alongside minutes
-        #self.measurement = "seconds"
+        # self.measurement = "seconds"
         if self.measurement == "seconds":
             return int(self._zonedata.water.value)
         if self.measurement == "minutes":
@@ -593,6 +593,9 @@ class Zone(SwitchEntity, RestoreEntity):
                 duration = await self.calc_run_time(
                     repeats=self.repeat, scheduled=self.scheduled
                 )
+
+                duration = math.ceil(duration / 60)
+
                 await self.hass.services.async_call(
                     RAINBIRD,
                     RAINBIRD_TURN_ON,
@@ -606,6 +609,9 @@ class Zone(SwitchEntity, RestoreEntity):
                 duration = await self.calc_run_time(
                     repeats=self.repeat, scheduled=self.scheduled
                 )
+
+                duration = math.ceil(duration / 60)
+
                 await self.hass.services.async_call(
                     BHYVE,
                     BHYVE_TURN_ON,
@@ -641,7 +647,11 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_solenoid_turn_off(self):
         """Turn on the zone."""
         # is it a valve or a switch
-        if self.entity_type == CONST_VALVE:
+        if self.controller_type == BHYVE:
+            await self.hass.services.async_call(
+                BHYVE, "stop_watering", {ATTR_ENTITY_ID: self.solenoid}
+            )
+        elif self.entity_type == CONST_VALVE:
             # postion entity defined get the value
             await self.hass.services.async_call(
                 CONST_VALVE, SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self.solenoid}

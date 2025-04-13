@@ -126,10 +126,10 @@ class Water(RestoreNumber):
 
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, flow_sensor=None, max=1, step=30, min_sec="minutes"):
+    def __init__(self, unique_id, pname, zone_name, flow_sensor=None, water_max=1, step=30, min_sec="minutes"):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_water")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
-        self._attr_native_max_value = max
+        self._attr_native_max_value = water_max
         self._attr_native_step = step
         self._attr_native_min_value = step
         if flow_sensor:
