@@ -464,10 +464,10 @@ Insert the generated yaml into a Manual Card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 ###  V2025.05.01
-- handle duration longer than 24 hours. If duration is > 24 hours the remaining time will be 23:59:59 until the remaining time reduces
-- Update dutch translation
-- update max transition time to 120 seconds
-- make wait time seconds based when runtime is defined as seconds
+- Handle duration longer than 24 hours. If duration is > 24 hours the remaining time will be 23:59:59 until the remaining time reduces
+- Update Dutch translation
+- Update max transition time to 120 seconds
+- Make wait time seconds based when runtime is defined as seconds
 - Fix code to stop the creation of the custom card yaml on start
 
 ###  V2025.04.01
