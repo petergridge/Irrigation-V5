@@ -8,7 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from . import IrrigationData, IrrigationProgram
-from .const import CONST_DELAY_OFFSET, CONST_SUN_OFFSET
+from .const import CONST_DELAY_OFFSET, CONST_SUN_OFFSET, CONST_DELAY_OFFSET_POS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ async def async_setup_entry(
             p.name,
             "inter_zone_delay",
             "sec",
-            CONST_DELAY_OFFSET,
+            CONST_DELAY_OFFSET_POS,
             -CONST_DELAY_OFFSET,
             1,
         )
@@ -67,13 +67,19 @@ async def async_setup_entry(
     zones = data.zone_data
     for i, zone in enumerate(zones):
         sensor = Water(
-            unique_id, p.name, zone.name, zone.flow_sensor, p.water_max, p.water_step, p.min_sec
+            unique_id,
+            p.name,
+            zone.name,
+            zone.flow_sensor,
+            p.water_max,
+            p.water_step,
+            p.min_sec,
         )
 
         sensors.append(sensor)
         config_entry.runtime_data.zone_data[i].water = sensor
         if zone.eco:
-            sensor = Wait(unique_id, p.name, zone.name)
+            sensor = Wait(unique_id, p.name, zone.name, p.min_sec)
             sensors.append(sensor)
             config_entry.runtime_data.zone_data[i].wait = sensor
 
@@ -126,7 +132,16 @@ class Water(RestoreNumber):
 
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, flow_sensor=None, water_max=1, step=30, min_sec="minutes"):
+    def __init__(
+        self,
+        unique_id,
+        pname,
+        zone_name,
+        flow_sensor=None,
+        water_max=1,
+        step=30,
+        min_sec="minutes",
+    ):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_water")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_native_max_value = water_max
@@ -165,16 +180,20 @@ class Wait(RestoreNumber):
     _attr_editable = True
     _attr_mode = "slider"
     _attr_native_min_value = 1
-    _attr_native_max_value = 10
     _attr_native_step = 1
     _attr_translation_key = "wait"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name):
+    def __init__(self, unique_id, pname, zone_name, min_sec="minutes"):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_wait")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
-        self._attr_native_unit_of_measurement = "min"
         self._attr_device_class = NumberDeviceClass.DURATION
+        if min_sec == "seconds":
+            self._attr_native_max_value = 120
+            self._attr_native_unit_of_measurement = "s"
+        else:
+            self._attr_native_unit_of_measurement = "min"
+            self._attr_native_max_value = 10
 
     async def async_added_to_hass(self):
         last_state = await self.async_get_last_number_data()

@@ -28,9 +28,9 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
-				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
-				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
+				"strict": "Stipt – Andere programma’s uitschakelen bij het starten, uitschakelen als een ander programma start",
+				"loose": "Los – alle andere programma’s uitschakelen bij het starten, actief blijven tenzij een ‘stipt’ programma wordt gestart",
+				"off": "Uit – alleen ‘stipt’ programma’s uitschakelen, actief blijven tenzij een ‘stipt’ programma wordt gestart"
 			}
 		}
 	},
@@ -111,7 +111,7 @@
 				"name": "Instellingen"
 			},
 			"zone":{
-				"name": "{zone_naam}"
+				"name": "{zone_name}"
 			},
 			"pause":{
 				"name": "Pause"
@@ -119,7 +119,7 @@
 		},
 		"select":{
 			"frequency":{
-				"name":"frequentie"
+				"name":"Frequentie"
 			}
 		}
 	},

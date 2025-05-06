@@ -111,7 +111,7 @@
 				"name": "Settings"
 			},
 			"zone":{
-				"name": "{zone_name}"
+				"name": "Zone"
 			},
 			"pause":{
 				"name": "Pause"

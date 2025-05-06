@@ -48,6 +48,7 @@ async def async_setup_entry(
     pname = config_entry.runtime_data.program.name
 
     sensors = []
+    # sensor = RemainingTime(hass, pname, unique_id)
     sensor = RemainingTime(hass, pname, unique_id)
     sensors.append(sensor)
     config_entry.runtime_data.program.remaining_time = sensor
@@ -219,7 +220,10 @@ class ZoneRemainingTime(SensorEntity):
         # convert seconds to datetime
         minute, second = divmod(value, 60)
         hour, minute = divmod(minute, 60)
-        rem = time(hour=hour, minute=minute, second=second)
+        if value/60/60/24 >= 1:
+            rem = time(hour=23, minute=59, second=59)
+        else:
+            rem = time(hour=hour, minute=minute, second=second)
         self._state = rem
         self.async_schedule_update_ha_state()
 
@@ -259,7 +263,10 @@ class RemainingTime(SensorEntity):
         # convert seconds to datetime
         minute, second = divmod(value, 60)
         hour, minute = divmod(minute, 60)
-        rem = time(hour=hour, minute=minute, second=second)
+        if value/60/60/24 >= 1:
+            rem = time(hour=23, minute=59, second=59)
+        else:
+            rem = time(hour=hour, minute=minute, second=second)
         self._state = rem
         self.async_schedule_update_ha_state()
 

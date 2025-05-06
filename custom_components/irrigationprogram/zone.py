@@ -186,7 +186,10 @@ class Zone(SwitchEntity, RestoreEntity):
     def wait(self) -> NumberEntity:
         """Wait entity number."""
         if self._zonedata.wait:
-            return int(self._zonedata.wait.value) * 60
+            if self.measurement == "seconds":
+                return int(self._zonedata.wait.value)
+            if self.measurement == "minutes":
+                return int(self._zonedata.wait.value) * 60
         return 0
 
     @property
@@ -730,8 +733,6 @@ class Zone(SwitchEntity, RestoreEntity):
             adjust = self._water_adjust_prior
 
         if self.flow_sensor is None:
-            # time based
-            #            water = self.water * 60
             water = self.water
             run_time = (water * adjust * repeats) + (wait * (repeats - 1))
         else:
@@ -856,14 +857,12 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self._stop:
             return 0
-        #        watertime = math.ceil(self.water * 60 * water_adjust_value)
         watertime = math.ceil(self.water * water_adjust_value)
         while watertime > 0:
             if self._status == CONST_PAUSED:
                 await asyncio.sleep(1)
                 continue
             seconds_run += 1
-            #            watertime = math.ceil(self.water * 60 * water_adjust_value) - seconds_run
             watertime = math.ceil(self.water * water_adjust_value) - seconds_run
             self._remaining_time = await self.calc_run_time(
                 seconds_run, repeats=reps, scheduled=self.scheduled

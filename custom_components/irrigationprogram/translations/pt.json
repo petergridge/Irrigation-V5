@@ -111,7 +111,7 @@
 				"name": "Definições"
 			},
 			"zone":{
-				"name": "{nome_zona}"
+				"name": "{zone_name}"
 			},
 			"pause":{
 				"name": "Pausa"

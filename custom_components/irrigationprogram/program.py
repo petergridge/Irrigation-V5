@@ -22,7 +22,6 @@ from . import (
     IrrigationData,
     IrrigationProgram as ProgramData,
     IrrigationZoneData as ZoneData,
-    #    async_stop_programs,
     async_stop_programs_new,
 )
 from .const import (
@@ -271,7 +270,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "```" + chr(10)
 
         # create the persistent notification
-        async_create(self._hass, message=card, title="Irrigation Controller")
+        if self._program.card_yaml is True:
+            async_create(self._hass, message=card, title="Irrigation Controller")
 
     async def async_will_remove_from_hass(self) -> None:
         """Cancel next update."""
