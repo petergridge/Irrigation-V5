@@ -109,6 +109,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
             user_input["freq_options"] = cleanoptions
 
+            if not cleanoptions:
+                errors["freq_options"] = "mandatory"
+
             if not errors:
                 # Input is valid, set data.
                 for attr in user_input:
@@ -831,6 +834,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     break
 
             newdata["freq_options"] = cleanoptions
+
+            if not cleanoptions:
+                errors["freq_options"] = "mandatory"
 
             if not errors:
                 if user_input["freq"] is False:
