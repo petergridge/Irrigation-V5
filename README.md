@@ -463,6 +463,8 @@ The yaml is generated on start and when a program configuration is created or mo
 Insert the generated yaml into a Manual Card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+###  V2025.05.02
+- Fix lag on stopping programs, prevent program being started until it has completely stopped (1-2 seconds)
 ###  V2025.05.01
 - Handle duration longer than 24 hours. If duration is > 24 hours the remaining time will be 23:59:59 until the remaining time reduces
 - Update Dutch translation
