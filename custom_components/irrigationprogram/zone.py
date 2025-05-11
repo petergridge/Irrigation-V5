@@ -649,6 +649,8 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_solenoid_turn_off(self):
         """Turn on the zone."""
+
+        self._stop = True
         # is it a valve or a switch
         if self.controller_type == BHYVE:
             await self.hass.services.async_call(
@@ -757,23 +759,23 @@ class Zone(SwitchEntity, RestoreEntity):
         # set the program attribute
         return math.ceil(run_time - seconds_run)
 
-    async def latency_check(self, state):
-        """Ensure switch has turned off/on as expected and warn, state = true for on."""
+    # async def latency_check(self, state):
+    #     """Ensure switch has turned off/on as expected and warn, state = true for on."""
 
-        for _ in range(CONST_LATENCY):
-            if await self.check_switch_state() is not state:
-                # if not the expected state loop again
-                await asyncio.sleep(1)
-            else:
-                return True
-        if not self._stop:
-            async_create(
-                self.hass,
-                message=f"Switch has latency exceeding {CONST_LATENCY} seconds, cannot confirm {self.name} state",
-                title="Irrigation Controller",
-            )
+    #     for _ in range(CONST_LATENCY):
+    #         if await self.check_switch_state() is not state:
+    #             # if not the expected state loop again
+    #             await asyncio.sleep(1)
+    #         else:
+    #             return True
+    #     if not self._stop:
+    #         async_create(
+    #             self.hass,
+    #             message=f"Switch has latency exceeding {CONST_LATENCY} seconds, cannot confirm {self.name} state",
+    #             title="Irrigation Controller",
+    #         )
 
-        return False
+    #     return False
 
     async def async_turn_on(self, **kwargs):
         """Start the zone watering cycle."""
@@ -850,7 +852,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if not self._aborted:
             await self.last_ran.set_state(last_ran)
-        await self.async_turn_off_zone()
+        # await self.async_turn_off_zone()
 
     async def time(self, water_adjust_value, seconds_run, reps):
         """Track watering time based on time."""
@@ -869,7 +871,7 @@ class Zone(SwitchEntity, RestoreEntity):
             )
             await self.remaining_time.set_value(self._remaining_time)
             if self._stop:
-                break
+                return 0
             await asyncio.sleep(1)
 
             # Check to see if the zone has been stopped
@@ -878,6 +880,10 @@ class Zone(SwitchEntity, RestoreEntity):
                     self._stop = False
                     self._aborted = False
                     break
+
+                # manually ending a zone in a program
+                if self._stop:
+                    return 0
 
                 self._stop = True
                 self._aborted = True

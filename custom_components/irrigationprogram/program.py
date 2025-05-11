@@ -416,7 +416,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         def hass_shutdown(event):
             """Make sure everything is shut down."""
             for zone in self._zones:
-                self.create_task_loop(zone.async_turn_zone_off())
+                self.create_task_loop(zone.async_turn_off_zone())
 
         # setup the callback to listen for the shut down
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hass_shutdown)
@@ -677,6 +677,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             ):
                 # zone has turned off remove from the running zones
                 running_zones.remove(running_zone)
+
                 # start the next zone if there is one
                 pend = (x for x in all_zones if x.status.state == CONST_PENDING)
                 for zone in pend:
