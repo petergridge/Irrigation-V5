@@ -104,6 +104,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._water_adjust_prior = 1
 
     async def async_added_to_hass(self):
+        '''Run when HA starts.'''
         last_state = await self.async_get_last_state()
         self._hist_flow_rate = 1
         if last_state:
@@ -172,9 +173,7 @@ class Zone(SwitchEntity, RestoreEntity):
     @property
     def water(self) -> NumberEntity:
         """Water entity number."""
-
         # allow seconds alongside minutes
-        # self.measurement = "seconds"
         if self.measurement == "seconds":
             return int(self._zonedata.water.value)
         if self.measurement == "minutes":
@@ -826,7 +825,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 await self.volume(water_adjust_value, reps)
             else:
                 seconds_run = await self.time(water_adjust_value, seconds_run, reps)
-            # abort
+            # # abort
             if self._stop:
                 self._aborted = True
                 break
@@ -852,7 +851,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if not self._aborted:
             await self.last_ran.set_state(last_ran)
-        # await self.async_turn_off_zone()
+        await self.async_turn_off_zone()
 
     async def time(self, water_adjust_value, seconds_run, reps):
         """Track watering time based on time."""
