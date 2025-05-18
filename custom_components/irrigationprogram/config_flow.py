@@ -645,8 +645,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata = {}
         newdata.update(self._data)
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
-        for zonenumber in self._delete:
-            sortedzones.pop(zonenumber)
+        for zone in self._delete:
+            for zonenumber, szone in enumerate(sortedzones):
+                if szone['zone'] == zone:
+                    sortedzones.pop(zonenumber)
 
         for zone in sortedzones:
             if zone["freq"] is False:

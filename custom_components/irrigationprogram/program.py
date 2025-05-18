@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 from homeassistant.components.persistent_notification import async_create
 from homeassistant.components.switch import ENTITY_ID_FORMAT, SwitchEntity
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, MATCH_ALL
+from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.event import (
@@ -412,15 +412,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # listen for config_flow change and apply the updates
         self._unsub_start = async_at_started(self._hass, hass_started)
 
-        @callback
-        def hass_shutdown(event):
-            """Make sure everything is shut down."""
-            for zone in self._zones:
-                self.create_task_loop(zone.async_turn_off_zone())
-
-        # setup the callback to listen for the shut down
-        self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, hass_shutdown)
-
         await super().async_added_to_hass()
 
         # generate the entities card yaml to replicate the custom card
@@ -492,6 +483,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def entity_toggle_zone(self, zone) -> None:
         """Toggle a specific zone."""
+        #called from the zone to ensure the program is notified
+        # when the zone is stopped manually while it is running
+
         # built to handle a list but only one
         checkzone = None
         # index the switch to process
@@ -754,21 +748,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._state = True
         self._finished = False
         self.async_schedule_update_ha_state()
-
-        # ------ New Feature under construction  ------
-        # check the extended interlock states
-        # turn action other running program accordingly
-        # Interlock states
-        # 1 - Strict
-        #     turn off other programs when starting
-        #     turn off when another program starts
-        # 2 - loose
-        #     turn off all other programs when starting
-        #     stay running unless a 'strict' program starts
-        # 3 - off
-        #     turn off 'strict' programs only
-        #     stay running unless a 'strict' program starts
-        # await async_stop_programs_new(self._hass, self)
 
         # stop all running programs except the calling program
         if self._program.interlock:

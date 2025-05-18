@@ -104,7 +104,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._water_adjust_prior = 1
 
     async def async_added_to_hass(self):
-        '''Run when HA starts.'''
+        """Run when HA starts."""
         last_state = await self.async_get_last_state()
         self._hist_flow_rate = 1
         if last_state:
@@ -174,6 +174,9 @@ class Zone(SwitchEntity, RestoreEntity):
     def water(self) -> NumberEntity:
         """Water entity number."""
         # allow seconds alongside minutes
+        if self.flow_sensor:
+            return int(self._zonedata.water.value)
+
         if self.measurement == "seconds":
             return int(self._zonedata.water.value)
         if self.measurement == "minutes":
@@ -297,7 +300,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self.status.state in [
             CONST_DISABLED,
-            CONST_PROGRAM_DISABLED,
+            #            CONST_PROGRAM_DISABLED,
             CONST_UNAVAILABLE,
             CONST_ADJUSTED_OFF,
             CONST_NO_WATER_SOURCE,
@@ -305,8 +308,13 @@ class Zone(SwitchEntity, RestoreEntity):
             CONST_ZONE_DISABLED,
         ]:
             return False
+
+        if self.status.state in [CONST_PROGRAM_DISABLED] and scheduled:
+            return False
+
         if not scheduled:
             return True
+
         if self.next_run.native_value > dt_util.as_local(dt_util.now()):
             return False
 
@@ -370,39 +378,70 @@ class Zone(SwitchEntity, RestoreEntity):
             if v_error in (CONST_NO_WATER_SOURCE):
                 async_create(
                     self.hass,
-                    message=f"No water source detected, {self.name} run terminated",
+                    message=f"No water source detected, {self.name} terminated",
                     title="Irrigation Controller",
                 )
+
+                event_data = {
+                    "action": "error",
+                    "error": "no water source detected",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+
                 self._stop = True
                 await self.async_turn_off_zone()
                 await self.calc_next_run()
             if self._status in (CONST_UNAVAILABLE):
                 async_create(
                     self.hass,
-                    message=f"Switch has appears is offline, {self.name}",
+                    message=f"Switch is offline, {self.name} terminated",
                     title="Irrigation Controller",
                 )
+
+                event_data = {
+                    "action": "error",
+                    "error": "Switch appears is offline",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+
                 self._stop = True
                 await self.async_turn_off_zone()
             if v_error in (CONST_RAINING_STOP):
                 async_create(
                     self.hass,
-                    message=f"Rain has been detected, {self.name} run terminated",
+                    message=f"Rain has been detected, {self.name} terminated",
                     title="Irrigation Controller",
                 )
+
+                event_data = {
+                    "action": "error",
+                    "error": "Rain has been detected",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+
                 self._stop = True
                 await self.async_turn_off_zone()
         return v_error
 
     async def next_run_validation(self):
         """Validate the object readyness."""
+
         if self._programdata.switch.irrigation_on_value == CONST_OFF:
             return CONST_PROGRAM_DISABLED
         if self._programdata.pause.is_on:
             return CONST_PAUSED
         if await self.check_switch_state() is None:
             return CONST_UNAVAILABLE
-        if self.water_source == CONST_OFF and not self.ignore_sensors:
+        if self.water_source == CONST_OFF:
             return CONST_NO_WATER_SOURCE
         if self.enabled.state == CONST_OFF:
             return CONST_ZONE_DISABLED
@@ -585,6 +624,7 @@ class Zone(SwitchEntity, RestoreEntity):
             if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
                 return True
             await asyncio.sleep(1)
+
         return None
 
     async def async_solenoid_turn_on(self):
@@ -645,11 +685,13 @@ class Zone(SwitchEntity, RestoreEntity):
                 "repeat": self.repeat,
             }
             self.hass.bus.async_fire("irrigation_event", event_data)
+        if await self.check_switch_state() is True:
+            # check the switch has actually turned on
+            pass
 
     async def async_solenoid_turn_off(self):
         """Turn on the zone."""
 
-        self._stop = True
         # is it a valve or a switch
         if self.controller_type == BHYVE:
             await self.hass.services.async_call(
@@ -664,6 +706,7 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.hass.services.async_call(
                 CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self.solenoid}
             )
+
         # raise an event
         state = CONST_OFF
         if self._status == CONST_ECO:
@@ -678,6 +721,10 @@ class Zone(SwitchEntity, RestoreEntity):
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
 
+        if await self.check_switch_state() is False:
+            # check the switch has actually turned off
+            pass
+
     async def async_eco_turn_off(self):
         """Signal the zone to stop."""
         self._status = CONST_ECO
@@ -686,7 +733,10 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        await self._programdata.switch.entity_toggle_zone(self._zonedata)
+        if self._programdata.switch.state == CONST_ON:
+            await self.async_turn_off_zone()
+        else:
+            await self.async_turn_on()
 
     @property
     def extra_state_attributes(self):
@@ -695,7 +745,8 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Toggle the entity."""
-        await self._programdata.switch.entity_toggle_zone(self._zonedata)
+        # await self._programdata.switch.entity_toggle_zone(self._zonedata)
+        await self.async_turn_off_zone()
 
     async def async_turn_off_zone(self, **kwargs):
         """Turn the entity off."""
@@ -706,11 +757,12 @@ class Zone(SwitchEntity, RestoreEntity):
         await self.async_solenoid_turn_off()
         self._remaining_time = 0
         await self.remaining_time.set_value(self._remaining_time)
-        if self._status in (CONST_PENDING, CONST_ECO, CONST_ON):
+        if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
             await self.status.set_value(CONST_OFF)
         self._state = CONST_OFF
         self._status = CONST_OFF
         self._stop = True
+
         self.async_schedule_update_ha_state()
 
     async def set_scheduled(self, scheduled: bool):
@@ -755,26 +807,12 @@ class Zone(SwitchEntity, RestoreEntity):
             watertime = remaining_volume / flow * 60
             # remaining watering time + remaining waits
             run_time = watertime + (wait * (repeats - 1))
+
         # set the program attribute
+        if math.ceil(run_time - seconds_run) < 0:
+            return 0
+
         return math.ceil(run_time - seconds_run)
-
-    # async def latency_check(self, state):
-    #     """Ensure switch has turned off/on as expected and warn, state = true for on."""
-
-    #     for _ in range(CONST_LATENCY):
-    #         if await self.check_switch_state() is not state:
-    #             # if not the expected state loop again
-    #             await asyncio.sleep(1)
-    #         else:
-    #             return True
-    #     if not self._stop:
-    #         async_create(
-    #             self.hass,
-    #             message=f"Switch has latency exceeding {CONST_LATENCY} seconds, cannot confirm {self.name} state",
-    #             title="Irrigation Controller",
-    #         )
-
-    #     return False
 
     async def async_turn_on(self, **kwargs):
         """Start the zone watering cycle."""
@@ -820,6 +858,21 @@ class Zone(SwitchEntity, RestoreEntity):
                         continue
                     self._stop = False
                     break
+                else:
+                    async_create(
+                        self.hass,
+                        message=f"Switch has latency exceeding {CONST_LATENCY} seconds, cannot confirm {self.name} state is on.",
+                        title="Irrigation Controller",
+                    )
+                    event_data = {
+                        "action": "error",
+                        "error": "Switch exceeds latency limit",
+                        "device_id": self.entity_id,
+                        "scheduled": self._scheduled,
+                        "program": self.name,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
+
             # track the watering
             if self.flow_sensor is not None:
                 await self.volume(water_adjust_value, reps)
@@ -832,6 +885,7 @@ class Zone(SwitchEntity, RestoreEntity):
             # wait cycle
             if self.wait > 0 and reps > 1:
                 await self.async_eco_turn_off()
+
                 for _ in range(self.wait):
                     seconds_run += 1
                     self._remaining_time = await self.calc_run_time(
@@ -863,6 +917,10 @@ class Zone(SwitchEntity, RestoreEntity):
             if self._status == CONST_PAUSED:
                 await asyncio.sleep(1)
                 continue
+
+            # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
+            await self.handle_validation_error()
+
             seconds_run += 1
             watertime = math.ceil(self.water * water_adjust_value) - seconds_run
             self._remaining_time = await self.calc_run_time(
@@ -875,21 +933,10 @@ class Zone(SwitchEntity, RestoreEntity):
 
             # Check to see if the zone has been stopped
             for _ in range(CONST_LATENCY):
-                if self._status == CONST_PAUSED:
-                    self._stop = False
-                    self._aborted = False
-                    break
-
-                # manually ending a zone in a program
-                if self._stop:
-                    return 0
-
                 self._stop = True
                 self._aborted = True
-                if (
-                    await self.check_switch_state() is not True
-                    and self._status != CONST_PAUSED
-                ):
+                # switch is off
+                if not await self.check_switch_state():
                     # if not on loop again
                     await asyncio.sleep(1)
                     continue
@@ -907,9 +954,13 @@ class Zone(SwitchEntity, RestoreEntity):
         volume_delivered = 0
         zeroflowcount = 0
         while volume_remaining > 0:
-            if await self.next_run_validation() == CONST_PAUSED:
+            if self._status == CONST_PAUSED:
                 await asyncio.sleep(1)
                 continue
+
+            # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
+            await self.handle_validation_error()
+
             if self._stop:
                 break
             volume_delivered += self.flow_sensor / 60
@@ -921,24 +972,26 @@ class Zone(SwitchEntity, RestoreEntity):
                 scheduled=self.scheduled,
             )
 
+            if volume_remaining < 0:
+                self._remaining_time = 0
             await self.remaining_time.set_value(self._remaining_time)
 
             await asyncio.sleep(1)
+
             # Check to see if the zone has been stopped
             for _ in range(CONST_LATENCY):
                 self._stop = True
                 self._aborted = True
-                if (
-                    await self.check_switch_state() is not True
-                    and self._status != CONST_PAUSED
-                ):
+                # switch is off
+                if not await self.check_switch_state():
                     # if not on loop again
                     await asyncio.sleep(1)
-                else:
-                    self._stop = False
-                    self._aborted = False
-                    break
-            # flow sensor has failed
+                    continue
+                self._stop = False
+                self._aborted = False
+                break
+
+            # If no flow for 5 cycles, shut off, possible flow sensor has failed
             if self.flow_sensor == 0:
                 zeroflowcount += 1
                 if zeroflowcount > CONST_ZERO_FLOW_DELAY:
@@ -946,9 +999,18 @@ class Zone(SwitchEntity, RestoreEntity):
                         self._aborted = True
                         async_create(
                             self.hass,
-                            message=f"No flow detected, {self.name} abandoned",
+                            message=f"No flow detected, {self.name} terminated",
                             title="Irrigation Controller",
                         )
+                        event_data = {
+                            "action": "error",
+                            "error": "no flow detected",
+                            "device_id": self.entity_id,
+                            "scheduled": self._scheduled,
+                            "program": self.name,
+                        }
+                        self.hass.bus.async_fire("irrigation_event", event_data)
+
                     break
             else:
                 zeroflowcount = 0
