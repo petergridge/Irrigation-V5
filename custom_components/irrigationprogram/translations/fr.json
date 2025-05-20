@@ -209,7 +209,8 @@
 					"water_max": "Temps/Volume maximum d'arrosage",
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
-					"card_yaml": "Activer la création de carte d'entité YAML"
+					"card_yaml": "Activer la création de carte d'entité YAML",
+					"zone_delay_max": "Maximum zone transition delay"
 				}
 			}
 		}
@@ -245,7 +246,8 @@
 					"water_max": "Temps/Volume maximum d'arrosage",
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
-					"card_yaml": "Activer la création de carte d'entité YAML"
+					"card_yaml": "Activer la création de carte d'entité YAML",
+					"zone_delay_max": "Maximum zone transition delay"
 				}
 			},
 			"update_program": {

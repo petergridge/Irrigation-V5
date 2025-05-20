@@ -21,17 +21,22 @@ from homeassistant.util import slugify
 
 from . import exclude
 from .const import (
+    ATTR_CARD_YAML,
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
     ATTR_INTERLOCK,
     ATTR_MIN_SEC,
+    ATTR_PARALLEL,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_SENSOR,
     ATTR_START_TYPE,
     ATTR_WATER_ADJUST,
+    ATTR_WATER_MAX,
     ATTR_WATER_SOURCE,
+    ATTR_WATER_STEP,
     ATTR_ZONE,
+    ATTR_ZONE_DELAY_MAX,
     ATTR_ZONE_ORDER,
     ATTR_ZONES,
     DOMAIN,
@@ -469,10 +474,11 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
                 self._data[ATTR_START_TYPE] = user_input[ATTR_START_TYPE]
                 self._data[ATTR_RAIN_BEHAVIOUR] = user_input[ATTR_RAIN_BEHAVIOUR]
-                self._data["water_max"] = user_input["water_max"]
-                self._data["water_step"] = user_input["water_step"]
-                self._data["parallel"] = user_input["parallel"]
-                self._data["card_yaml"] = user_input["card_yaml"]
+                self._data[ATTR_WATER_MAX] = user_input[ATTR_WATER_MAX]
+                self._data[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
+                self._data[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
+                self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
+                self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 return await self.async_step_menu()
 
         if user_input:
@@ -484,21 +490,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
         schema = vol.Schema(
             {
-                # vol.Optional(
-                #     ATTR_INTERLOCK,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_INTERLOCK, True)
-                #     },
-                # ): cv.boolean,
-                # 1 - Strict
-                #     turn off other programs when starting
-                #     turn off when another program starts
-                # 2 - loose
-                #     turn off all other programs when starting
-                #     stay running unless a 'strict' program starts
-                # 3 - off
-                #     turn off 'strict' programs only
-                #     stay running unless a 'strict' program starts
                 vol.Optional(
                     ATTR_INTERLOCK,
                     description={
@@ -548,21 +539,27 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     }
                 ),
                 vol.Optional(
-                    "water_max",
-                    description={"suggested_value": default_input.get("water_max", 30)},
+                    ATTR_WATER_MAX,
+                    description={"suggested_value": default_input.get(ATTR_WATER_MAX, 30)},
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
                 vol.Optional(
-                    "water_step",
-                    description={"suggested_value": default_input.get("water_step", 1)},
+                    ATTR_WATER_STEP,
+                    description={"suggested_value": default_input.get(ATTR_WATER_STEP, 1)},
                 ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
+
                 vol.Optional(
-                    "parallel",
-                    description={"suggested_value": default_input.get("parallel", 1)},
+                    ATTR_ZONE_DELAY_MAX,
+                    description={"suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)},
+                ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
+
+                vol.Optional(
+                    ATTR_PARALLEL,
+                    description={"suggested_value": default_input.get(ATTR_PARALLEL, 1)},
                 ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
                 vol.Optional(
-                    "card_yaml",
+                    ATTR_CARD_YAML,
                     description={
-                        "suggested_value": default_input.get("card_yaml", False)
+                        "suggested_value": default_input.get(ATTR_CARD_YAML, False)
                     },
                 ): cv.boolean,
             }
@@ -686,10 +683,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ATTR_RAIN_BEHAVIOUR, "stop"
                 )
                 newdata[ATTR_MIN_SEC] = user_input[ATTR_MIN_SEC]
-                newdata["water_max"] = user_input["water_max"]
-                newdata["water_step"] = user_input["water_step"]
-                newdata["parallel"] = user_input["parallel"]
-                newdata["card_yaml"] = user_input["card_yaml"]
+                newdata[ATTR_WATER_MAX] = user_input[ATTR_WATER_MAX]
+                newdata[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
+                newdata[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
+                newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
+                newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 # Return the form of the next step.
                 self._data = newdata
                 if user_input[ATTR_START_TYPE] not in ["sunset"]:
@@ -712,21 +710,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # build a dict including entered values on error
         schema = vol.Schema(
             {
-                # vol.Optional(
-                #     ATTR_INTERLOCK,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_INTERLOCK, True)
-                #     },
-                # ): cv.boolean,
-                # 1 - Strict
-                #     turn off other programs when starting
-                #     turn off when another program starts
-                # 2 - loose
-                #     turn off all other programs when starting
-                #     stay running unless a 'strict' program starts
-                # 3 - off
-                #     turn off 'strict' programs only
-                #     stay running unless a 'strict' program starts
                 vol.Optional(
                     ATTR_INTERLOCK,
                     description={
@@ -772,20 +755,26 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     }
                 ),
                 vol.Optional(
-                    "water_max",
-                    description={"suggested_value": default_input.get("water_max", 30)},
+                    ATTR_WATER_MAX,
+                    description={"suggested_value": default_input.get(ATTR_WATER_MAX, 30)},
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
                 vol.Optional(
-                    "water_step",
-                    description={"suggested_value": default_input.get("water_step", 1)},
+                    ATTR_WATER_STEP,
+                    description={"suggested_value": default_input.get(ATTR_WATER_STEP, 1)},
                 ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
+
                 vol.Optional(
-                    "parallel",
-                    description={"suggested_value": default_input.get("parallel", 1)},
+                    ATTR_ZONE_DELAY_MAX,
+                    description={"suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)},
+                ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
+
+                vol.Optional(
+                    ATTR_PARALLEL,
+                    description={"suggested_value": default_input.get(ATTR_PARALLEL, 1)},
                 ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
                 vol.Optional(
-                    "card_yaml",
-                    description={"suggested_value": default_input.get("card_yaml", 1)},
+                    ATTR_CARD_YAML,
+                    description={"suggested_value": default_input.get(ATTR_CARD_YAML, 1)},
                 ): cv.boolean,
             }
         )

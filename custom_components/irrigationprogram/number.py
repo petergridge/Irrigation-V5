@@ -8,7 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from . import IrrigationData, IrrigationProgram
-from .const import CONST_DELAY_OFFSET, CONST_SUN_OFFSET, CONST_DELAY_OFFSET_POS
+from .const import CONST_DELAY_OFFSET, CONST_SUN_OFFSET
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ async def async_setup_entry(
             p.name,
             "inter_zone_delay",
             "sec",
-            CONST_DELAY_OFFSET_POS,
-            -CONST_DELAY_OFFSET,
+            p.zone_delay_max,
+            CONST_DELAY_OFFSET,
             1,
         )
         sensors.append(sensor)

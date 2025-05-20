@@ -209,7 +209,8 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
-					"card_yaml": "Permitir a criação de cartão de entidades em yaml"
+					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
+					"zone_delay_max": "Maximum zone transition delay"
 				}
 			}
 		}
@@ -245,7 +246,8 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
-					"card_yaml": "Permitir a criação de cartão de entidades em yaml"
+					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
+					"zone_delay_max": "Maximum zone transition delay"
 				}
 			},
 			"update_program": {

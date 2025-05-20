@@ -123,6 +123,7 @@ class IrrigationProgram:
     min_sec: str  # minutes|seconds
     water_max: int
     water_step: int
+    zone_delay_max: int
     parallel: int
     card_yaml: bool
 
@@ -158,6 +159,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         min_sec=config.get(ATTR_MIN_SEC, "minutes"),
         water_max=config.get("water_max", 30),
         water_step=config.get("water_step", 1),
+        zone_delay_max=config.get("zone_delay_max", 120),
         parallel=config.get("parallel", 1),
         card_yaml=config.get("card_yaml", False),
     )
@@ -289,7 +291,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 #             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
 
-async def async_stop_programs_new(hass, calling_program):
+async def async_stop_programs_new(hass:HomeAssistant, calling_program):
     """Stop all running programs."""
 
     async def stop_program():

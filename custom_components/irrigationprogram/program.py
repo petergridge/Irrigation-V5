@@ -510,7 +510,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await checkzone.switch.prepare_to_run(self._scheduled)
         else:
             # zone is running/queued turn it off
-            await checkzone.switch.async_turn_off_zone()
+            await checkzone.switch.async_turn_off()
             if self._run_zones.count(checkzone) > 0:
                 self._run_zones.remove(checkzone)
             if len(self._run_zones) == 0:
@@ -800,6 +800,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._running_zone = []
             self._run_zones = []
             for zone in self._zones:
-                await zone.switch.async_turn_off_zone()
+                await zone.switch.async_turn_off()
             self._state = False
         self.async_schedule_update_ha_state()
