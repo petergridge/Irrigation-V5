@@ -301,27 +301,22 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self.status.state in [
             CONST_DISABLED,
-            #            CONST_PROGRAM_DISABLED,
             CONST_UNAVAILABLE,
             CONST_ADJUSTED_OFF,
             CONST_NO_WATER_SOURCE,
             CONST_RAINING,
-            # CONST_ZONE_DISABLED,
         ]:
             return False
 
-        # if self.status.state in [CONST_ZONE_DISABLED] and scheduled:
-        #     return False
-
+        # Zone is diabled and not started from the zone (from the program)
         if self.status.state in [CONST_ZONE_DISABLED] and not self._zone_manual_start:
             return False
 
-        if self.status.state in [CONST_PROGRAM_DISABLED] and scheduled:
-            return False
-
+        # A manual start
         if not scheduled:
             return True
 
+        # lastly check the scheduled run time
         if self.next_run.native_value > dt_util.as_local(dt_util.now()):
             return False
 
@@ -376,23 +371,15 @@ class Zone(SwitchEntity, RestoreEntity):
                 self._stop = True
                 break
             v_error = await self.next_run_validation()
-            if (
-                self._status in (CONST_ON, CONST_PENDING, CONST_ECO)
-                and v_error != CONST_ZONE_DISABLED
+            if self._status in (CONST_ON, CONST_PENDING, CONST_ECO) and v_error not in (
+                CONST_ZONE_DISABLED,
+                CONST_PROGRAM_DISABLED,
             ):
                 # the zone is running so debounce
                 await asyncio.sleep(1)
                 continue
             # zone is not running so let the status change
             break
-
-        if v_error == CONST_ZONE_DISABLED and (
-            self._scheduled or not self._zone_manual_start
-        ):
-            self._stop = True
-
-        if v_error in (CONST_PROGRAM_DISABLED):
-            self._stop = True
 
         if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
             if v_error in (CONST_NO_WATER_SOURCE):
@@ -457,7 +444,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self.enabled.state == CONST_OFF:
             return CONST_ZONE_DISABLED
-        if self._programdata.switch.irrigation_on_value == CONST_OFF:
+        if not self._programdata.enabled.is_on:
             return CONST_PROGRAM_DISABLED
         if self._programdata.pause.is_on:
             return CONST_PAUSED
@@ -844,8 +831,8 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_turn_on_from_program(self, **kwargs):
         """Start the zone watering cycle."""
 
-        if self._state == CONST_ZONE_DISABLED:
-            return
+        # if self._state == CONST_ZONE_DISABLED:
+        #     return
 
         self._status = CONST_ON
         await self.status.set_value(CONST_ON)
