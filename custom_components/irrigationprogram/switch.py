@@ -18,81 +18,84 @@ from .zone import Zone
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: MyConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Initialize config entry. from config flow."""
-    data:IrrigationData = config_entry.runtime_data
+    data: IrrigationData = config_entry.runtime_data
     name = config_entry.runtime_data.program.name
     unique_id = config_entry.entry_id
     switches = []
     programs = []
 
-    #for Program
-    switch = EnableProgram(unique_id,name)
+    # for Program
+    switch = EnableProgram(unique_id, name)
     config_entry.runtime_data.program.enabled = switch
     switches.append(switch)
-    switch = ProgramConfig(unique_id,name)
+    switch = ProgramConfig(unique_id, name)
     config_entry.runtime_data.program.config = switch
     switches.append(switch)
-    switch = ProgramPause(unique_id,name)
+    switch = ProgramPause(unique_id, name)
     config_entry.runtime_data.program.pause = switch
     switches.append(switch)
 
     zones = data.zone_data
     for i, zone in enumerate(zones):
-        #check if the switch is ready
+        # check if the switch is ready
         switch_not_ready = True
         for _ in range(CONST_START_LATENCY):
             try:
-                friendly_name = hass.states.get(zone.zone).attributes.get('friendly_name')
+                friendly_name = hass.states.get(zone.zone).attributes.get(
+                    "friendly_name"
+                )
                 switch_not_ready = False
                 break
             except AttributeError:
                 await asyncio.sleep(1)
         if switch_not_ready:
-            #switch has not initialised raise an error
-            _LOGGER.error("Switch %s has not initialised before irrigation program",zone.zone)
+            # switch has not initialised raise an error
+            _LOGGER.error(
+                "Switch %s has not initialised before irrigation program", zone.zone
+            )
 
         z_name = zone.name
         if zone.rain_sensor or zone.adjustment or zone.water_source:
             switch = IgnoreRainSensor(unique_id, name, z_name)
             switches.append(switch)
-            config_entry.runtime_data.zone_data[i].ignore_sensors=switch
+            config_entry.runtime_data.zone_data[i].ignore_sensors = switch
 
         switch = EnableZone(unique_id, name, z_name)
-        config_entry.runtime_data.zone_data[i].enabled=switch
+        config_entry.runtime_data.zone_data[i].enabled = switch
         switches.append(switch)
 
         switch = ZoneConfig(unique_id, name, z_name)
-        config_entry.runtime_data.zone_data[i].config=switch
+        config_entry.runtime_data.zone_data[i].config = switch
         switches.append(switch)
 
-        switch = Zone(unique_id, name,z_name,friendly_name, zone,data.program)
-        config_entry.runtime_data.zone_data[i].switch=switch
+        switch = Zone(unique_id, name, z_name, friendly_name, zone, data.program)
+        config_entry.runtime_data.zone_data[i].switch = switch
         switches.append(switch)
     async_add_entities(switches)
 
-    #add program after switch as program references the switches
+    # add program after switch as program references the switches
     program = IrrigationProgram(hass, unique_id, name, data)
-    config_entry.runtime_data.program.switch=program
+    config_entry.runtime_data.program.switch = program
     programs.append(program)
     async_add_entities(programs)
 
-class ProgramConfig(SwitchEntity, RestoreEntity):
 
+class ProgramConfig(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
-    _attr_translation_key = 'config'
+    _attr_translation_key = "config"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,name
-    ) -> None:
+    def __init__(self, unique_id, name) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_{name}_config')
-        self._attr_attribution = f'Irrigation Controller: {name}'
+        self._attr_unique_id = slugify(f"{unique_id}_{name}_config")
+        self._attr_attribution = f"Irrigation Controller: {name}"
         self._state = "off"
         self._unique_id = unique_id
 
@@ -100,7 +103,7 @@ class ProgramConfig(SwitchEntity, RestoreEntity):
         """HA has started."""
         last_state = await self.async_get_last_state()
         if last_state is None:
-            self._state =  "off"
+            self._state = "off"
         else:
             self._state = last_state.state
         self.async_schedule_update_ha_state()
@@ -114,7 +117,7 @@ class ProgramConfig(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        #self._state = not self._state
+        # self._state = not self._state
 
         if self._state == "on":
             self._state = "off"
@@ -131,25 +134,23 @@ class ProgramConfig(SwitchEntity, RestoreEntity):
         """Turn the entity on."""
         self._state = "on"
         self.async_schedule_update_ha_state()
+
 
 class ProgramPause(SwitchEntity, RestoreEntity):
-
     _attr_has_entity_name = True
-    _attr_translation_key = 'pause'
+    _attr_translation_key = "pause"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,name
-    ) -> None:
+    def __init__(self, unique_id, name) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_{name}_pause')
-        self._attr_attribution = f'Irrigation Controller: {name}'
+        self._attr_unique_id = slugify(f"{unique_id}_{name}_pause")
+        self._attr_attribution = f"Irrigation Controller: {name}"
         self._state = "off"
         self._unique_id = unique_id
 
     async def async_added_to_hass(self):
         """HA has started."""
-        self._state =  "off"
+        self._state = "off"
 
     @property
     def is_on(self):
@@ -160,7 +161,7 @@ class ProgramPause(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        #self._state = not self._state
+        # self._state = not self._state
 
         if self._state == "on":
             self._state = "off"
@@ -177,19 +178,17 @@ class ProgramPause(SwitchEntity, RestoreEntity):
         """Turn the entity on."""
         self._state = "on"
         self.async_schedule_update_ha_state()
+
 
 class ZoneConfig(SwitchEntity, RestoreEntity):
-
     _attr_has_entity_name = True
-    _attr_translation_key = 'config'
+    _attr_translation_key = "config"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,pname,name
-    ) -> None:
+    def __init__(self, unique_id, pname, name) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_{name}_config')
-        self._attr_attribution = f'Irrigation Controller: {pname}, {name}'
+        self._attr_unique_id = slugify(f"{unique_id}_{name}_config")
+        self._attr_attribution = f"Irrigation Controller: {pname}, {name}"
         self._state = "off"
         self._unique_id = unique_id
 
@@ -197,7 +196,7 @@ class ZoneConfig(SwitchEntity, RestoreEntity):
         """HA has started."""
         last_state = await self.async_get_last_state()
         if last_state is None:
-            self._state =  "off"
+            self._state = "off"
         else:
             self._state = last_state.state
 
@@ -210,7 +209,7 @@ class ZoneConfig(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        #self._state = not self._state
+        # self._state = not self._state
 
         if self._state == "on":
             self._state = "off"
@@ -227,19 +226,17 @@ class ZoneConfig(SwitchEntity, RestoreEntity):
         """Turn the entity on."""
         self._state = "on"
         self.async_schedule_update_ha_state()
+
 
 class IgnoreRainSensor(SwitchEntity, RestoreEntity):
-
     _attr_has_entity_name = True
-    _attr_translation_key = 'ignore_sensor'
+    _attr_translation_key = "ignore_sensor"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,pname,name
-    ) -> None:
+    def __init__(self, unique_id, pname, name) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_{name}_ignore_sensors')
-        self._attr_attribution = f'Irrigation Controller: {pname}, {name}'
+        self._attr_unique_id = slugify(f"{unique_id}_{name}_ignore_sensors")
+        self._attr_attribution = f"Irrigation Controller: {pname}, {name}"
         self._state = "off"
         self._unique_id = unique_id
 
@@ -247,7 +244,7 @@ class IgnoreRainSensor(SwitchEntity, RestoreEntity):
         """HA has started."""
         last_state = await self.async_get_last_state()
         if last_state is None:
-            self._state =  "off"
+            self._state = "off"
         else:
             self._state = last_state.state
 
@@ -260,7 +257,7 @@ class IgnoreRainSensor(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        #self._state = not self._state
+        # self._state = not self._state
 
         if self._state == "on":
             self._state = "off"
@@ -278,18 +275,16 @@ class IgnoreRainSensor(SwitchEntity, RestoreEntity):
         self.async_schedule_update_ha_state()
         self._state = "on"
 
-class EnableProgram(SwitchEntity, RestoreEntity):
 
+class EnableProgram(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
-    _attr_translation_key = 'enable_program'
+    _attr_translation_key = "enable_program"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,pname
-    ) -> None:
+    def __init__(self, unique_id, pname) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_enable_program')
-        self._attr_attribution = f'Irrigation Controller: {pname}'
+        self._attr_unique_id = slugify(f"{unique_id}_enable_program")
+        self._attr_attribution = f"Irrigation Controller: {pname}"
         self._state = False
         self._pname = pname
         self._unique_id = unique_id
@@ -298,7 +293,7 @@ class EnableProgram(SwitchEntity, RestoreEntity):
         """HA has started."""
         last_state = await self.async_get_last_state()
         if last_state is None:
-            self._state =  "off"
+            self._state = "off"
         else:
             self._state = last_state.state
 
@@ -311,7 +306,7 @@ class EnableProgram(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        #self._state = not self._state
+        # self._state = not self._state
 
         if self._state == "on":
             self._state = "off"
@@ -329,18 +324,16 @@ class EnableProgram(SwitchEntity, RestoreEntity):
         self._state = "on"
         self.async_schedule_update_ha_state()
 
-class EnableZone(SwitchEntity, RestoreEntity):
 
+class EnableZone(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
-    _attr_translation_key = 'enable_zone'
+    _attr_translation_key = "enable_zone"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(
-        self, unique_id,pname,zname
-    ) -> None:
+    def __init__(self, unique_id, pname, zname) -> None:
         """Initialize a Irrigation program."""
-        self._attr_unique_id = slugify(f'{unique_id}_{zname}_enable_zone')
-        self._attr_attribution = f'Irrigation Controller: {pname}, {zname}'
+        self._attr_unique_id = slugify(f"{unique_id}_{zname}_enable_zone")
+        self._attr_attribution = f"Irrigation Controller: {pname}, {zname}"
         self._state = False
         self._unique_id = unique_id
 
@@ -348,10 +341,10 @@ class EnableZone(SwitchEntity, RestoreEntity):
         """HA has started."""
         last_state = await self.async_get_last_state()
         if last_state is None:
-            self._state =  True
+            self._state = True
         else:
             self._state = False
-            if last_state.state == 'on':
+            if last_state.state == "on":
                 self._state = True
 
     @property

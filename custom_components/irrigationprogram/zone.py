@@ -740,7 +740,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
-        if self._programdata.switch.state == CONST_ON:
+        if self._zonedata.switch.state == CONST_ON:
             await self.async_turn_off()
         else:
             await self.async_turn_on()

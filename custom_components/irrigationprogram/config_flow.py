@@ -641,6 +641,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Create the program config."""
         newdata = {}
         newdata.update(self._data)
+
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
         for zone in self._delete:
             for zonenumber, szone in enumerate(sortedzones):
@@ -649,11 +650,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         for zone in sortedzones:
             if zone["freq"] is False:
-                # ensure defaulted freq is removed
-                friendlyname = zone.get(ATTR_ZONE).split(".")[1]
-                await self.get_er(
-                    "select", slugify(f"{self._uid}_{friendlyname}_frequency")
-                )
+                #ensure program freq is enabled
+                newdata.update({'freq':True})
 
         newdata.update({ATTR_ZONES: sortedzones})
         # the top level of the dictionary needs to change
