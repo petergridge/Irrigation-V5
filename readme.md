@@ -463,6 +463,25 @@ The yaml is generated on start and when a program configuration is created or mo
 Insert the generated yaml into a Manual Card.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+
+### 2025.06.02
+- Allow input_boolean for Rain and Water source
+- Allow input number for Adjustment
+- During latency check, start solenoid with each 1 second cycle, could assist with zigbee devices
+- allow adjustment of latency constant
+- add option to create a rain delay
+  - adds n days to the frequency intiated.
+  - extends the calculated next run by n days, i.e. from last ran date
+  - behaviour
+    - when turned on adds the selected number of days to the calculated next run
+    - turns off whe the program runs
+    - can be turned off.
+    - applies to all zones of the program
+  implementaion
+    - Switch to turn off and on
+    - input number to set delay
+    - option to enable in advanced features
+
 ###  V2025.05.02
 - Fix lag on stopping programs, prevent program being started until it has completely stopped (1-2 seconds)
 ###  V2025.05.01
