@@ -186,12 +186,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += add_entity(self._program.enabled, condition)
         card += add_entity(self._program.frequency, condition)
         card += add_entity(self._program.inter_zone_delay, condition)
+        if self._program.rain_delay_on:
+            card += add_entity(self._program.rain_delay, condition)
+            card += add_entity(self._program.rain_delay_days, condition)
 
         # now process the zones
         for zone in self._zones:
             card += "- type: section" + chr(10)
             card += "  label: ''" + chr(10)
-
             card += "- type: conditional" + chr(10)
             card += "  conditions:" + chr(10)
             card += "  - entity: " + zone.switch.entity_id + chr(10)
@@ -428,7 +430,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._program.sunset_offset:
             monitor.append(self._program.sunset_offset.entity_id)
         monitor.append(self._program.enabled.entity_id)
-        monitor.append(self._program.pause.entity_id)
+        if self._program.rain_delay:
+            monitor.append(self._program.rain_delay.entity_id)
+            monitor.append(self._program.rain_delay_days.entity_id)
         if self._program.frequency:
             monitor.append(self._program.frequency.entity_id)
         for zone in self._zones:
@@ -469,6 +473,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._extra_attrs[ATTR_IRRIGATION_ON] = self._program.enabled.entity_id
         if self._program.inter_zone_delay:
             self._extra_attrs[ATTR_DELAY] = self._program.inter_zone_delay.entity_id
+        if self._program.rain_delay:
+            self._extra_attrs["enable_rain_delay"] = self._program.rain_delay.entity_id
+            self._extra_attrs["rain_delay_days"] = (
+                self._program.rain_delay_days.entity_id
+            )
         self._extra_attrs[ATTR_REMAINING] = self._program.remaining_time.entity_id
         self._extra_attrs[ATTR_SHOW_CONFIG] = self._program.config.entity_id
         self._extra_attrs[ATTR_PAUSE] = self._program.pause.entity_id
@@ -483,7 +492,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def entity_toggle_zone(self, zone) -> None:
         """Toggle a specific zone."""
-        #called from the zone to ensure the program is notified
+        # called from the zone to ensure the program is notified
         # when the zone is stopped manually while it is running
 
         # built to handle a list but only one

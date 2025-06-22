@@ -23,7 +23,8 @@
 		"rain_behaviour": {
 			"options": {
 				"stop": "Stop the program",
-				"continue": "Allow program to complete"
+				"continue": "Allow program to complete",
+				"delay": "Delay the next run when rain detected"
 			}
 		},
 		"interlock": {
@@ -85,6 +86,9 @@
 			},
 			"sunset_offset":{
 				"name":"Sunset offset"
+			},
+			"rain_delay_days":{
+				"name":"Rain Delay"
 			}
 		},
 		"time":{
@@ -100,6 +104,9 @@
 		"switch":{
 			"ignore_sensor":{
 				"name":"Ignore sensors"
+			},
+			"enable_rain_delay":{
+				"name":"Enable rain delay"
 			},
 			"enable_program":{
 				"name":"Enable program"

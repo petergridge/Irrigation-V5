@@ -85,6 +85,9 @@
 			},
 			"sunset_offset":{
 				"name":"Sonnenuntergang offset"
+			},
+			"rain_delay_days":{
+				"name":"Rain delay"
 			}
 		},
 		"time":{
@@ -100,6 +103,9 @@
 		"switch":{
 			"ignore_sensor":{
 				"name":"Sensoren ignorieren"
+			},
+			"enable_rain_delay":{
+				"name":"Enable rain delay"
 			},
 			"enable_program":{
 				"name":"Programm aktivieren"
@@ -210,7 +216,8 @@
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
 					"card_yaml": "Entities Card YAML definition einschalten",
-					"zone_delay_max": "Maximum zone transition delay"
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			}
 		}
@@ -247,7 +254,8 @@
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
 					"card_yaml": "Entities Card YAML definition einschalten",
-					"zone_delay_max": "Maximum zone transition delay"
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			},
 			"update_program": {

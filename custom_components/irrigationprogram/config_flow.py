@@ -25,10 +25,12 @@ from .const import (
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
     ATTR_INTERLOCK,
+    ATTR_LATENCY,
     ATTR_MIN_SEC,
     ATTR_PARALLEL,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
+    ATTR_RAIN_DELAY,
     ATTR_RAIN_SENSOR,
     ATTR_START_TYPE,
     ATTR_WATER_ADJUST,
@@ -261,7 +263,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_WATER_ADJUST)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["sensor", "input_number"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_RAIN_SENSOR,
@@ -269,7 +274,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_WATER_SOURCE,
@@ -277,7 +285,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
@@ -433,7 +444,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_WATER_ADJUST)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["sensor", "input_number"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_RAIN_SENSOR,
@@ -441,7 +455,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_WATER_SOURCE,
@@ -449,7 +466,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
@@ -477,8 +497,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_WATER_MAX] = user_input[ATTR_WATER_MAX]
                 self._data[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
                 self._data[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
+                self._data[ATTR_LATENCY] = user_input[ATTR_LATENCY]
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
+                self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
 
         if user_input:
@@ -540,26 +562,42 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 ),
                 vol.Optional(
                     ATTR_WATER_MAX,
-                    description={"suggested_value": default_input.get(ATTR_WATER_MAX, 30)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_MAX, 30)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
                 vol.Optional(
                     ATTR_WATER_STEP,
-                    description={"suggested_value": default_input.get(ATTR_WATER_STEP, 1)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_STEP, 1)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
-
                 vol.Optional(
                     ATTR_ZONE_DELAY_MAX,
-                    description={"suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
-
+                vol.Optional(
+                    ATTR_LATENCY,
+                    description={"suggested_value": default_input.get(ATTR_LATENCY, 5)},
+                ): sel.sel({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
                     ATTR_PARALLEL,
-                    description={"suggested_value": default_input.get(ATTR_PARALLEL, 1)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_PARALLEL, 1)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
                 vol.Optional(
                     ATTR_CARD_YAML,
                     description={
                         "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_RAIN_DELAY,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
                     },
                 ): cv.boolean,
             }
@@ -645,13 +683,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         sortedzones = bubble_sort(self._data.get(ATTR_ZONES))
         for zone in self._delete:
             for zonenumber, szone in enumerate(sortedzones):
-                if szone['zone'] == zone:
+                if szone["zone"] == zone:
                     sortedzones.pop(zonenumber)
 
         for zone in sortedzones:
             if zone["freq"] is False:
-                #ensure program freq is enabled
-                newdata.update({'freq':True})
+                # ensure program freq is enabled
+                newdata.update({"freq": True})
 
         newdata.update({ATTR_ZONES: sortedzones})
         # the top level of the dictionary needs to change
@@ -676,7 +714,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if not errors:
                 newdata[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
-                newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE,"selector")
+                newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE, "selector")
                 newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
                     ATTR_RAIN_BEHAVIOUR, "stop"
                 )
@@ -684,8 +722,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_WATER_MAX] = user_input[ATTR_WATER_MAX]
                 newdata[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
                 newdata[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
+                newdata[ATTR_LATENCY] = user_input[ATTR_LATENCY]
                 newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
+                newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
                 if user_input[ATTR_START_TYPE] not in ["sunset"]:
@@ -696,6 +736,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     await self.get_er("time", slugify(f"{self._uid}_start_time"))
                 if user_input[ATTR_START_TYPE] not in ["multistart"]:
                     await self.get_er("text", slugify(f"{self._uid}_start_times"))
+                if not user_input[ATTR_RAIN_DELAY]:
+                    await self.get_er("number", slugify(f"{self._uid}_rain_delay_days"))
+                    await self.get_er(
+                        "switch", slugify(f"{self._uid}_enable_rain_delay")
+                    )
                 return await self.async_step_init()
 
         if user_input:
@@ -754,25 +799,43 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ),
                 vol.Optional(
                     ATTR_WATER_MAX,
-                    description={"suggested_value": default_input.get(ATTR_WATER_MAX, 30)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_MAX, 30)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
                 vol.Optional(
                     ATTR_WATER_STEP,
-                    description={"suggested_value": default_input.get(ATTR_WATER_STEP, 1)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_WATER_STEP, 1)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 100, "mode": "box"}),
-
                 vol.Optional(
                     ATTR_ZONE_DELAY_MAX,
-                    description={"suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_ZONE_DELAY_MAX, 120)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 9999, "mode": "box"}),
-
+                vol.Optional(
+                    ATTR_LATENCY,
+                    description={"suggested_value": default_input.get(ATTR_LATENCY, 5)},
+                ): sel.NumberSelector({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
                     ATTR_PARALLEL,
-                    description={"suggested_value": default_input.get(ATTR_PARALLEL, 1)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_PARALLEL, 1)
+                    },
                 ): sel.NumberSelector({"min": 1, "max": 10, "mode": "box"}),
                 vol.Optional(
                     ATTR_CARD_YAML,
-                    description={"suggested_value": default_input.get(ATTR_CARD_YAML, 1)},
+                    description={
+                        "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_RAIN_DELAY,
+                    description={
+                        "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
+                    },
                 ): cv.boolean,
             }
         )
@@ -1071,7 +1134,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_WATER_ADJUST)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["sensor", "input_number"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_RAIN_SENSOR,
@@ -1079,7 +1145,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_SENSOR)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_WATER_SOURCE,
@@ -1087,7 +1156,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
@@ -1171,7 +1243,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_WATER_ADJUST, None)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["sensor", "input_number"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_RAIN_SENSOR,
@@ -1179,7 +1254,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_SENSOR, None)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_WATER_SOURCE,
@@ -1187,7 +1265,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_WATER_SOURCE, None)
                     },
                 ): sel.EntitySelector(
-                    {"domain": ["binary_sensor"], "exclude_entities": self._exclude}
+                    {
+                        "domain": ["binary_sensor", "input_boolean"],
+                        "exclude_entities": self._exclude,
+                    }
                 ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,

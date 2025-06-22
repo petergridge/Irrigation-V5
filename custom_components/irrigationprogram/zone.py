@@ -25,6 +25,7 @@ from .const import (
     ATTR_HISTORICAL_FLOW,
     ATTR_IGNORE_SENSOR,
     ATTR_LAST_RAN,
+    #    ATTR_LATENCY,
     ATTR_NEXT_RUN,
     ATTR_RAIN_SENSOR,
     ATTR_REMAINING,
@@ -43,7 +44,7 @@ from .const import (
     CONST_CLOSED,
     CONST_DISABLED,
     CONST_ECO,
-    CONST_LATENCY,
+    #    CONST_LATENCY,
     CONST_NO_WATER_SOURCE,
     CONST_OFF,
     CONST_ON,
@@ -103,6 +104,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._hist_flow_rate = 1
         self._water_adjust_prior = 1
         self._zone_manual_start = False
+        self._latency = programdata.latency
 
     async def async_added_to_hass(self):
         """Run when HA starts."""
@@ -205,8 +207,19 @@ class Zone(SwitchEntity, RestoreEntity):
     @property
     def frequency(self) -> SensorEntity:
         """Frequency entity select."""
+        # manage the impact of the rain delay on frequency
+        delay = 0
+        if self._programdata.rain_delay:
+            if self._programdata.rain_delay.state == CONST_ON:
+                delay = int(self._programdata.rain_delay_days.state)
+
         if self._zonedata.frequency:
+            if self._zonedata.frequency.state.isnumeric():
+                return int(self._zonedata.frequency.state) + delay
             return self._zonedata.frequency.state
+
+        if self._programdata.frequency.state.isnumeric():
+            return int(self._programdata.frequency.state) + delay
         return self._programdata.frequency.state
 
     @property
@@ -320,6 +333,8 @@ class Zone(SwitchEntity, RestoreEntity):
         if self.next_run.native_value > dt_util.as_local(dt_util.now()):
             return False
 
+        # turn off the rain delay feature
+        await self._programdata.rain_delay.async_turn_off()
         return True
 
     # end should_run
@@ -330,7 +345,7 @@ class Zone(SwitchEntity, RestoreEntity):
         if self._status == CONST_PAUSED:
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_on()
-                for _ in range(CONST_LATENCY):
+                for _ in range(self._latency):
                     if self._aborted:
                         break
                     if self.hass.states.get(self.solenoid).state in [
@@ -365,7 +380,7 @@ class Zone(SwitchEntity, RestoreEntity):
         ):
             return self._status
 
-        for _ in range(CONST_LATENCY):
+        for _ in range(self._latency):
             # allow for false readings/debounce
             if self._aborted:
                 self._stop = True
@@ -581,6 +596,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 v_next_run = v_last_ran.replace(
                     hour=firststarthour, minute=firststartmin, second=00, microsecond=00
                 ) + timedelta(days=frq)
+
         except ValueError:
             # Frq is days of week
             string_freq = self.frequency
@@ -624,7 +640,7 @@ class Zone(SwitchEntity, RestoreEntity):
     async def check_switch_state(self):
         """Check the solenoid switch/valve state."""
         # wait a few seconds if offline it may come back
-        for _ in range(CONST_LATENCY):
+        for _ in range(self._latency):
             # latency check if it has gone offline for a short period
             if self.hass.states.get(self.solenoid).state in [CONST_OFF, CONST_CLOSED]:
                 return False
@@ -831,9 +847,6 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_turn_on_from_program(self, **kwargs):
         """Start the zone watering cycle."""
 
-        # if self._state == CONST_ZONE_DISABLED:
-        #     return
-
         self._status = CONST_ON
         await self.status.set_value(CONST_ON)
         self._state = CONST_ON
@@ -858,15 +871,19 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.status.set_value(self._status)
             if await self.check_switch_state() is False and self._stop is False:
                 await self.async_solenoid_turn_on()
-                for _ in range(CONST_LATENCY):
+                for _ in range(self._latency):
                     self._stop = True
                     if self._aborted:
                         break
                     if self._status == CONST_PAUSED:
                         self._stop = False
                         break
+                    # try to turn the switch on again
+                    # this is an attempt to handle zigbee devices that sleep
+                    await asyncio.sleep(1)
                     if await self.check_switch_state() is not True:
                         # if not the expected state loop again
+                        await self.async_solenoid_turn_on()
                         await asyncio.sleep(1)
                         continue
                     self._stop = False
@@ -874,7 +891,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 else:
                     async_create(
                         self.hass,
-                        message=f"Switch has latency exceeding {CONST_LATENCY} seconds, cannot confirm {self.name} state is on.",
+                        message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is on.",
                         title="Irrigation Controller",
                     )
                     event_data = {
@@ -905,7 +922,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     )
                     await self.remaining_time.set_value(self._remaining_time)
                     if self._stop:
-                        #                        self._aborted = True
+                        # self._aborted = True
                         break
                     await asyncio.sleep(1)
             # abort
@@ -944,7 +961,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 return 0
 
             # Check to see if the zone has been stopped
-            for _ in range(CONST_LATENCY):
+            for _ in range(self._latency):
                 self._stop = True
                 if self._aborted:
                     break
@@ -991,7 +1008,7 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.remaining_time.set_value(self._remaining_time)
 
             # Check to see if the zone has been stopped
-            for _ in range(CONST_LATENCY):
+            for _ in range(self._latency):
                 self._stop = True
                 if self._aborted:
                     break

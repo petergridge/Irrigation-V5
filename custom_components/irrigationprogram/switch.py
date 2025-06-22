@@ -41,6 +41,10 @@ async def async_setup_entry(
     switch = ProgramPause(unique_id, name)
     config_entry.runtime_data.program.pause = switch
     switches.append(switch)
+    if config_entry.runtime_data.program.rain_delay_on:
+        switch = EnableRainDelay(unique_id, name)
+        config_entry.runtime_data.program.rain_delay = switch
+        switches.append(switch)
 
     zones = data.zone_data
     for i, zone in enumerate(zones):
@@ -365,4 +369,53 @@ class EnableZone(SwitchEntity, RestoreEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         self._state = True
+        self.async_schedule_update_ha_state()
+
+
+class EnableRainDelay(SwitchEntity, RestoreEntity):
+    _attr_has_entity_name = True
+    _attr_translation_key = "enable_rain_delay"
+    _unrecorded_attributes = frozenset({MATCH_ALL})
+
+    def __init__(self, unique_id, name) -> None:
+        """Initialize a Irrigation program."""
+        self._attr_unique_id = slugify(f"{unique_id}_enable_rain_delay")
+        self._attr_attribution = f"Irrigation Controller: {name}"
+        self._state = "off"
+        self._unique_id = unique_id
+
+    async def async_added_to_hass(self):
+        """HA has started."""
+        last_state = await self.async_get_last_state()
+        if last_state is None:
+            self._state = "off"
+        else:
+            self._state = last_state.state
+        self.async_schedule_update_ha_state()
+
+    @property
+    def is_on(self):
+        """Return true if switch is on."""
+        if self._state == "on":
+            return True
+        return False
+
+    async def async_toggle(self, **kwargs):
+        """Toggle the entity."""
+        # self._state = not self._state
+
+        if self._state == "on":
+            self._state = "off"
+        else:
+            self._state = "on"
+        self.async_schedule_update_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
+        self._state = "off"
+        self.async_schedule_update_ha_state()
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
+        self._state = "on"
         self.async_schedule_update_ha_state()

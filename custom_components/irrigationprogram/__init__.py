@@ -27,9 +27,11 @@ from .const import (
     ATTR_FLOW_SENSOR,
     ATTR_GROUPS,
     ATTR_INTERLOCK,
+    ATTR_LATENCY,
     ATTR_MIN_SEC,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
+    ATTR_RAIN_DELAY,
     ATTR_RAIN_SENSOR,
     ATTR_SHOW_CONFIG,
     ATTR_START_TYPE,
@@ -103,6 +105,9 @@ class IrrigationProgram:
     name: str
     switch: SwitchEntity
     pause: SwitchEntity
+    rain_delay_on: bool
+    rain_delay: SwitchEntity
+    rain_delay_days: NumberEntity
     unique_id: str
     config: SwitchEntity
     start_time: TimeEntity  # generated
@@ -126,6 +131,7 @@ class IrrigationProgram:
     zone_delay_max: int
     parallel: int
     card_yaml: bool
+    latency: int
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -139,6 +145,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         name=entry.title,
         switch=None,
         pause=None,
+        rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
+        rain_delay=None,
+        rain_delay_days=None,
         unique_id=entry.entry_id,
         config=None,
         start_time=None,
@@ -158,6 +167,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         zone_count=len(config.get(ATTR_ZONES)),
         min_sec=config.get(ATTR_MIN_SEC, "minutes"),
         water_max=config.get("water_max", 30),
+        latency=int(config.get(ATTR_LATENCY, 5)),
         water_step=config.get("water_step", 1),
         zone_delay_max=config.get("zone_delay_max", 120),
         parallel=config.get("parallel", 1),
@@ -291,7 +301,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 #             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
 
-async def async_stop_programs_new(hass:HomeAssistant, calling_program):
+async def async_stop_programs_new(hass: HomeAssistant, calling_program):
     """Stop all running programs."""
 
     async def stop_program():

@@ -28,9 +28,9 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Stipt – Andere programma’s uitschakelen bij het starten, uitschakelen als een ander programma start",
-				"loose": "Los – alle andere programma’s uitschakelen bij het starten, actief blijven tenzij een ‘stipt’ programma wordt gestart",
-				"off": "Uit – alleen ‘stipt’ programma’s uitschakelen, actief blijven tenzij een ‘stipt’ programma wordt gestart"
+				"strict": "Stipt - Andere programma's uitschakelen bij het starten, uitschakelen als een ander programma start",
+				"loose": "Los - alle andere programma's uitschakelen bij het starten, actief blijven tenzij een 'stipt' programma wordt gestart",
+				"off": "Uit - alleen 'stipt' programma's uitschakelen, actief blijven tenzij een 'stipt' programma wordt gestart"
 			}
 		}
 	},
@@ -85,6 +85,9 @@
 			},
 			"sunset_offset":{
 				"name":"Zonsondergang offset"
+			},
+			"rain_delay_days":{
+				"name":"Rain delay"
 			}
 		},
 		"time":{
@@ -100,6 +103,9 @@
 		"switch":{
 			"ignore_sensor":{
 				"name":"Negeer sensoren"
+			},
+			"enable_rain_delay":{
+				"name":"Enable rain delay"
 			},
 			"enable_program":{
 				"name":"Programma aan"
@@ -210,7 +216,8 @@
 					"water_step": "Tijd/volume stap",
 					"parallel": "Zone parallel execution",
 					"card_yaml": "Enable creation of entities card yaml",
-					"zone_delay_max": "Maximum zone transition delay"
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			}
 		}
@@ -247,7 +254,8 @@
 					"water_step": "Tijd/volume stap",
 					"parallel": "Zone parallel uitvoering",
 					"card_yaml": "Enable creation of entities card yaml",
-					"zone_delay_max": "Maximum zone transition delay"
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			},
 			"update_program": {
