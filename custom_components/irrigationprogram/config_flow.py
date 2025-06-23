@@ -323,9 +323,17 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         # build list of zones
         zones = [zone[ATTR_ZONE] for zone in self._data[ATTR_ZONES]]
         # build the options list
-        optionslist = [
-            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        ]
+        optionslist = []
+        for zone in zones:
+            try:
+                optionslist.append(
+                    {"label": self.hass.states.get(zone).name, "value": zone}
+                )
+            except:
+                optionslist.append({"label": zone + " offline!", "value": zone})
+        # optionslist = [
+        #     {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        # ]
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(
@@ -357,9 +365,17 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
         # build list of zones
         zones = [zone[ATTR_ZONE] for zone in sortedzones]
         # build the options list
-        optionslist = [
-            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        ]
+        optionslist = []
+        for zone in zones:
+            try:
+                optionslist.append(
+                    {"label": self.hass.states.get(zone).name, "value": zone}
+                )
+            except:
+                optionslist.append({"label": zone + " offline!", "value": zone})
+        # optionslist = [
+        #     {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
+        # ]
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(
@@ -997,9 +1013,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # remove zones already flagged for deletion
         zones = [zone for zone in zones if zone not in self._delete]
         # build the options list
-        optionslist = [
-            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        ]
+        optionslist = []
+        for zone in zones:
+            try:
+                optionslist.append(
+                    {"label": self.hass.states.get(zone).name, "value": zone}
+                )
+            except AttributeError:
+                optionslist.append({"label": zone + " offline!", "value": zone})
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(
@@ -1032,9 +1053,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # remove zones already flagged for deletion
         zones = [zone for zone in zones if zone not in self._delete]
         # build the options list
-        optionslist = [
-            {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        ]
+        optionslist = []
+        for zone in zones:
+            try:
+                optionslist.append(
+                    {"label": self.hass.states.get(zone).name, "value": zone}
+                )
+            except AttributeError:
+                optionslist.append({"label": zone + " offline!", "value": zone})
+
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(

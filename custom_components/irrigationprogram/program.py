@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 import logging
 from zoneinfo import ZoneInfo
 
-from homeassistant.components.persistent_notification import async_create
+from homeassistant.components.persistent_notification import async_create, async_dismiss
 from homeassistant.components.switch import ENTITY_ID_FORMAT, SwitchEntity
 from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant, callback
@@ -273,7 +273,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         # create the persistent notification
         if self._program.card_yaml is True:
-            async_create(self._hass, message=card, title="Irrigation Controller")
+            async_dismiss(self.hass, "irrigation_card")
+            async_create(
+                self._hass,
+                message=card,
+                title="Irrigation Controller",
+                notification_id="irrigation_card",
+            )
 
     async def async_will_remove_from_hass(self) -> None:
         """Cancel next update."""
@@ -423,37 +429,51 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     @callback
     def set_up_entity_monitoring(self):
         """Set up to monitor these entities to change the next run data."""
+
+        def monitor_append(object, name=None):
+            try:
+                monitor.append(object)
+            except AttributeError:
+                async_dismiss(self.hass, "irrigation_device_error1")
+                async_create(
+                    self.hass,
+                    message=f"Configured monitor {name} item is no longer available or has been renamed",
+                    title="Irrigation Controller",
+                    notification_id="irrigation_device_error1",
+                )
+
         monitor = []
-        monitor.append(self._program.start_time.entity_id)
+        monitor_append(self._program.start_time.entity_id, "start_time")
         if self._program.sunrise_offset:
-            monitor.append(self._program.sunrise_offset.entity_id)
+            monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset")
         if self._program.sunset_offset:
-            monitor.append(self._program.sunset_offset.entity_id)
-        monitor.append(self._program.enabled.entity_id)
+            monitor_append(self._program.sunset_offset.entity_id, "sunset_offset")
+        monitor_append(self._program.enabled.entity_id, "enabled")
         if self._program.rain_delay:
-            monitor.append(self._program.rain_delay.entity_id)
-            monitor.append(self._program.rain_delay_days.entity_id)
+            monitor_append(self._program.rain_delay.entity_id, "rain_delay")
+            monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days")
         if self._program.frequency:
-            monitor.append(self._program.frequency.entity_id)
+            monitor_append(self._program.frequency.entity_id, "frequency")
         for zone in self._zones:
-            monitor.append(zone.switch.entity_id)
-            monitor.append(zone.enabled.entity_id)
+            monitor_append(zone.switch.entity_id, "zone")
+            monitor_append(zone.enabled.entity_id, "enabled")
             if zone.frequency:
-                monitor.append(zone.frequency.entity_id)
+                monitor_append(zone.frequency.entity_id, "frequency")
             if zone.rain_sensor:
-                monitor.append(zone.rain_sensor)
+                monitor_append(zone.rain_sensor, "rain_sensor")
             if zone.ignore_sensors:
-                monitor.append(zone.ignore_sensors.entity_id)
+                monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors")
             if zone.adjustment:
-                monitor.append(zone.adjustment)
+                monitor_append(zone.adjustment, "adjustment")
             if zone.water_source:
-                monitor.append(zone.water_source)
+                monitor_append(zone.water_source, "water_source")
 
         self._unsub_monitor = async_track_state_change_event(
             self._hass, tuple(monitor), self.update_next_run
         )
+
         monitor = []
-        monitor.append(self._program.pause.entity_id)
+        monitor_append(self._program.pause.entity_id, "pause")
         self._unsub_pause = async_track_state_change_event(
             self._hass, tuple(monitor), self.pause_program
         )
@@ -486,7 +506,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         zones = self._zones
         zones = []
         for zone in self._zones:
-            zones.append(zone.switch.entity_id)
+            try:
+                zones.append(zone.switch.entity_id)
+            except AttributeError:
+                async_dismiss(self.hass, "irrigation_device_error2")
+                async_create(
+                    self.hass,
+                    message=f"Configured zone item {zone} is no longer available or has been renamed",
+                    title="Irrigation Controller",
+                    notification_id="irrigation_device_error2",
+                )
         self._extra_attrs["zones"] = zones
         self.async_schedule_update_ha_state()
 

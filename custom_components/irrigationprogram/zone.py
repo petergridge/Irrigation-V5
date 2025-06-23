@@ -4,7 +4,7 @@ import logging
 import math
 
 from homeassistant.components.number import NumberEntity
-from homeassistant.components.persistent_notification import async_create
+from homeassistant.components.persistent_notification import async_create, async_dismiss
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
@@ -398,10 +398,12 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
             if v_error in (CONST_NO_WATER_SOURCE):
+                async_dismiss(self.hass, "irrigation_water_source")
                 async_create(
                     self.hass,
-                    message=f"No water source detected, {self.name} terminated",
+                    message=f"No water source detected, {self.name} terminated. Your water source sensor is reporting no water is available",
                     title="Irrigation Controller",
+                    notification_id="irrigation_water_source",
                 )
 
                 event_data = {
@@ -417,10 +419,12 @@ class Zone(SwitchEntity, RestoreEntity):
                 await self.async_turn_off_zone()
                 await self.calc_next_run()
             if self._status in (CONST_UNAVAILABLE):
+                async_dismiss(self.hass, "irrigation_switch_offline")
                 async_create(
                     self.hass,
-                    message=f"Switch is offline, {self.name} terminated",
+                    message=f"Switch is offline, {self.name} terminated.",
                     title="Irrigation Controller",
+                    notification_id="irrigation_switch_offline",
                 )
 
                 event_data = {
@@ -435,10 +439,12 @@ class Zone(SwitchEntity, RestoreEntity):
                 self._stop = True
                 await self.async_turn_off_zone()
             if v_error in (CONST_RAINING_STOP):
+                async_dismiss(self.hass, "irrigation_rain_detected")
                 async_create(
                     self.hass,
                     message=f"Rain has been detected, {self.name} terminated",
                     title="Irrigation Controller",
+                    notification_id="irrigation_rain_detected",
                 )
 
                 event_data = {
@@ -641,13 +647,43 @@ class Zone(SwitchEntity, RestoreEntity):
         """Check the solenoid switch/valve state."""
         # wait a few seconds if offline it may come back
         for _ in range(self._latency):
-            # latency check if it has gone offline for a short period
-            if self.hass.states.get(self.solenoid).state in [CONST_OFF, CONST_CLOSED]:
-                return False
-            if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
-                return True
+            if not self.hass.states.async_available(self.solenoid):
+                break
             await asyncio.sleep(1)
-
+        else:
+            async_create(
+                self.hass,
+                message=f"Configured item, {self.solenoid}, is no longer available or has been renamed",
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
+            return None
+        if self.hass.states.get(self.solenoid).state in [
+            CONST_OFF,
+            CONST_CLOSED,
+        ]:
+            return False
+        if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
+            return True
+        # for _ in range(self._latency):
+        #     try:
+        #         # latency check if it has gone offline for a short period
+        #         if self.hass.states.get(self.solenoid).state in [
+        #             CONST_OFF,
+        #             CONST_CLOSED,
+        #         ]:
+        #             return False
+        #         if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
+        #             return True
+        #         await asyncio.sleep(1)
+        #     except AttributeError:
+        #         #async_dismiss(self.hass, "irrigation_device_error")
+        #         async_create(
+        #             self.hass,
+        #             message=f"Configured item, {self.solenoid}, is no longer available or has been renamed",
+        #             title="Irrigation Controller",
+        #             notification_id="irrigation_device_error",
+        #         )
         return None
 
     async def async_solenoid_turn_on(self):
@@ -889,10 +925,12 @@ class Zone(SwitchEntity, RestoreEntity):
                     self._stop = False
                     break
                 else:
+                    async_dismiss(self.hass, "irrigation_latency")
                     async_create(
                         self.hass,
                         message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is on.",
                         title="Irrigation Controller",
+                        notification_id="irrigation_latency",
                     )
                     event_data = {
                         "action": "error",
@@ -1027,10 +1065,12 @@ class Zone(SwitchEntity, RestoreEntity):
                     if self.flow_sensor == 0:
                         self._stop = True
                         self._aborted = True
+                        async_dismiss(self.hass, "irrigation_no_flow")
                         async_create(
                             self.hass,
-                            message=f"No flow detected, {self.name} terminated",
+                            message=f"No flow detected, {self.name} terminated. The flow sensor has been reporting 0 flow for 5 seconds",
                             title="Irrigation Controller",
+                            notification_id="irrigation_no_flow",
                         )
                         event_data = {
                             "action": "error",

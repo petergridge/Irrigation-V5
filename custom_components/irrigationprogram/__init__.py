@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 
 from homeassistant.components.number import NumberEntity
-from homeassistant.components.persistent_notification import async_create
+from homeassistant.components.persistent_notification import async_create, async_dismiss
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
@@ -217,46 +217,56 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 def exclude(hass: HomeAssistant):
     """Build list of entities to exclude from config flow selection."""
     output = []
-    for e in hass.config_entries.async_entries(DOMAIN):
-        if e.state == ConfigEntryState.NOT_LOADED:
-            # this config is disabled
-            continue
-        i: IrrigationData = e.runtime_data
-        p: IrrigationProgram = i.program
-        output.extend(
-            [
-                p.switch.entity_id,
-                p.enabled.entity_id,
-                p.config.entity_id,
-                p.start_time.entity_id,
-                p.remaining_time.entity_id,
-            ]
-        )
-        if p.inter_zone_delay:
-            output.append(p.inter_zone_delay.entity_id)
-        if p.frequency:
-            output.append(p.frequency.entity_id)
-        zs: IrrigationZoneData = i.zone_data
-        for zone in zs:
-            z: IrrigationZoneData = zone
+    try:
+        for e in hass.config_entries.async_entries(DOMAIN):
+            if e.state == ConfigEntryState.NOT_LOADED:
+                # this config is disabled
+                continue
+            i: IrrigationData = e.runtime_data
+            p: IrrigationProgram = i.program
             output.extend(
                 [
-                    z.config.entity_id,
-                    z.enabled.entity_id,
-                    z.next_run.entity_id,
-                    z.status.entity_id,
-                    z.water.entity_id,
-                    z.last_ran.entity_id,
-                    z.remaining_time.entity_id,
-                    z.switch.entity_id,
+                    p.switch.entity_id,
+                    p.enabled.entity_id,
+                    p.config.entity_id,
+                    p.start_time.entity_id,
+                    p.remaining_time.entity_id,
                 ]
             )
-            if z.eco:
-                output.extend([z.wait.entity_id, z.repeat.entity_id])
-            if z.frequency:
-                output.append(z.frequency.entity_id)
-            if z.ignore_sensors:
-                output.append(z.ignore_sensors.entity_id)
+            if p.inter_zone_delay:
+                output.append(p.inter_zone_delay.entity_id)
+            if p.frequency:
+                output.append(p.frequency.entity_id)
+            zs: IrrigationZoneData = i.zone_data
+            for zone in zs:
+                z: IrrigationZoneData = zone
+                output.extend(
+                    [
+                        z.config.entity_id,
+                        z.enabled.entity_id,
+                        z.next_run.entity_id,
+                        z.status.entity_id,
+                        z.water.entity_id,
+                        z.last_ran.entity_id,
+                        z.remaining_time.entity_id,
+                        z.switch.entity_id,
+                    ]
+                )
+                if z.eco:
+                    output.extend([z.wait.entity_id, z.repeat.entity_id])
+                if z.frequency:
+                    output.append(z.frequency.entity_id)
+                if z.ignore_sensors:
+                    output.append(z.ignore_sensors.entity_id)
+    except AttributeError:
+        async_dismiss(hass, "irrigation_device_error")
+        async_create(
+            hass,
+            message="A configured item is no longer available or has been renamed",
+            title="Irrigation Controller",
+            notification_id="irrigation_device_error",
+        )
+        return []
     return output
 
 
@@ -308,10 +318,12 @@ async def async_stop_programs_new(hass: HomeAssistant, calling_program):
         device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME, "unknown")))
         servicedata = {ATTR_ENTITY_ID: device}
         if hass.states.get(device).state == "on":
+            async_dismiss(hass, "irrigation_teminate")
             async_create(
                 hass,
                 message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {calling_program.name}",
                 title="Irrigation Controller",
+                notification_id="irrigation_terminate",
             )
             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
@@ -509,7 +521,13 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         new[ATTR_ZONES] = newzones
 
         # create the persistent notification
-        async_create(hass, message=msg, title="Irrigation Controller")
+        async_dismiss("irrigation_card")
+        async_create(
+            hass,
+            message=msg,
+            title="Irrigation Controller",
+            notification_id="irrigation_card",
+        )
 
         hass.config_entries.async_update_entry(config_entry, data=new, version=6)
 

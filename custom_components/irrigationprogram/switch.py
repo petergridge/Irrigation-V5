@@ -49,20 +49,17 @@ async def async_setup_entry(
     zones = data.zone_data
     for i, zone in enumerate(zones):
         # check if the switch is ready
-        switch_not_ready = True
         for _ in range(CONST_START_LATENCY):
-            try:
+            if not hass.states.async_available(zone.zone):
                 friendly_name = hass.states.get(zone.zone).attributes.get(
                     "friendly_name"
                 )
-                switch_not_ready = False
                 break
-            except AttributeError:
-                await asyncio.sleep(1)
-        if switch_not_ready:
-            # switch has not initialised raise an error
+            await asyncio.sleep(1)
+        else:
             _LOGGER.error(
-                "Switch %s has not initialised before irrigation program", zone.zone
+                "Switch %s has not initialised before irrigation program, check your configuration",
+                zone.zone,
             )
 
         z_name = zone.name
