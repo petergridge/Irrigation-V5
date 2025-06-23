@@ -23,8 +23,7 @@
 		"rain_behaviour": {
 			"options": {
 				"stop": "Stop the program",
-				"continue": "Allow program to complete",
-				"delay": "Delay the next run when rain detected"
+				"continue": "Allow program to complete"
 			}
 		},
 		"interlock": {
@@ -88,7 +87,7 @@
 				"name":"Sunset offset"
 			},
 			"rain_delay_days":{
-				"name":"Rain Delay"
+				"name":"Rain delay"
 			}
 		},
 		"time":{
@@ -118,7 +117,7 @@
 				"name": "Settings"
 			},
 			"zone":{
-				"name": "Zone"
+				"name": "{zone_name}"
 			},
 			"pause":{
 				"name": "Pause"
@@ -216,7 +215,9 @@
 					"water_max": "Maximum watering time/volume",
 					"water_step": "Time/volume step",
 					"parallel": "Zone parallel execution",
-					"card_yaml": "Enable creation of entities card yaml"
+					"card_yaml": "Enable creation of entities card yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			}
 		}
@@ -252,7 +253,9 @@
 					"water_max": "Maximum watering time/volume",
 					"water_step": "Time/volume step",
 					"parallel": "Zone parallel execution",
-					"card_yaml": "Enable creation of entities card yaml"
+					"card_yaml": "Enable creation of entities card yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected"
 				}
 			},
 			"update_program": {
