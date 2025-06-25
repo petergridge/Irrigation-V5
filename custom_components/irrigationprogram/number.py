@@ -253,32 +253,3 @@ class Repeat(RestoreNumber):
     async def async_set_native_value(self, value):
         self._attr_native_value = value
         self.async_write_ha_state()
-
-    _attr_has_entity_name = True
-    _attr_editable = True
-    _attr_mode = "slider"
-    _attr_native_min_value = 1
-    _attr_native_max_value = 10
-    _attr_native_step = 1
-    _attr_translation_key = "rain_delay"
-    _unrecorded_attributes = frozenset({MATCH_ALL})
-
-    def __init__(self, unique_id, pname, zone_name):
-        self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_repeat")
-        self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
-        self._attr_native_unit_of_measurement = "days"
-
-    async def async_added_to_hass(self):
-        last_state = await self.async_get_last_number_data()
-        if last_state is not None:
-            await self.async_set_native_value(last_state.native_value)
-        else:
-            await self.async_set_native_value(1)
-
-    @property
-    def native_value(self):
-        return self._attr_native_value
-
-    async def async_set_native_value(self, value):
-        self._attr_native_value = value
-        self.async_write_ha_state()

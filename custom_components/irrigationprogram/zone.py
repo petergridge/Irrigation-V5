@@ -788,6 +788,24 @@ class Zone(SwitchEntity, RestoreEntity):
         """Signal the zone to stop."""
         self._status = CONST_ECO
         await self.async_solenoid_turn_off()
+
+        for _ in range(self._latency):
+            self._stop = True
+            if self._aborted:
+                break
+            if self._status == CONST_PAUSED:
+                self._stop = False
+                break
+            # try to turn the switch on again
+            # this is an attempt to handle zigbee devices that sleep
+            await asyncio.sleep(1)
+            if await self.check_switch_state() is True:
+                # if not the expected state loop again
+                await self.async_solenoid_turn_off()
+                await asyncio.sleep(1)
+                continue
+            self._stop = False
+
         await self.status.set_value(self._status)
 
     async def async_toggle(self, **kwargs):

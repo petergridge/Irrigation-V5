@@ -217,7 +217,8 @@
 					"parallel": "Zonen gleichzeitig ausführen",
 					"card_yaml": "Entities Card YAML definition einschalten",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected"
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices"
 				}
 			}
 		}
@@ -255,7 +256,8 @@
 					"parallel": "Zonen gleichzeitig ausführen",
 					"card_yaml": "Entities Card YAML definition einschalten",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected"
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices"
 				}
 			},
 			"update_program": {

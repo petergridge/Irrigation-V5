@@ -217,7 +217,8 @@
 					"parallel": "Ejecución de zonas en paralelo",
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected"
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices"
 				}
 			}
 		}
@@ -255,7 +256,9 @@
 					"parallel": "Ejecución de zonas en paralelo",
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected"
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices"
+
 				}
 			},
 			"update_program": {
