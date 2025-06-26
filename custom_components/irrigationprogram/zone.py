@@ -334,14 +334,33 @@ class Zone(SwitchEntity, RestoreEntity):
             return False
 
         # turn off the rain delay feature
-        await self._programdata.rain_delay.async_turn_off()
+        if self._programdata.rain_delay:
+            await self._programdata.rain_delay.async_turn_off()
+            return True
+
         return True
 
     # end should_run
+    async def check_off(self):
+        for _ in range(self._latency):
+            self._stop = True
+            if self._aborted:
+                break
+            if self._status == CONST_PAUSED:
+                self._stop = False
+                break
+            # try to turn the switch on again
+            # this is an attempt to handle zigbee devices that sleep
+            await asyncio.sleep(1)
+            if await self.check_switch_state() is True:
+                # if not the expected state loop again
+                await self.async_solenoid_turn_off()
+                await asyncio.sleep(1)
+                continue
+            self._stop = False
 
     async def pause(self):
         """Pause the zone."""
-
         if self._status == CONST_PAUSED:
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_on()
@@ -360,6 +379,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._last_status = self._status
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_off()
+                await self.check_off()
             self._status = CONST_PAUSED
             await self.status.set_value(self._status)
         self.async_schedule_update_ha_state()
@@ -788,23 +808,24 @@ class Zone(SwitchEntity, RestoreEntity):
         """Signal the zone to stop."""
         self._status = CONST_ECO
         await self.async_solenoid_turn_off()
+        await self.check_off()
 
-        for _ in range(self._latency):
-            self._stop = True
-            if self._aborted:
-                break
-            if self._status == CONST_PAUSED:
-                self._stop = False
-                break
-            # try to turn the switch on again
-            # this is an attempt to handle zigbee devices that sleep
-            await asyncio.sleep(1)
-            if await self.check_switch_state() is True:
-                # if not the expected state loop again
-                await self.async_solenoid_turn_off()
-                await asyncio.sleep(1)
-                continue
-            self._stop = False
+        # for _ in range(self._latency):
+        #     self._stop = True
+        #     if self._aborted:
+        #         break
+        #     if self._status == CONST_PAUSED:
+        #         self._stop = False
+        #         break
+        #     # try to turn the switch on again
+        #     # this is an attempt to handle zigbee devices that sleep
+        #     await asyncio.sleep(1)
+        #     if await self.check_switch_state() is True:
+        #         # if not the expected state loop again
+        #         await self.async_solenoid_turn_off()
+        #         await asyncio.sleep(1)
+        #         continue
+        #     self._stop = False
 
         await self.status.set_value(self._status)
 
@@ -833,6 +854,8 @@ class Zone(SwitchEntity, RestoreEntity):
             self._hist_flow_rate = self.flow_sensor
 
         await self.async_solenoid_turn_off()
+        await self.check_off()
+
         self._remaining_time = 0
         await self.remaining_time.set_value(self._remaining_time)
         if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
