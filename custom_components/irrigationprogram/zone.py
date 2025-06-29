@@ -25,7 +25,6 @@ from .const import (
     ATTR_HISTORICAL_FLOW,
     ATTR_IGNORE_SENSOR,
     ATTR_LAST_RAN,
-    #    ATTR_LATENCY,
     ATTR_NEXT_RUN,
     ATTR_RAIN_SENSOR,
     ATTR_REMAINING,
@@ -44,7 +43,6 @@ from .const import (
     CONST_CLOSED,
     CONST_DISABLED,
     CONST_ECO,
-    #    CONST_LATENCY,
     CONST_NO_WATER_SOURCE,
     CONST_OFF,
     CONST_ON,
@@ -139,6 +137,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._extra_attrs[ATTR_IGNORE_SENSOR] = (
                 self._zonedata.ignore_sensors.entity_id
             )
+
         self.async_schedule_update_ha_state()
 
     @property
@@ -214,12 +213,20 @@ class Zone(SwitchEntity, RestoreEntity):
                 delay = int(self._programdata.rain_delay_days.state)
 
         if self._zonedata.frequency:
-            if self._zonedata.frequency.state.isnumeric():
-                return int(self._zonedata.frequency.state) + delay
+            frq = self._zonedata.frequency.current_option
+            if frq == "unknown":
+                frq = self._programdata.freq_options[0]
+            if frq.isnumeric():
+                return int(frq) + delay
             return self._zonedata.frequency.state
 
-        if self._programdata.frequency.state.isnumeric():
-            return int(self._programdata.frequency.state) + delay
+        if self._programdata.frequency:
+            frq = self._programdata.frequency.current_option
+            if frq == "unknown":
+                frq = self._programdata.freq_options[0]
+            if frq.isnumeric():
+                return int(frq) + delay
+
         return self._programdata.frequency.state
 
     @property
@@ -377,10 +384,10 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.status.set_value(self._status)
         elif self._status in (CONST_ECO, CONST_ON, CONST_PENDING):
             self._last_status = self._status
+            self._status = CONST_PAUSED
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_off()
                 await self.check_off()
-            self._status = CONST_PAUSED
             await self.status.set_value(self._status)
         self.async_schedule_update_ha_state()
 
@@ -576,7 +583,7 @@ class Zone(SwitchEntity, RestoreEntity):
             firststartmin = int(firststarttime.split(":")[1])
         else:
             firststarthour = 8
-            firststarthour = 0
+            firststartmin = 0
 
         if self.last_ran.native_value is None:
             v_last_ran = dt_util.as_local(dt_util.now()) - timedelta(days=10)
@@ -642,7 +649,6 @@ class Zone(SwitchEntity, RestoreEntity):
                     v_next_run = min(
                         self.get_next_dayofweek_datetime(v_last_ran, day), v_next_run
                     )
-
         await self.next_run.set_value(v_next_run)
         if self._state not in (CONST_PENDING, CONST_ON, CONST_ECO, CONST_OFF):
             self._state = CONST_OFF

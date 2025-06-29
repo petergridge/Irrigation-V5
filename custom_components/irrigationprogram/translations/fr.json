@@ -17,7 +17,7 @@
 				"selector":"Selection Horaire",
 				"multistart":"Selection Horaires Multiples",
 				"sunrise":"Par rapport au lever du Soleil",
-				"sunset":"Par rapport au lever du Soleil"
+				"sunset":"Par rapport au coucher du soleil"
 			}
 		},
 		"rain_behaviour": {
@@ -218,7 +218,8 @@
 					"card_yaml": "Activer la création de carte d'entité YAML",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices"
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup"
 				}
 			}
 		}
@@ -257,7 +258,8 @@
 					"card_yaml": "Activer la création de carte d'entité YAML",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices"
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup"
 				}
 			},
 			"update_program": {

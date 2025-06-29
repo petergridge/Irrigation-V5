@@ -676,6 +676,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         for zone in self._zones:
             await zone.switch.pause()
+        await asyncio.sleep(1)
 
         if not self._program.pause.is_on:
             self._paused = False

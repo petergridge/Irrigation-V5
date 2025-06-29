@@ -32,6 +32,7 @@ from .const import (
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_DELAY,
     ATTR_RAIN_SENSOR,
+    ATTR_START_LATENCY,
     ATTR_START_TYPE,
     ATTR_WATER_ADJUST,
     ATTR_WATER_MAX,
@@ -331,9 +332,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 )
             except:
                 optionslist.append({"label": zone + " offline!", "value": zone})
-        # optionslist = [
-        #     {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        # ]
+
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(
@@ -373,9 +372,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 )
             except:
                 optionslist.append({"label": zone + " offline!", "value": zone})
-        # optionslist = [
-        #     {"label": self.hass.states.get(zone).name, "value": zone} for zone in zones
-        # ]
+
         list_schema = vol.Schema(
             {
                 vol.Optional(ATTR_ZONE): sel.SelectSelector(
@@ -514,6 +511,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
                 self._data[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
                 self._data[ATTR_LATENCY] = user_input[ATTR_LATENCY]
+                self._data[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
@@ -599,6 +597,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     description={"suggested_value": default_input.get(ATTR_LATENCY, 5)},
                 ): sel.sel({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
+                    ATTR_START_LATENCY,
+                    description={
+                        "suggested_value": default_input.get(ATTR_START_LATENCY, 30)
+                    },
+                ): sel.sel({"min": 5, "max": 60, "mode": "box"}),
+                vol.Optional(
                     ATTR_PARALLEL,
                     description={
                         "suggested_value": default_input.get(ATTR_PARALLEL, 1)
@@ -650,7 +654,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Option flow."""
 
-    VERSION = 5
+    VERSION = 7
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialise option flow."""
@@ -739,6 +743,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_WATER_STEP] = user_input[ATTR_WATER_STEP]
                 newdata[ATTR_ZONE_DELAY_MAX] = user_input[ATTR_ZONE_DELAY_MAX]
                 newdata[ATTR_LATENCY] = user_input[ATTR_LATENCY]
+                newdata[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
@@ -836,6 +841,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     description={"suggested_value": default_input.get(ATTR_LATENCY, 5)},
                 ): sel.NumberSelector({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
+                    ATTR_START_LATENCY,
+                    description={
+                        "suggested_value": default_input.get(ATTR_START_LATENCY, 30)
+                    },
+                ): sel.NumberSelector({"min": 5, "max": 60, "mode": "box"}),
+                vol.Optional(
                     ATTR_PARALLEL,
                     description={
                         "suggested_value": default_input.get(ATTR_PARALLEL, 1)
@@ -923,7 +934,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = vol.Schema(
             {
-                # vol.Required(CONF_NAME): str,
                 vol.Optional(
                     "freq",
                     description={"suggested_value": default_input.get("freq", True)},

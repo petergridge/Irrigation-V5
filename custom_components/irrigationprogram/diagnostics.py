@@ -18,9 +18,7 @@ async def async_get_config_entry_diagnostics(
     else:
         config = config_entry.data
 
-
-
     return {
-        "irrigation_config": async_redact_data(config,()),
-        "irrigation_data": async_redact_data(config_entry.runtime_data,()),
+        "irrigation_config": async_redact_data(config, ()),
+        "irrigation_data": async_redact_data(config_entry.runtime_data, ()),
     }

@@ -34,11 +34,13 @@ from .const import (
     ATTR_RAIN_DELAY,
     ATTR_RAIN_SENSOR,
     ATTR_SHOW_CONFIG,
+    ATTR_START_LATENCY,
     ATTR_START_TYPE,
     ATTR_WATER_ADJUST,
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
     ATTR_ZONES,
+    CONST_START_LATENCY,
     CONST_SWITCH,
     DOMAIN,
     SWITCH_ID_FORMAT,
@@ -132,6 +134,7 @@ class IrrigationProgram:
     parallel: int
     card_yaml: bool
     latency: int
+    start_latency: int
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -168,6 +171,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         min_sec=config.get(ATTR_MIN_SEC, "minutes"),
         water_max=config.get("water_max", 30),
         latency=int(config.get(ATTR_LATENCY, 5)),
+        start_latency=int(config.get(ATTR_START_LATENCY, 5)),
         water_step=config.get("water_step", 1),
         zone_delay_max=config.get("zone_delay_max", 120),
         parallel=config.get("parallel", 1),
@@ -202,15 +206,69 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             flow_rate=None,
         )
         zone_data.append(z)
+
+        # wait for the referenced devices to come online before preceeding to
+        # the setup
+        if zone.get(ATTR_ZONE):
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(zone.get(ATTR_ZONE)):
+                    break
+                await asyncio.sleep(1)
+            else:
+                _LOGGER.error(
+                    "%s has not initialised before irrigation program, check your configuration",
+                    zone.get(ATTR_ZONE),
+                )
+        if zone.get(ATTR_FLOW_SENSOR):
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(zone.get(ATTR_FLOW_SENSOR)):
+                    break
+                await asyncio.sleep(1)
+            else:
+                _LOGGER.error(
+                    "%s has not initialised before irrigation program, check your configuration",
+                    zone.get(ATTR_FLOW_SENSOR),
+                )
+        if zone.get(ATTR_WATER_ADJUST):
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(zone.get(ATTR_WATER_ADJUST)):
+                    break
+                await asyncio.sleep(1)
+            else:
+                _LOGGER.error(
+                    "%s has not initialised before irrigation program, check your configuration",
+                    zone.get(ATTR_WATER_ADJUST),
+                )
+        if zone.get(ATTR_RAIN_SENSOR):
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(zone.get(ATTR_RAIN_SENSOR)):
+                    break
+                await asyncio.sleep(1)
+            else:
+                _LOGGER.error(
+                    "%s has not initialised before irrigation program, check your configuration",
+                    zone.get(ATTR_RAIN_SENSOR),
+                )
+        if zone.get(ATTR_WATER_SOURCE):
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(zone.get(ATTR_WATER_SOURCE)):
+                    break
+                await asyncio.sleep(1)
+            else:
+                _LOGGER.error(
+                    "%s has not initialised before irrigation program, check your configuration",
+                    zone.get(ATTR_WATER_SOURCE),
+                )
+
     entry.runtime_data = IrrigationData(program, zone_data)
 
     # store an object for your platforms to access
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
-    # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
 
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
+
     return True
 
 

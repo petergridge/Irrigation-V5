@@ -218,7 +218,8 @@
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices"
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup"
 				}
 			}
 		}
@@ -257,8 +258,8 @@
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices"
-
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup"
 				}
 			},
 			"update_program": {
