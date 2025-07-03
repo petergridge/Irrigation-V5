@@ -411,7 +411,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # create pump class to start/stop pumps
             for pump, zones in pumps.items():
                 # pass pump_switch, list of zones, off_delay
-                self._pumps.append(PumpClass(self._hass, pump, zones))
+                self._pumps.append(
+                    PumpClass(self._hass, pump, zones, self._program.vent)
+                )
 
             # calculate the next run
             self.update_next_run()
@@ -821,6 +823,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             "device_id": self.entity_id,
             "program": self.name,
         }
+
         self._hass.bus.async_fire("irrigation_event", event_data)
         # reset indicators
         self._state = False

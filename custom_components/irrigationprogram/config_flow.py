@@ -34,6 +34,7 @@ from .const import (
     ATTR_RAIN_SENSOR,
     ATTR_START_LATENCY,
     ATTR_START_TYPE,
+    ATTR_VENT,
     ATTR_WATER_ADJUST,
     ATTR_WATER_MAX,
     ATTR_WATER_SOURCE,
@@ -514,6 +515,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
+                self._data[ATTR_VENT] = user_input[ATTR_VENT]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
 
@@ -612,6 +614,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     ATTR_CARD_YAML,
                     description={
                         "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_VENT,
+                    description={
+                        "suggested_value": default_input.get(ATTR_VENT, False)
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -746,6 +754,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
+                newdata[ATTR_VENT] = user_input[ATTR_VENT]
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
@@ -856,6 +865,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ATTR_CARD_YAML,
                     description={
                         "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_VENT,
+                    description={
+                        "suggested_value": default_input.get(ATTR_VENT, False)
                     },
                 ): cv.boolean,
                 vol.Optional(

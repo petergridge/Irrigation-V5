@@ -3,6 +3,7 @@
 import asyncio
 import logging
 
+from homeassistant.components.persistent_notification import async_create
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry as MyConfigEntry
 from homeassistant.const import MATCH_ALL
@@ -48,24 +49,24 @@ async def async_setup_entry(
 
     zones = data.zone_data
     for i, zone in enumerate(zones):
-        # # check if the switch is ready
-        # for _ in range(CONST_START_LATENCY):
-        #     if not hass.states.async_available(zone.zone):
-        #         friendly_name = hass.states.get(zone.zone).attributes.get(
-        #             "friendly_name"
-        #         )
-        #         break
-        #     await asyncio.sleep(1)
+        # check if the switch is ready
+        for _ in range(CONST_START_LATENCY):
+            if not hass.states.async_available(zone.zone):
+                friendly_name = hass.states.get(zone.zone).attributes.get(
+                    "friendly_name"
+                )
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"{zone.zone} has not initialised before irrigation program, check your configuration."
+            _LOGGER.error(msg)
+            async_create(
+                hass,
+                message=msg,
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
 
-        #     if zone.adjustment and not hass.states.async_available(zone.adjustment):
-        #         break
-        #     await asyncio.sleep(1)
-
-        # else:
-        #     _LOGGER.error(
-        #         "Switch %s has not initialised before irrigation program, check your configuration",
-        #         zone.zone,
-        #     )
         friendly_name = hass.states.get(zone.zone).attributes.get("friendly_name")
         z_name = zone.name
         if zone.rain_sensor or zone.adjustment or zone.water_source:

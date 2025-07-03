@@ -219,7 +219,8 @@
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup"
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"vent": "Vent excess pressure after pump stops"
 				}
 			}
 		}
@@ -259,7 +260,8 @@
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup"
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"vent": "Vent excess pressure after pump stops"
 				}
 			},
 			"update_program": {

@@ -9,7 +9,7 @@
 		"min_sec": {
 			"options": {
 				"minutes": "Minutes",
-				"seconds": "Seconds"
+				"seconds": "Secondes"
 			}
 		},
 		"start_type": {
@@ -28,9 +28,9 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
-				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
-				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
+				"strict": "Strict - Arrêt des autres programmes au démarrage. Ce programme s'arrete au démarrage d'un autre programme",
+				"loose": "Perte - Arrêt des autres programmes au démarrage. Ce programme continue sauf si un programme 'strict' demarre",
+				"off": "Arrêt - Arrêt des programmes stricts seulement. Ce programme continue sauf si un programme 'strict' démarre"
 			}
 		}
 	},
@@ -216,10 +216,11 @@
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
 					"card_yaml": "Activer la création de carte d'entité YAML",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup"
+					"zone_delay_max": "Délai max inter zone",
+					"rain_delay_on": "Différer le prochain lancement si pluie",
+					"latency": "Délai pour les équipements peu réactifs",
+					"start_latency": "Délai pour les équipements démarrant lentement",
+					"vent": "Vent excess pressure after pump stops"
 				}
 			}
 		}
@@ -251,15 +252,16 @@
 					"sun":"Options d'horaire de démarrage",
 					"interlock": "Empêcher les programmes de fonctionner en même temps",
 					"rain_behaviour": "Comportement du capteur de pluie",
-					"min_sec": "Watering time unit",
+					"min_sec": "Unité d'arrosage",
 					"water_max": "Temps/Volume maximum d'arrosage",
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
 					"card_yaml": "Activer la création de carte d'entité YAML",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup"
+					"zone_delay_max": "Délai max inter zone",
+					"rain_delay_on": "Différer le prochain lancement si pluie",
+					"latency": "Délai pour les équipements peu réactifs",
+					"start_latency": "Délai pour les équipements démarrant lentement",
+					"vent": "Vent excess pressure after pump stops"
 				}
 			},
 			"update_program": {

@@ -260,7 +260,11 @@ class Zone(SwitchEntity, RestoreEntity):
     def rain_sensor(self) -> bool:
         """Raining value Bool."""
         if self._zonedata.rain_sensor:
-            return self.hass.states.get(self._zonedata.rain_sensor).state
+            try:
+                return self.hass.states.get(self._zonedata.rain_sensor).state
+            except AttributeError:
+                # rain sensor is not available
+                return False
         return None
 
     @property
@@ -272,9 +276,12 @@ class Zone(SwitchEntity, RestoreEntity):
     def flow_sensor(self) -> float:
         """Flow rate value."""
         if self._zonedata.flow_sensor:
-            flow = float(self.hass.states.get(self._zonedata.flow_sensor).state)
-            if self._state == CONST_ON:
-                return flow
+            try:
+                flow = float(self.hass.states.get(self._zonedata.flow_sensor).state)
+                if self._state == CONST_ON:
+                    return flow
+            except AttributeError:
+                return None
             return self._hist_flow_rate
         return None
 
@@ -282,14 +289,20 @@ class Zone(SwitchEntity, RestoreEntity):
     def adjustment(self) -> float:
         """Adjustment value."""
         if self._zonedata.adjustment:
-            return float(self.hass.states.get(self._zonedata.adjustment).state)
+            try:
+                return float(self.hass.states.get(self._zonedata.adjustment).state)
+            except AttributeError:
+                return 1
         return 1
 
     @property
     def water_source(self) -> bool:
         """Water Source value Bool."""
         if self._zonedata.water_source:
-            return self.hass.states.get(self._zonedata.water_source).state
+            try:
+                return self.hass.states.get(self._zonedata.water_source).state
+            except AttributeError:
+                return None
         return None
 
     @property

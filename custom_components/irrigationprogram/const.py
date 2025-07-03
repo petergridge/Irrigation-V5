@@ -54,6 +54,7 @@ ATTR_INTERLOCK = "interlock"
 ATTR_SCHEDULED = "scheduled"
 ATTR_WATER_SOURCE = "water_source_active"
 ATTR_MIN_SEC = "min_sec"
+ATTR_VENT = "vent"
 
 ATTR_ZONE_DELAY_MAX = "zone_delay_max"
 ATTR_WATER_MAX = "water_max"
