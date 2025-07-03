@@ -365,7 +365,7 @@ Selecting this provides the frequency of operation for all zones that do not hav
 The options selected/created here are used across the program and zone frequency selectors and supports:
 - Numeric values: 1 = every day, 2 = every second day and so on.
 - Day of week: valid values are Mon, Tue, Wed, Thu, Fri, Sat, Sun. When a day is selected the program will only execute the defined day.
-- Days of the week: Wed, Sat. When selected the program will run on Wednesday and Saturday. This supports specific water restriction is some jurisdictions.
+- Days of the week: Enter combinations of days ```Wed, Sat```. When selected the program will run on Wednesday and Saturday. This supports specific water restriction is some jurisdictions.
 
 📝 You can extend this by entering your own frequency options for example Mon, Wed, Fri. New groups can only be made up of days of the week.
 
@@ -400,7 +400,7 @@ Defining the Pump valve/switch supports the control of a pump or master solenoid
 ### Flow sensor
 When defined the system operates on the delivery of volume rather than watering for a specified time.
 - The flow sensor is monitored to determine the volume of water delivered and varies the watering time dynamically.
-- If the flow sensor value is 0, the zone will terminate after 5 minutes.
+- If the flow sensor value is 0, the zone will terminate after 5 seconds.
 - The ignore senor feature has no impact on this sensor.
 
 ### Adjustment Sensor
@@ -433,8 +433,9 @@ Use this to alter the run sequence of the zones. The value increments by 10 as a
 
 ### Concurrent program execution (interlock)
 This option allows or prevents two programs executing concurrently.
-- When enabled (default) the second program to run will terminate the running program.
-- A persistent notification is created to highlight the occurrence.
+- Strict - turn off other programs when starting, turn off when another program starts
+- Loose - turn off all other programs when starting, stay running unless a 'strict' program starts
+- Off - turn off 'strict' programs only, stay running unless a 'strict' program starts
 
 ### Start time options
 Select an option to change the method that the start time is defined.
@@ -454,6 +455,15 @@ Allows selecting the behaviour when the program is already running:
 ### Maximum watering time/step
 These options change the default settings for the slider to enter time/volume in the custom card.
 
+### Maximum zone transistion delay
+Sets the max interzone delay displayed on the card
+
+### Wait time for slow responding devices
+Some devices are slow to update this sets the wait time before the program cancels
+
+### Wait time for devices that are slow to start
+Similar to above, this a a one off wait time as the program starts to wait for devices to connect to HA.
+
 ### Zone parallel execution
 This setting allows multiple zones to run concurrently in a program. if set to two, two zones will start and as one finishes another will start. If this setting is selected the zone transition is not available.
 
@@ -461,6 +471,12 @@ This setting allows multiple zones to run concurrently in a program. if set to t
 This setting enables the production of yaml to implement the equivalent to the custom card. Some users are experiencing issues with the custom card requiring this alternative. The custom card is also based on the entities cards.
 The yaml is generated on start and when a program configuration is created or modified.
 Insert the generated yaml into a Manual Card.
+
+### Vent exccess pressure after pump stop
+This option opens one valve for three seconds after the pump has stop on program completion to release presure from the system.
+
+### Delay next run when rain detected
+Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
