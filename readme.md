@@ -480,6 +480,28 @@ Enables a delay function to add a number of days before the next run of the prog
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
+### V2025.07.01
+- Correct default on interlock option to "strict"
+- Update French translation
+- More work to support slow loading devices
+- Add function to vent the system when a pump is used to release pressure in the system
+
+### V2025.06.05
+- Improve check of slow loading devices on start up. Some controllers are slow to reconnect the HA. Issue #182
+  - zone
+  - rain sensor
+  - water source sensor
+  - adjustment sensor
+  - flow sensor
+  Waits up to the configurable 'start latency' value for devices to start.
+  Raises an error when times out without the device becoming avaiable
+- Add 'start latency' option to the advanced options. Issue #182
+  - default 30 seconds, minimum 5 seconds, maximum 60 seconds
+  There is no impact to performance if the devices are avaiable immediately
+- Update French translations Issue #193
+- Correct the pause function, fix delay when enabling pause. Issue #194
+- Default frequency to the first option is none is selected. Issue #195
+
 ### 2025.06.02
 - Allow input_boolean for Rain and Water source
 - Allow input number for Adjustment
