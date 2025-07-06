@@ -479,7 +479,21 @@ This option opens one valve for three seconds after the pump has stop on program
 Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
-
+### V2025.07.02
+- Update venting funtion to turn pump off before zones when a program ends. Issue #199
+  - NOTE: The venting function DOES NOT work if ZONES are ended manually
+- More French translation updates
+- re instate the ability to define a sensor for frequency Issue #154
+  - Add the sensor in the same way you add days, validation that the sensor exists occurs.
+  - The sensor will appear as one of the selectable options
+  - The validation of the sensor value at runtime is limited
+  - Check the log if the program does not start as expected
+- Add functionality to pause a running program when the water source state becomes OFF Issue #181
+  - program resumes when the water source becomes ON
+  - Zone will not start if water source is OFF
+  - NOTE: There is no timeout
+  - Functionality enabled in advanced options
+ 
 ### V2025.07.01
 - Correct default on interlock option to "strict"
 - Update French translation
