@@ -2,14 +2,14 @@
 	"selector": {
 		"device_type": {
 			"options": {
-				"generic": "Generic",
+				"generic": "Generisch",
 				"rainbird": "RainBird"
 			}
 		},
 		"min_sec": {
 			"options": {
-				"minutes": "Minutes",
-				"seconds": "Seconds"
+				"minutes": "Minuten",
+				"seconds": "Sekunden"
 			}
 		},
 		"start_type": {
@@ -28,16 +28,16 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
-				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
-				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
+				"strict": "Strict - andere Programme beim Starten ausschalten, beim Starten eines anderen Programms ausschalten",
+				"loose": "Loose - alle anderen Programme beim Starten ausschalten, weiterlaufen lassen, es sei denn, ein 'strict' Programm wird gestartet",
+				"off": "Off - nur 'strict' Programme ausschalten, weiterlaufen lassen, es sei denn, ein 'strict' Programm wird gestartet"
 			}
 		}
 	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Zone status",
+				"name":"Zonenstatus",
 				"state": {
 					"off": "Aus",
 					"on": "An",
@@ -47,7 +47,7 @@
 					"program_disabled": "Programm deaktiviert",
 					"controller_disabled": "Controller deaktiviert",
 					"unavailable": "Nicht verfügbar",
-					"raining": "Regnet",
+					"raining": "Regen",
 					"adjusted_off": "Eingestellt aus",
 					"no_water_source": "Keine Wasserquelle gefunden",
 					"zone_disabled": "Deaktiviert",
@@ -78,7 +78,7 @@
 				"name":"Wiederholungen"
 			},
 			"inter_zone_delay":{
-				"name":"Zeit zwischen Zonen"
+				"name":"Wartedauer zwischen Zonen"
 			},
 			"sunrise_offset":{
 				"name":"Sonnenaufgang offset"
@@ -87,7 +87,7 @@
 				"name":"Sonnenuntergang offset"
 			},
 			"rain_delay_days":{
-				"name":"Rain delay"
+				"name":"Regenverzögerung"
 			}
 		},
 		"time":{
@@ -105,7 +105,7 @@
 				"name":"Sensoren ignorieren"
 			},
 			"enable_rain_delay":{
-				"name":"Enable rain delay"
+				"name":"Regenverzögerung aktivieren"
 			},
 			"enable_program":{
 				"name":"Programm aktivieren"
@@ -136,7 +136,7 @@
 			"zone_required": "Es muss mindestens eine Zone definiert sein",
 			"invalid_days_group": "Häufigkeitsauswahl aus Liste muss Mon,Tue,Wed,Thu,Fri,Sat,Sun sein",
 			"invalid_option": "Häufigkeitsauswahl muss numerisch sein oder Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Häufigkeitsoption, eingegebener Sensor ist falsch oder offline"
 		},
 		"step": {
 			"user": {
@@ -151,44 +151,44 @@
 				}
 			},
 			"add_zone": {
-				"title": "Programm Zonen",
+				"title": "Programmzonen",
 				"description": "Zonen definieren",
 				"data": {
-					"zone": "Zonen Schalter",
-					"freq": "Zonen Häufigkeit ersetzt Programm Häufigkeit",
+					"zone": "Zonenschalter",
+					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpen Schalter",
-					"flow_sensor": "Durchfluss Sensor",
-					"water_adjustment": "Laufzeit Anpassungs Sensor",
-					"rain_sensor": "Regen Sensor (Binär)",
-					"water_source_active": "Waterquelle Sensor (Binär)",
-					"order": "Zonen Reihenfolge"
+					"pump": "Pumpenschalter",
+					"flow_sensor": "Durchflusssensor",
+					"water_adjustment": "Laufzeitanpassungssensor",
+					"rain_sensor": "Regensensor (Binär)",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"order": "Zonenreihenfolge"
 				}
 			},
 			"delete_zone": {
-				"title": "Zonen Definition",
+				"title": "Zonendefinition",
 				"description": "",
 				"data": {
 					"zone": "Welche Zone soll gelöscht werden"
 				}
 			},
 			"update_zone_data": {
-				"title": "Zonen Definition",
+				"title": "Zonendefinition",
 				"description": "Zone aktualisieren",
 				"data": {
-					"zone": "Zonen Schalter",
-					"freq": "Zonen Häufigkeit ersetzt Programm Häufigkeit",
+					"zone": "Zonenschalter",
+					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpen Schalter",
-					"flow_sensor": "Durchfluss Sensor",
-					"water_adjustment": "Laufzeit Anpassungs Sensor",
-					"rain_sensor": "Regen Sensor (Binär)",
-					"water_source_active": "Waterquelle Sensor (Binär)",
-					"order": "Zonen Reihenfolge"
+					"pump": "Pumpenschalter",
+					"flow_sensor": "Durchflusssensor",
+					"water_adjustment": "Laufzeitanpassungssensor",
+					"rain_sensor": "Regensensor (Binär)",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"order": "Zonenreihenfolge"
 				}
 			},
 			"update_zone": {
-				"title": "Zonen Definition",
+				"title": "Zonendefinition",
 				"description": "",
 				"data": {
 					"zone": "Welche Zone soll geändert werden"
@@ -211,18 +211,18 @@
 				"data": {
 					"start_type":"Start Zeit Optionen",
 					"interlock": "Verhindern, dass Programme gleichzeitig laufen",
-					"rain_behaviour": "Regen Sensor Verhalten",
-					"min_sec": "Watering time unit",
-					"water_max": "Maximale Bewässerungsdauer/-Menge",
+					"rain_behaviour": "Regensensorverhalten",
+					"min_sec": "Bewässerungszeit Einheit",
+					"water_max": "Maximale Bewässerungsdauer/-menge",
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
-					"card_yaml": "Entities Card YAML definition einschalten",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"card_yaml": "Entities Card YAML generieren",
+					"zone_delay_max": "Maximale Zonenübergangsverzögerung",
+					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
+					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
+					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
+					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
 				}
 			}
 		}
@@ -234,14 +234,14 @@
 			"zone_required": "Mindestens eine Zone muss definiert werden",
 			"invalid_days_group": "Häufigkeitsauswahl aus Liste muss Mon,Tue,Wed,Thu,Fri,Sat,Sun sein",
 			"invalid_option": "Häufigkeitsauswahl muss numerisch sein oder or Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Häufigkeitsoption, eingegebener Sensor ist falsch oder offline"
 		},
 		"step": {
 			"user": {
 				"description": "Wenn eine Zone gelöscht oder der Zonenschalter geändert wird, werden alle zugehörigen Gruppen gelöscht",
 				"menu_options": {
-					"update_program": "Programm Optionen aktualisieren",
-					"update_zone": "Zonen Optionen aktualisieren",
+					"update_program": "Programmoptionen aktualisieren",
+					"update_zone": "Zonenoptionen aktualisieren",
 					"delete_zone": "Zone löschen",
 					"add_zone": "Zone hinzufügen",
 					"finalise": "Änderungen anwenden",
@@ -249,76 +249,76 @@
 				}
 			},
 			"advanced": {
-				"title": "Advanced Options",
+				"title": "Erweiterte Optionen",
 				"description": "",
 				"data": {
-					"sun":"Start Zeit Optionen",
+					"sun":"Startzeit Optionen",
 					"interlock": "Verhindern, dass Programme gleichzeitig laufen",
 					"rain_behaviour": "Regen Sensor Verhalten",
-					"min_sec": "Watering time unit",
-					"water_max": "Maximale Bewässerungsdauer/-Menge",
+					"min_sec": "Bewässerungszeit Einheit",
+					"water_max": "Maximale Bewässerungsdauer/-menge",
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
-					"card_yaml": "Entities Card YAML definition einschalten",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"card_yaml": "Entities Card YAML generieren",
+					"zone_delay_max": "Maximale Zonenübergangsverzögerung",
+					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
+					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
+					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
+					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
 				}
 			},
 			"update_program": {
-				"title": "Programm Daten",
-				"description": "Programmdaten aktualisierten",
+				"title": "Programmdaten",
+				"description": "Programmdaten aktualisieren",
 				"data": {
-					"program": "Programm Name",
+					"program": "Programmname",
 					"freq": "Häufigkeit progammweit einstellen",
 					"freq_options": "Häufigkeitsauswahl auswählen oder definieren",
-					"controller_monitor": " Binär-Sensor als Monitor",
+					"controller_monitor": "Binärsensor als Monitor",
 					"device_type": "Schaltertyp"
                 }
 			},
 			"add_zone": {
-				"title": "Programm Zonen",
-				"description": "Zonen Einstellungen",
+				"title": "Programmzonen",
+				"description": "Zoneneinstellungen",
 				"data": {
-					"zone": "Zonen Schalter",
-					"freq": "Zonen Häufigkeit ersetzt Programm Häufigkeit",
+					"zone": "Zonenschalter",
+					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpen Schalter",
-					"flow_sensor": "Durchfluss Sensor",
-					"water_adjustment": "Laufzeit Anpassungs Sensor",
-					"rain_sensor": "Regen Sensor (Binär)",
-					"water_source_active": "Waterquelle Sensor (Binär)",
-					"order": "Zonen Reihenfolge"
+					"pump": "Pumpenschalter",
+					"flow_sensor": "Durchflusssensor",
+					"water_adjustment": "Laufzeitanpassungssensor",
+					"rain_sensor": "Regensensor (Binär)",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"order": "Zonenreihenfolge"
 				}
 			},
 			"update_zone_data": {
-				"title": "Programm Zonen",
-				"description": "Zonen Einstellungen",
+				"title": "Programmzonen",
+				"description": "Zoneneinstellungen",
 				"data": {
 					"zone": "Zonenschalter",
-					"freq": "Zonen Häufigkeit ersetzt Programm Häufigkeit",
+					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpen Schalter",
-					"flow_sensor": "Durchfluss Sensor",
-					"water_adjustment": "Laufzeit Anpassungs Sensor",
-					"rain_sensor": "Regen Sensor (Binär)",
-					"water_source_active": "Waterquelle Sensor (Binär)",
-					"order": "Zonen Reihenfolge"
+					"pump": "Pumpenschalter",
+					"flow_sensor": "Durchflusssensor",
+					"water_adjustment": "Laufzeitanpassungssensor",
+					"rain_sensor": "Regensensor (Binär)",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"order": "Zonenreihenfolge"
 				}
 			},
 			"delete_zone": {
 				"title": "Zone löschen",
-				"description": "Zonen Einstellungen",
+				"description": "Zoneneinstellungen",
 				"data": {
 					"zone": "Zone auswählen"
 				}
 			},
 			"update_zone": {
 				"title": "Zone aktualisieren",
-				"description": "Zonen Einstellungen",
+				"description": "Zoneneinstellungen",
 				"data": {
 					"zone": "Zone auswählen"
 				}
