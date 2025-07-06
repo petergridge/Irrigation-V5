@@ -43,6 +43,7 @@ from .const import (
     CONST_CLOSED,
     CONST_DISABLED,
     CONST_ECO,
+    CONST_LATENCY,
     CONST_NO_WATER_SOURCE,
     CONST_OFF,
     CONST_ON,
@@ -222,8 +223,10 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if self._programdata.frequency:
             frq = self._programdata.frequency.current_option
+            if frq.split(".")[0] == "sensor":
+                return self.hass.states.get(frq).state
             if frq == "unknown":
-                frq = self._programdata.freq_options[0]
+                frq = "1"  # self._programdata.freq_options[0]
             if frq.isnumeric():
                 return int(frq) + delay
 
@@ -420,7 +423,7 @@ class Zone(SwitchEntity, RestoreEntity):
         ):
             return self._status
 
-        for _ in range(self._latency):
+        for _ in range(CONST_LATENCY):
             # allow for false readings/debounce
             if self._aborted:
                 self._stop = True
@@ -513,6 +516,7 @@ class Zone(SwitchEntity, RestoreEntity):
             return CONST_UNAVAILABLE
         if self.water_source == CONST_OFF:
             return CONST_NO_WATER_SOURCE
+
         if (
             self.rain_sensor == CONST_ON
             and not self.ignore_sensors
@@ -609,7 +613,8 @@ class Zone(SwitchEntity, RestoreEntity):
             if self.frequency is None:
                 frq = 1
             else:
-                frq = int(self.frequency)
+                number_as_float = float(self.frequency)
+                frq = int(number_as_float)
 
             today_start_time = dt_util.as_local(dt_util.now()).replace(
                 hour=starthour, minute=startmin, second=00, microsecond=00
@@ -670,7 +675,17 @@ class Zone(SwitchEntity, RestoreEntity):
 
     def get_weekday(self, day):
         """Determine weekday num."""
-        return VALID_DAYS.index(day) + 1
+        try:
+            return VALID_DAYS.index(day) + 1
+        except ValueError:
+            # put a persistent error up
+            # frquency sensor does not contain valid values
+            async_create(
+                self.hass,
+                message=f"Frequency sensor, {self._zonedata.frequency.current_option}, value is not valid.",
+                title="Irrigation Controller",
+                notification_id="irrigation_frequency",
+            )
 
     def get_next_dayofweek_datetime(self, date_time, dayofweek):
         """Next date for the given day."""
@@ -704,25 +719,7 @@ class Zone(SwitchEntity, RestoreEntity):
             return False
         if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
             return True
-        # for _ in range(self._latency):
-        #     try:
-        #         # latency check if it has gone offline for a short period
-        #         if self.hass.states.get(self.solenoid).state in [
-        #             CONST_OFF,
-        #             CONST_CLOSED,
-        #         ]:
-        #             return False
-        #         if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
-        #             return True
-        #         await asyncio.sleep(1)
-        #     except AttributeError:
-        #         #async_dismiss(self.hass, "irrigation_device_error")
-        #         async_create(
-        #             self.hass,
-        #             message=f"Configured item, {self.solenoid}, is no longer available or has been renamed",
-        #             title="Irrigation Controller",
-        #             notification_id="irrigation_device_error",
-        #         )
+
         return None
 
     async def async_solenoid_turn_on(self):
@@ -828,23 +825,6 @@ class Zone(SwitchEntity, RestoreEntity):
         self._status = CONST_ECO
         await self.async_solenoid_turn_off()
         await self.check_off()
-
-        # for _ in range(self._latency):
-        #     self._stop = True
-        #     if self._aborted:
-        #         break
-        #     if self._status == CONST_PAUSED:
-        #         self._stop = False
-        #         break
-        #     # try to turn the switch on again
-        #     # this is an attempt to handle zigbee devices that sleep
-        #     await asyncio.sleep(1)
-        #     if await self.check_switch_state() is True:
-        #         # if not the expected state loop again
-        #         await self.async_solenoid_turn_off()
-        #         await asyncio.sleep(1)
-        #         continue
-        #     self._stop = False
 
         await self.status.set_value(self._status)
 

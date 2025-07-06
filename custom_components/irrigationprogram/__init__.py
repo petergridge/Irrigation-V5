@@ -29,6 +29,7 @@ from .const import (
     ATTR_INTERLOCK,
     ATTR_LATENCY,
     ATTR_MIN_SEC,
+    ATTR_PAUSE_WATER_SOURCE,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_DELAY,
@@ -136,6 +137,7 @@ class IrrigationProgram:
     latency: int
     start_latency: int
     vent: bool
+    water_source_pause: bool
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -178,6 +180,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         parallel=config.get("parallel", 1),
         card_yaml=config.get("card_yaml", False),
         vent=config.get(ATTR_VENT, False),
+        water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
     )
 
     zone_data = []

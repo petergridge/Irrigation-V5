@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from homeassistant.components.persistent_notification import async_create, async_dismiss
 from homeassistant.components.switch import ENTITY_ID_FORMAT, SwitchEntity
 from homeassistant.const import MATCH_ALL
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import Event, EventStateChangedData, HomeAssistant, callback
 from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
@@ -33,6 +33,7 @@ from .const import (
     ATTR_SHOW_CONFIG,
     ATTR_START,
     CONST_ECO,
+    CONST_OFF,
     CONST_ON,
     CONST_PENDING,
     TIME_STR_FORMAT,
@@ -69,6 +70,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._state = False
         self._finished = True
         self._paused = False
+        self._vented = False
+        self._pause_on_water_source = True
 
         self._last_run = None
         self._program_remaining = 0
@@ -411,9 +414,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # create pump class to start/stop pumps
             for pump, zones in pumps.items():
                 # pass pump_switch, list of zones, off_delay
-                self._pumps.append(
-                    PumpClass(self._hass, pump, zones, self._program.vent)
-                )
+                self._pumps.append(PumpClass(self._hass, pump, zones))
 
             # calculate the next run
             self.update_next_run()
@@ -445,6 +446,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 )
 
         monitor = []
+
         monitor_append(self._program.start_time.entity_id, "start_time")
         if self._program.sunrise_offset:
             monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset")
@@ -473,6 +475,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_monitor = async_track_state_change_event(
             self._hass, tuple(monitor), self.update_next_run
         )
+
+        monitor = []
+        for zone in self._zones:
+            if zone.water_source and self._program.water_source_pause:
+                monitor_append(zone.water_source, "water_source")
+                self._unsub_monitor = async_track_state_change_event(
+                    self._hass, tuple(monitor), self.pause_program_water_source
+                )
 
         monitor = []
         monitor_append(self._program.pause.entity_id, "pause")
@@ -671,7 +681,22 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         return self._program_remaining
 
-    async def pause_program(self, entity=None, old_status=None, new_status=None):
+    async def pause_program_water_source(
+        self,
+        event: Event[EventStateChangedData],
+    ):
+        """Program paused status changes."""
+
+        if event.data["new_state"].state == CONST_ON:
+            await self._program.pause.async_turn_off()
+
+        if event.data["new_state"].state == CONST_OFF:
+            await self._program.pause.async_turn_on()
+
+    async def pause_program(
+        self,
+        event: Event[EventStateChangedData],
+    ):
         """Program paused status changes."""
         if self._program.pause.is_on:
             self._paused = True
@@ -721,6 +746,18 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     running_zones.append(zone.switch)
                     break
 
+            if running_zone.remaining_time.numeric_value <= 3 and self._program.vent:
+                # And last zone turn off the pump
+                pend = (x for x in all_zones if x.status.state == CONST_PENDING)
+                if sum(1 for _ in pend) == 0:
+                    self._vented = True
+                    loop = asyncio.get_event_loop()
+                    background_tasks = set()
+                    for pump in self._pumps:
+                        task = loop.create_task(pump.async_stop_monitoring())
+                        background_tasks.add(task)
+                        task.add_done_callback(background_tasks.discard)
+
             if (
                 running_zone.remaining_time.numeric_value == 0
                 and running_zones.count(running_zone) > 0
@@ -763,7 +800,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
-
+        self._vented = False
         if self._state is True:
             # program is already running
             return
@@ -812,6 +849,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             running_zones = await self.run_monitor_zones(running_zones, self._run_zones)
 
         # run is complete stop pump monitoring
+        loop = asyncio.get_event_loop()
         background_tasks = set()
         for pump in self._pumps:
             task = loop.create_task(pump.async_stop_monitoring())
@@ -836,12 +874,23 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Stop the switch/program."""
+
         await self._program.pause.async_turn_off()
         if self._state is True:
             self._scheduled = False
             self._running_zone = []
             self._run_zones = []
+            # attempt to vent the lines even when a program is manually terminated
+            if self._program.vent:
+                loop = asyncio.get_event_loop()
+                background_tasks = set()
+                for pump in self._pumps:
+                    task = loop.create_task(pump.async_stop_monitoring())
+                    background_tasks.add(task)
+                    task.add_done_callback(background_tasks.discard)
+                await asyncio.sleep(3)
             for zone in self._zones:
                 await zone.switch.async_turn_off()
             self._state = False
+
         self.async_schedule_update_ha_state()

@@ -135,7 +135,8 @@
 			"mandatory": "Il campo richiesto non è stato riempito",
 			"zone_required": "Deve essere definita almeno una zona",
 			"invalid_days_group": "Le opzioni della frequenza nella lista sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
-			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom"
+			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
 		},
 		"step": {
 			"user": {
@@ -220,7 +221,8 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"vent": "Vent excess pressure after pump stops",
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			}
 		}
@@ -231,7 +233,8 @@
 			"mandatory": "Il campo richiesto non è stato riempito",
 			"zone_required": "Deve essere definita almeno una zona",
 			"invalid_days_group": "Le opzioni della frequenza nella lista sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
-			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom"
+			"invalid_option": "Le opzioni della frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
 		},
 		"step": {
 			"user": {
@@ -261,7 +264,8 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"vent": "Vent excess pressure after pump stops",
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {

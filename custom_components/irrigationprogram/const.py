@@ -55,6 +55,7 @@ ATTR_SCHEDULED = "scheduled"
 ATTR_WATER_SOURCE = "water_source_active"
 ATTR_MIN_SEC = "min_sec"
 ATTR_VENT = "vent"
+ATTR_PAUSE_WATER_SOURCE = "pause_on_water_source"
 
 ATTR_ZONE_DELAY_MAX = "zone_delay_max"
 ATTR_WATER_MAX = "water_max"
@@ -62,7 +63,7 @@ ATTR_WATER_STEP = "water_step"
 ATTR_PARALLEL = "parallel"
 ATTR_CARD_YAML = "card_yaml"
 
-CONST_LATENCY = 5
+CONST_LATENCY = 3
 CONST_ZERO_FLOW_DELAY = 5
 CONST_OFF_DELAY = 5
 CONST_SUN_OFFSET = 240

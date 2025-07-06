@@ -28,6 +28,7 @@ from .const import (
     ATTR_LATENCY,
     ATTR_MIN_SEC,
     ATTR_PARALLEL,
+    ATTR_PAUSE_WATER_SOURCE,
     ATTR_PUMP,
     ATTR_RAIN_BEHAVIOUR,
     ATTR_RAIN_DELAY,
@@ -83,43 +84,52 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             # 1 or 'mon,tue,fri' formats are valid
             # if list must be in mon, tue, wed, thu, fri, sat, sun
             # if not list must be numeric or mon, tue, wed, thu, fri, sat, sun
+            # Support input using sensor
 
             cleanoptions = []
 
-            for option in user_input.get("freq_options"):
-                try:
-                    if isinstance(int(option), int):
+            # check if it is a sensor being provide
+            if not user_input.get("freq_options", None):
+                errors["freq_options"] = "mandatory"
+            else:
+                for option in user_input.get("freq_options"):
+                    if option.split(".")[0] == "sensor":
+                        # now validate the sensor exists
+                        if self.hass.states.async_available(option):
+                            errors["freq_options"] = "invalid_sensor"
+                            break
                         cleanoptions.append(option)
                         continue
-                except ValueError:
-                    optionlist = (
-                        option.replace(" ", "")
-                        .replace("\n", "")
-                        .replace("'", "")
-                        .replace('"', "")
-                        .strip("[]'")
-                        .split(",")
-                    )
-                    optionlist = [x.capitalize() for x in optionlist]
-                    if len(optionlist) > 1:
-                        for item in optionlist:
-                            if item.strip() not in OPTIONS_DAYS_OF_WEEK:
-                                errors["freq_options"] = "invalid_days_group"
-                                break
-                        else:
-                            cleanoptions.append(", ".join(item))
+                    try:
+                        if isinstance(int(option), int):
+                            cleanoptions.append(option)
                             continue
-                    if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
-                        cleanoptions.append(optionlist[0])
-                        continue
+                    except ValueError:
+                        optionlist = (
+                            option.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("'", "")
+                            .replace('"', "")
+                            .strip("[]'")
+                            .split(",")
+                        )
+                        optionlist = [x.capitalize() for x in optionlist]
+                        if len(optionlist) > 1:
+                            for item in optionlist:
+                                if item.strip() not in OPTIONS_DAYS_OF_WEEK:
+                                    errors["freq_options"] = "invalid_days_group"
+                                    break
+                            else:
+                                cleanoptions.append(", ".join(optionlist))
+                                continue
+                        if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
+                            cleanoptions.append(optionlist[0])
+                            continue
 
-                    errors["freq_options"] = "invalid_option"
-                    break
+                        errors["freq_options"] = "invalid_option"
+                        break
 
-            user_input["freq_options"] = cleanoptions
-
-            if not cleanoptions:
-                errors["freq_options"] = "mandatory"
+                user_input["freq_options"] = cleanoptions
 
             if not errors:
                 # Input is valid, set data.
@@ -516,6 +526,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 self._data[ATTR_VENT] = user_input[ATTR_VENT]
+                self._data[ATTR_PAUSE_WATER_SOURCE] = user_input[
+                    ATTR_PAUSE_WATER_SOURCE
+                ]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
 
@@ -597,13 +610,13 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 vol.Optional(
                     ATTR_LATENCY,
                     description={"suggested_value": default_input.get(ATTR_LATENCY, 5)},
-                ): sel.sel({"min": 5, "max": 60, "mode": "box"}),
+                ): sel.NumberSelector({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
                     ATTR_START_LATENCY,
                     description={
                         "suggested_value": default_input.get(ATTR_START_LATENCY, 30)
                     },
-                ): sel.sel({"min": 5, "max": 60, "mode": "box"}),
+                ): sel.NumberSelector({"min": 5, "max": 60, "mode": "box"}),
                 vol.Optional(
                     ATTR_PARALLEL,
                     description={
@@ -620,6 +633,14 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     ATTR_VENT,
                     description={
                         "suggested_value": default_input.get(ATTR_VENT, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_PAUSE_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_PAUSE_WATER_SOURCE, False
+                        )
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -755,6 +776,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 newdata[ATTR_VENT] = user_input[ATTR_VENT]
+                newdata[ATTR_PAUSE_WATER_SOURCE] = user_input[ATTR_PAUSE_WATER_SOURCE]
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
@@ -874,6 +896,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     },
                 ): cv.boolean,
                 vol.Optional(
+                    ATTR_PAUSE_WATER_SOURCE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_PAUSE_WATER_SOURCE, False
+                        )
+                    },
+                ): cv.boolean,
+                vol.Optional(
                     ATTR_RAIN_DELAY,
                     description={
                         "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
@@ -897,40 +927,49 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             newdata.update(user_input)
             cleanoptions = []
 
-            for option in user_input.get("freq_options"):
-                try:
-                    if isinstance(int(option), int):
+            # check if it is a sensor being provide
+            if not user_input.get("freq_options", None):
+                errors["freq_options"] = "mandatory"
+            else:
+                for option in user_input.get("freq_options"):
+                    if option.split(".")[0] == "sensor":
+                        # now validate the sensor exists
+                        if self.hass.states.async_available(option):
+                            errors["freq_options"] = "invalid_sensor"
+                            break
                         cleanoptions.append(option)
                         continue
-                except ValueError:
-                    optionlist = (
-                        option.replace(" ", "")
-                        .replace("\n", "")
-                        .replace("'", "")
-                        .replace('"', "")
-                        .strip("[]'")
-                        .split(",")
-                    )
-                    optionlist = [x.capitalize() for x in optionlist]
-                    if len(optionlist) > 1:
-                        for item in optionlist:
-                            if item.strip() not in OPTIONS_DAYS_OF_WEEK:
-                                errors["freq_options"] = "invalid_days_group"
-                                break
-                        else:
-                            cleanoptions.append(", ".join(optionlist))
+
+                    try:
+                        if isinstance(int(option), int):
+                            cleanoptions.append(option)
                             continue
-                    if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
-                        cleanoptions.append(optionlist[0])
-                        continue
+                    except ValueError:
+                        optionlist = (
+                            option.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("'", "")
+                            .replace('"', "")
+                            .strip("[]'")
+                            .split(",")
+                        )
+                        optionlist = [x.capitalize() for x in optionlist]
+                        if len(optionlist) > 1:
+                            for item in optionlist:
+                                if item.strip() not in OPTIONS_DAYS_OF_WEEK:
+                                    errors["freq_options"] = "invalid_days_group"
+                                    break
+                            else:
+                                cleanoptions.append(", ".join(optionlist))
+                                continue
+                        if optionlist[0] in OPTIONS_DAYS_OF_WEEK:
+                            cleanoptions.append(optionlist[0])
+                            continue
 
-                    errors["freq_options"] = "invalid_option"
-                    break
+                        errors["freq_options"] = "invalid_option"
+                        break
 
-            newdata["freq_options"] = cleanoptions
-
-            if not cleanoptions:
-                errors["freq_options"] = "mandatory"
+                newdata["freq_options"] = cleanoptions
 
             if not errors:
                 if user_input["freq"] is False:

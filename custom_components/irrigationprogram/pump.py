@@ -45,6 +45,7 @@ class PumpClass:
 
     async def async_monitor(self):
         """Monitor running zones to determine if pump is required."""
+        self._stop = False
 
         def zone_running():
             return any(
@@ -101,29 +102,3 @@ class PumpClass:
             await self.hass.services.async_call(
                 "valve", SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self._pump}
             )
-        if self._vent:
-            await asyncio.sleep(1)
-            await self.async_vent_pressure()
-
-    async def async_vent_pressure(self):
-        """Open a valve for a few seconds to relive pressure when the pump stops monitoring."""
-        if not self.pump_running:
-            state = self.hass.states.get(self._zones[0]).state
-            if state == "off":
-                await self.hass.services.async_call(
-                    CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._zones[0]}
-                )
-            if state == "closed":
-                await self.hass.services.async_call(
-                    "valve", SERVICE_OPEN_VALVE, {ATTR_ENTITY_ID: self._zones[0]}
-                )
-            await asyncio.sleep(3)
-            state = self.hass.states.get(self._zones[0]).state
-            if state == "on":
-                await self.hass.services.async_call(
-                    CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._zones[0]}
-                )
-            if state == "open":
-                await self.hass.services.async_call(
-                    "valve", SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self._zones[0]}
-                )

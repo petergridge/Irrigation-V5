@@ -135,7 +135,8 @@
 			"mandatory": "Required field not filled in",
 			"zone_required": "At least one zone must be defined",
 			"invalid_days_group": "Frequency options in list must be Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+			"invalid_option": "Frequency option must be numeric or Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
 		},
 		"step": {
 			"user": {
@@ -220,7 +221,9 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"vent": "Vent excess pressure after pump stops",
+					"pause_on_water_source": "Pause program when water source sensor turns off"
+
 				}
 			}
 		}
@@ -231,7 +234,8 @@
 			"mandatory": "Required field not filled in",
 			"zone_required": "At least one zone must be defined",
 			"invalid_days_group": "Frequency options must be mon,tue,wed,thu,fri,sat,sun",
-			"invalid_option": "Frequency option must be numeric or mon,tue,wed,thu,fri,sat,sun"
+			"invalid_option": "Frequency option must be numeric or mon,tue,wed,thu,fri,sat,sun",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
 		},
 		"step": {
 			"user": {
@@ -261,7 +265,8 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"vent": "Vent excess pressure after pump stops",
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {
