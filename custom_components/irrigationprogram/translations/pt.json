@@ -8,8 +8,8 @@
 		},
 		"min_sec": {
 			"options": {
-				"minutes": "Minutes",
-				"seconds": "Seconds"
+				"minutes": "Minutos",
+				"seconds": "Segundos"
 			}
 		},
 		"start_type": {
@@ -28,9 +28,9 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
-				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
-				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
+				"strict": "Rigoroso - desliga outros programas ao iniciar, desliga quando outro programa inicia",
+				"loose": "Livre - desliga todos os outros programas ao iniciar, continua a ser executado a menos que um programa 'rigoroso' seja iniciado",
+				"off": "Desligado - desativa apenas os programas 'rigorosos', continua a ser executado a menos que um programa 'rigoroso' seja iniciado"
 			}
 		}
 	},
@@ -87,7 +87,7 @@
 				"name":"Ajustes do Pôr do Sol"
 			},
 			"rain_delay_days":{
-				"name":"Rain delay"
+				"name":"Atraso por estar a chuver"
 			}
 		},
 		"time":{
@@ -105,7 +105,7 @@
 				"name":"Ignorar o sensor"
 			},
 			"enable_rain_delay":{
-				"name":"Enable rain delay"
+				"name":"Ativar atraso por estar a chuver"
 			},
 			"enable_program":{
 				"name":"Ativar o programa"
@@ -136,7 +136,7 @@
 			"zone_required": "Pelo menos uma zona deve ser definida",
 			"invalid_days_group": "Os intervalos de rega na lista devem ser Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
 			"invalid_option": "O intervalo de rega deve ser numérico ou Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Opção de frequência, o sensor introduzido está incorreto ou desconectado"
 		},
 		"step": {
 			"user": {
@@ -212,17 +212,17 @@
 					"start_type":"Opções de hora de início",
 					"interlock": "Impedir que os programas sejam executados em simultâneo",
 					"rain_behaviour": "Comportamento do sensor de chuva",
-					"min_sec": "Watering time unit",
+					"min_sec": "Unidades da temporização de rega",
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"zone_delay_max": "Atraso máximo de transição de zona",
+					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
+					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
+					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
+					"vent": "Libertar o excesso de pressão após a paragem da bomba",
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
 				}
 			}
 		}
@@ -234,7 +234,7 @@
 			"zone_required": "Pelo menos uma zona deve ser definida",
 			"invalid_days_group": "Os intervalos de rega na lista devem ser Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
 			"invalid_option": "O intervalo de rega deve ser numérico ou Seg, Ter, Qua, Qui, Sex, Sáb, Dom",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Opção de frequência, o sensor introduzido está incorreto ou desconectado"
 		},
 		"step": {
 			"user": {
@@ -255,17 +255,17 @@
 					"start_type":"Opções de hora de início",
 					"interlock": "Impedir que os programas sejam executados em simultâneo",
 					"rain_behaviour": "Comportamento do sensor de chuva",
-					"min_sec": "Watering time unit",
+					"min_sec": "Unidades da temporização de rega",
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"zone_delay_max": "Atraso máximo de transição de zona",
+					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
+					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
+					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
+					"vent": "Libertar o excesso de pressão após a paragem da bomba",
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
 				}
 			},
 			"update_program": {
