@@ -95,9 +95,9 @@ async def async_setup_entry(
 
 
 class ProgramConfig(SwitchEntity, RestoreEntity):
-    _attr_has_entity_name = True
-    _attr_translation_key = "config"
-    _unrecorded_attributes = frozenset({MATCH_ALL})
+    # _attr_translation_key = "config"
+    # _attr_has_entity_name = True
+    # _unrecorded_attributes = frozenset({MATCH_ALL})
 
     def __init__(self, unique_id, name) -> None:
         """Initialize a Irrigation program."""
@@ -105,6 +105,9 @@ class ProgramConfig(SwitchEntity, RestoreEntity):
         self._attr_attribution = f"Irrigation Controller: {name}"
         self._state = "off"
         self._unique_id = unique_id
+        self._attr_translation_key = "config"
+        self._attr_has_entity_name = True
+        self._unrecorded_attributes = frozenset({MATCH_ALL})
 
     async def async_added_to_hass(self):
         """HA has started."""

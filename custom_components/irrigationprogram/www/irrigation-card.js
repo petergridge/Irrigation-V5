@@ -75,6 +75,7 @@ class IrrigationCard extends HTMLElement {
       // Build the Card
       if (config.show_program === true) {
         let showconfig = hass.states[config.program].attributes["show_config"]
+        let programenabled = hass.states[config.program].attributes["irrigation_on"]
 
         const buttons = [];
         buttons.length = 0;
@@ -121,8 +122,10 @@ class IrrigationCard extends HTMLElement {
           }
         });
 
-        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" }];
+        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state: "on" }];
         add_simple_entity(config.program, condition, "start_time", entities);
+        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state_not: "on" }];
+        add_simple_entity(config.program, condition, "irrigation_on", entities);
 
         var condition = [{ entity: showconfig, state: "on" }];
         if (hass.states[config.program].attributes["sunrise"] || hass.states[config.program].attributes["sunset"]) {

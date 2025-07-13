@@ -353,8 +353,17 @@ class Zone(SwitchEntity, RestoreEntity):
             return True
 
         # lastly check the scheduled run time
-        if self.next_run.native_value > dt_util.as_local(dt_util.now()):
-            return False
+        if self.next_run.native_value:
+            if self.next_run.native_value > dt_util.as_local(dt_util.now()):
+                return False
+        else:
+            # report an issue
+            async_create(
+                self.hass,
+                message=f"No next run calculated for {self.name}. Your frequency may not be set correctly",
+                title="Irrigation Controller",
+                notification_id="irrigation_frequency",
+            )
 
         # turn off the rain delay feature
         if self._programdata.rain_delay:
@@ -667,6 +676,14 @@ class Zone(SwitchEntity, RestoreEntity):
                     v_next_run = min(
                         self.get_next_dayofweek_datetime(v_last_ran, day), v_next_run
                     )
+        if v_next_run is None:
+            async_create(
+                self.hass,
+                message=f"No next run calculated for {self.name}. Your frequency may not be set correctly",
+                title="Irrigation Controller",
+                notification_id="irrigation_frequency",
+            )
+
         await self.next_run.set_value(v_next_run)
         if self._state not in (CONST_PENDING, CONST_ON, CONST_ECO, CONST_OFF):
             self._state = CONST_OFF
@@ -1000,7 +1017,6 @@ class Zone(SwitchEntity, RestoreEntity):
                     )
                     await self.remaining_time.set_value(self._remaining_time)
                     if self._stop:
-                        # self._aborted = True
                         break
                     await asyncio.sleep(1)
             # abort
@@ -1016,36 +1032,49 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def time(self, water_adjust_value, seconds_run, reps):
         """Track watering time based on time."""
-
         if self._stop:
             return 0
+
         watertime = math.ceil(self.water * water_adjust_value)
-        while watertime > 0:
+        start_time = dt_util.now()
+        end_time = dt_util.now() + timedelta(seconds=watertime)
+
+        while dt_util.now() < end_time:
             if self._status == CONST_PAUSED:
+                # now I need to add time to the expected end time
+                end_time += timedelta(seconds=1)
                 await asyncio.sleep(1)
                 continue
 
             await asyncio.sleep(1)
             # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
             await self.handle_validation_error()
-
-            seconds_run += 1
-            watertime = math.ceil(self.water * water_adjust_value) - seconds_run
-            self._remaining_time = await self.calc_run_time(
-                seconds_run, repeats=reps, scheduled=self.scheduled
-            )
-            await self.remaining_time.set_value(self._remaining_time)
+            # seconds_run = (dt_util.now() - start_time).total_seconds()
+            # watertime = math.ceil(self.water * water_adjust_value) - seconds_run
+            # self._remaining_time = await self.calc_run_time(
+            #     seconds_run, repeats=reps, scheduled=self.scheduled
+            # )
+            # await self.remaining_time.set_value(self._remaining_time)
             if self._stop:
                 return 0
 
             # Check to see if the zone has been stopped
             for _ in range(self._latency):
+                seconds_run = (dt_util.now() - start_time).total_seconds()
+                self._remaining_time = await self.calc_run_time(
+                    seconds_run, repeats=reps, scheduled=self.scheduled
+                )
+                await self.remaining_time.set_value(self._remaining_time)
                 self._stop = True
                 if self._aborted:
                     break
                 # switch is off
-                if not await self.check_switch_state():
+                check_state = await self.check_switch_state()
+                if not check_state:
                     # if not on loop again
+                    _LOGGER.warning(
+                        f"{self.name} returned an unexpected state, {check_state}"
+                    )
                     await asyncio.sleep(1)
                     continue
                 self._stop = False

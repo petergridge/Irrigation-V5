@@ -171,8 +171,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         condition = [
             {"entity": self.entity_id, "state_not": "on"},
             {"entity": self._program.config.entity_id, "state_not": "on"},
+            {"entity": self._program.enabled.entity_id, "state": "on"},
         ]
         card += add_entity(self._program.start_time, condition, True)
+        condition = [
+            {"entity": self.entity_id, "state_not": "on"},
+            {"entity": self._program.config.entity_id, "state_not": "on"},
+            {"entity": self._program.enabled.entity_id, "state_not": "on"},
+        ]
+        card += add_entity(self._program.enabled, condition, True)
 
         condition = [{"entity": self._program.config.entity_id, "state": "on"}]
         if self._program.sunrise_offset or self._program.sunset_offset:
@@ -440,7 +447,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 async_dismiss(self.hass, "irrigation_device_error1")
                 async_create(
                     self.hass,
-                    message=f"Configured monitor {name} item is no longer available or has been renamed",
+                    message=f"Warning, configured monitor {name} item is no longer available or has been renamed",
                     title="Irrigation Controller",
                     notification_id="irrigation_device_error1",
                 )
@@ -524,7 +531,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 async_dismiss(self.hass, "irrigation_device_error2")
                 async_create(
                     self.hass,
-                    message=f"Configured zone item {zone} is no longer available or has been renamed",
+                    message=f"Warning, configured zone item {zone} is no longer available or has been renamed",
                     title="Irrigation Controller",
                     notification_id="irrigation_device_error2",
                 )

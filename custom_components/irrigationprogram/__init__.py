@@ -212,14 +212,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         zone_data.append(z)
 
-        # # wait for the referenced devices to come online before preceeding to
-        # # the setup
+    entry.runtime_data = IrrigationData(program, zone_data)
+
+    # store an object for your platforms to access
+    hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
+
+    # # wait for the referenced devices to come online before preceeding to
+    # # the setup
+    for _ in range(program.start_latency):
+        if not hass.states.async_available(z.zone):
+            break
+        await asyncio.sleep(1)
+    else:
+        msg = f"Warning, {z.zone} has not initialised before irrigation program, check your configuration"
+        _LOGGER.error(msg)
+        async_create(
+            hass,
+            message=msg,
+            title="Irrigation Controller",
+            notification_id="irrigation_device_error",
+        )
+    # check if dependant objects are ready
+    if z.flow_sensor:
         for _ in range(program.start_latency):
-            if not hass.states.async_available(z.zone):
+            if not hass.states.async_available(z.flow_sensor):
                 break
             await asyncio.sleep(1)
         else:
-            msg = f"{z.zone} has not initialised before irrigation program, check your configuration"
+            msg = f"Warning, {z.flow_sensor} has not initialised before irrigation program, check your configuration"
             _LOGGER.error(msg)
             async_create(
                 hass,
@@ -227,69 +248,49 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 title="Irrigation Controller",
                 notification_id="irrigation_device_error",
             )
-        # check if dependant objects are ready
-        if z.flow_sensor:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.flow_sensor):
-                    break
-                await asyncio.sleep(1)
-            else:
-                msg = f"{z.flow_sensor} has not initialised before irrigation program, check your configuration"
-                _LOGGER.error(msg)
-                async_create(
-                    hass,
-                    message=msg,
-                    title="Irrigation Controller",
-                    notification_id="irrigation_device_error",
-                )
-        if z.adjustment:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.adjustment):
-                    break
-                await asyncio.sleep(1)
-            else:
-                msg = f"{z.adjustment} has not initialised before irrigation program, check your configuration"
-                _LOGGER.error(msg)
-                async_create(
-                    hass,
-                    message=msg,
-                    title="Irrigation Controller",
-                    notification_id="irrigation_device_error",
-                )
-        if z.rain_sensor:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.rain_sensor):
-                    break
-                await asyncio.sleep(1)
-            else:
-                msg = f"{z.rain_sensor} has not initialised before irrigation program, check your configuration"
-                _LOGGER.error(msg)
-                async_create(
-                    hass,
-                    message=msg,
-                    title="Irrigation Controller",
-                    notification_id="irrigation_device_error",
-                )
-        if z.water_source:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.water_source):
-                    break
-                await asyncio.sleep(1)
-            else:
-                msg = f"{z.water_source} has not initialised before irrigation program, check your configuration"
-                _LOGGER.error(msg)
-                async_create(
-                    hass,
-                    message=msg,
-                    title="Irrigation Controller",
-                    notification_id="irrigation_device_error",
-                )
+    if z.adjustment:
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(z.adjustment):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
+            _LOGGER.error(msg)
+            async_create(
+                hass,
+                message=msg,
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
+    if z.rain_sensor:
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(z.rain_sensor):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
+            _LOGGER.error(msg)
+            async_create(
+                hass,
+                message=msg,
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
+    if z.water_source:
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(z.water_source):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"Warning, {z.water_source} has not initialised before irrigation program, check your configuration"
+            _LOGGER.error(msg)
+            async_create(
+                hass,
+                message=msg,
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
 
-    entry.runtime_data = IrrigationData(program, zone_data)
-
-    # store an object for your platforms to access
-    hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
 
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
@@ -372,26 +373,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # remove the instance of component
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
-
-
-# async def async_stop_programs(hass, ignore_program):
-#     """Stop all running programs."""
-
-#     for n, data in enumerate(hass.data[DOMAIN].values()):
-#         if data.get(ATTR_NAME) == ignore_program:
-#             continue
-#         device = SWITCH_ID_FORMAT.format(slugify(data.get(ATTR_NAME, "unknown")))
-#         servicedata = {ATTR_ENTITY_ID: device}
-#         # warn if the program is terminated
-#         await asyncio.sleep(n)
-
-#         if hass.states.get(device).state == "on":
-#             async_create(
-#                 hass,
-#                 message=f"Irrigation Program {data.get(ATTR_NAME)} terminated by {ignore_program}",
-#                 title="Irrigation Controller",
-#             )
-#             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
 
 async def async_stop_programs_new(hass: HomeAssistant, calling_program):

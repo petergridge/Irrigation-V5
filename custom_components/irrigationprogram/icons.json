@@ -19,13 +19,13 @@
             "enable_program": {
                 "state": {
                     "on": "mdi:water",
-                    "off": "mdi:water-off"
+                    "off": "mdi:alert-outline"
                 }
             },
             "enable_zone": {
                 "state": {
                     "on": "mdi:water",
-                    "off": "mdi:water-off"
+                    "off": "mdi:alert-outline"
                 }
             },
 			"config":{
