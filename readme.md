@@ -479,6 +479,13 @@ This option opens one valve for three seconds after the pump has stop on program
 Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+### V2025.07.03
+  - Update Portugese and German translations
+  - More work on slow loading devices, provide warnings is referencecd devices are not available before the program is setup/
+  - Modify Zone timing to use datedif instead of a second counter for more accurated zone run time
+    - add a warning to identify when the running switch is not indicating the expected state to logging. This may indicate communicaton issues with the irrigation controller/switch
+  - Update UI to more clearly show when the program is disabled
+
 ### V2025.07.02
 - Update venting funtion to turn pump off before zones when a program ends. Issue #199
   - NOTE: The venting function DOES NOT work if ZONES are ended manually
