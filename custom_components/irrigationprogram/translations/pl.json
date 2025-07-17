@@ -1,0 +1,329 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Ogólny",
+				"rainbird": "RainBird"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "Minut",
+				"seconds": "Sekund"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Pojedynczy czas",
+				"multistart":"Wiele razy",
+				"sunrise":"czas przed/po wschodzie słońca (offset)",
+				"sunset":"czas przed/po zachodzie słońca (offset)"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Zatrzymaj program",
+				"continue": "Pozwól dokończyć program"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "Rygorystyczny - wyłącz inne programy podczas uruchamiania, wyłącz, gdy uruchamia się inny program",
+				"loose": "Łagodny - wyłącz wszystkie inne programy podczas uruchamiania, kontynuuj działanie, chyba że zostanie uruchomiony program „Rygorystyczny”",
+				"off": "Wyłącz – wyłącz tylko programy „Rygorystyczny”, kontynuuj działanie, dopóki nie zostanie uruchomiony program „Rygorystyczny”"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"Status strefy",
+				"state": {
+					"off": "Wyłączony",
+					"on": "Włączony",
+					"disabled": "Wyłączony",
+					"pending": "W trakcie działania",
+					"eco": "ECO",
+					"program_disabled": "Program wyłączony",
+					"controller_disabled": "Sterownik wyłączony",
+					"unavailable": "Niedostępny",
+					"raining": "Pada deszcz",
+					"adjusted_off": "Dostosowano",
+					"no_water_source": "No water source detected",
+					"zone_disabled": "Strefa wyłączona",
+					"paused": "Program wstrzymany"
+				}
+			},
+			"zone_next_run":{
+				"name":"Następne podlewanie"
+			},
+			"zone_last_ran":{
+				"name":"Ostatnio podlewano"
+			},
+			"remaining_time":{
+				"name":"Pozostały czas"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Czas podlewania"
+			},
+			"volume":{
+				"name":"Wielkość podlewania"
+			},
+			"wait":{
+				"name":"Czas oczekiwania"
+			},
+			"repeat":{
+				"name":"Ilość powtórzeń"
+			},
+			"inter_zone_delay":{
+				"name":"Pauza między strefami"
+			},
+			"sunrise_offset":{
+				"name":"czas przed/po wschodzie słońca (offset)"
+			},
+			"sunset_offset":{
+				"name":"czas przed/po zachodzie słońca (offset)"
+			},
+			"rain_delay_days":{
+				"name":"Opóźnienie po deszczu"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Godzina startu"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Godziny startu"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignoruj sensory"
+			},
+			"enable_rain_delay":{
+				"name":"Włącz opóźnienie po deszczu"
+			},
+			"enable_program":{
+				"name":"Włącz program"
+			},
+			"enable_zone":{
+				"name":"Włącz strefę"
+			},
+			"config":{
+				"name": "Ustawienia"
+			},
+			"zone":{
+				"name": "{nazwa_strefy}"
+			},
+			"pause":{
+				"name": "Wstrzymano"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Częstotliwość (dni)"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
+			"mandatory": "Nie wprowadzono wymaganych danych",
+			"zone_required": "Przynajmniej jedna strfa musi być zdefiniowana",
+			"invalid_days_group": "Wybrana opcja musi być jak: Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Wybrana opcja musi być numeryczna lub Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_sensor": "Wprowadzony sensor jest niepoprawny lub jest offline"
+		},
+		"step": {
+			"user": {
+				"title": "Ustawienia programu",
+				"description": "Zdefiniuj parametry programu",
+				"data": {
+					"name": "Nazwa",
+					"freq": "Włącz program według częstotliwości",
+					"freq_options": "Wybierz dni lub częstotliwość",
+					"controller_monitor": "binary sensor monitora sterownika",
+					"device_type": "Typ sterownika"
+				}
+			},
+			"add_zone": {
+				"title": "Ustawinia stref",
+				"description": "Ustawienia strefy",
+				"data": {
+					"zone": "Włącznik strefy",
+					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
+					"eco": "Włącz funkcję czekania i powtarzania ECO",
+					"pump": "Włącznik pompy",
+					"flow_sensor": "Sensor przepływu",
+					"water_adjustment": "Sensor czasu pracy",
+					"rain_sensor": "Sensor deszczu",
+					"water_source_active": "Sensor źródła wody",
+					"order": "Kolejność uruchamiania stref"
+				}
+			},
+			"delete_zone": {
+				"title": "Ustawienia strefy",
+				"description": "",
+				"data": {
+					"zone": "Wybierz strefę do usunięcia"
+				}
+			},
+			"update_zone_data": {
+				"title": "Ustawienia strefy",
+				"description": "Aktualizacja strefy",
+				"data": {
+					"zone": "Włącznik strefy",
+					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
+					"eco": "Włącz funkcję czekania i powtarzania ECO",
+					"pump": "Włącznik pompy",
+					"flow_sensor": "Sensor przepływu",
+					"water_adjustment": "Sensor czasu pracy",
+					"rain_sensor": "Sensor deszczu",
+					"water_source_active": "Sensor źródła wody",
+					"order": "Kolejność uruchamiania stref"
+				}
+			},
+			"update_zone": {
+				"title": "Ustawienia strefy",
+				"description": "",
+				"data": {
+					"zone": "Wybierz strefę do aktualizacji"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Aktualizacja programu",
+					"add_zone": "Dodaj strefę",
+					"update_zone": "Aktualizacja strefy",
+					"delete_zone": "Usuń strefę",
+					"finalise": "Zastosuj",
+					"advanced": "Opcje zaawansowane"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Opcje zaawansowane",
+				"data": {
+					"start_type":"Opcje czasu startu",
+					"interlock": "Zapobiegaj jednoczesnemu uruchamianiu programów",
+					"rain_behaviour": "Zachowanie czujnika deszczu",
+					"min_sec": "Jednostka czasu podlewania",
+					"water_max": "Maksymalny czas podlewania/wartość",
+					"water_step": "Krok zmiany czasu podlewania",
+					"parallel": "Ilość stref jednocześnie",
+					"card_yaml": "Generuj yaml karty Encje",
+					"zone_delay_max": "Maksymalna pauza między strefami",
+					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
+					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
+					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
+					"vent": "Uwolnij nadmiar ciśnienia po zatrzymaniu pompy",
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
+
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
+			"mandatory": "Nie wprowadzono wymaganych danych",
+			"zone_required": "Przynajmniej jedna strfa musi być zdefiniowana",
+			"invalid_days_group": "Wybrana opcja musi być jak: Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "Wybrana opcja musi być numeryczna lub Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_sensor": "Wprowadzony sensor jest niepoprawny lub jest offline"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "Aktualizacja programu",
+					"update_zone": "Aktualizacja strefy",
+					"delete_zone": "Usuń strefę",
+					"add_zone": "Dodaj strefę",
+					"finalise": "Zastosuj",
+					"advanced": "Opcje zaawansowane"
+				}
+			},
+			"advanced": {
+				"title": "Opcje zaawansowane",
+				"description": "",
+				"data": {
+					"start_type":"Opcje czasu startu",
+					"interlock": "Zapobiegaj jednoczesnemu uruchamianiu programów",
+					"rain_behaviour": "Zachowanie czujnika deszczu",
+					"min_sec": "Jednostka czasu podlewania",
+					"water_max": "Maksymalny czas podlewania/wartość",
+					"water_step": "Krok zmiany czasu podlewania",
+					"parallel": "Ilość stref jednocześnie",
+					"card_yaml": "Generuj yaml karty Encje",
+					"zone_delay_max": "Maksymalna pauza między strefami",
+					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
+					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
+					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
+					"vent": "Uwolnij nadmiar ciśnienia po zatrzymaniu pompy",
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
+				}
+			},
+			"update_program": {
+				"title": "Ustawienia programu",
+				"description": "Aktualizacja programu",
+				"data": {
+					"program": "Włącz program według częstotliwości",
+					"freq": "Włącz program według częstotliwości",
+					"freq_options": "Wybierz dni lub częstotliwość",
+					"controller_monitor": "binary sensor monitora sterownika",
+					"device_type": "Typ sterownika"
+				}
+			},
+			"add_zone": {
+				"title": "Ustawienia strefy",
+				"description": "Dodaj strefę",
+				"data": {
+					"zone": "Włącznik strefy",
+					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
+					"eco": "Włącz funkcję czekania i powtarzania ECO",
+					"pump": "Włącznik pompy",
+					"flow_sensor": "Sensor przepływu",
+					"water_adjustment": "Sensor czasu pracy",
+					"rain_sensor": "RSensor deszczu",
+					"water_source_active": "Sensor źródła wody",
+					"order": "Kolejność uruchamiania stref"
+				}
+			},
+			"update_zone_data": {
+				"title": "Ustawienia strefy",
+				"description": "Aktualizacja strefy",
+				"data": {
+					"zone": "Włącznik strefy",
+					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
+					"eco": "Włącz funkcję czekania i powtarzania ECO",
+					"pump": "Włącznik pompy",
+					"flow_sensor": "Sensor przepływu",
+					"water_adjustment": "Sensor czasu pracy",
+					"rain_sensor": "Sensor deszczu",
+					"water_source_active": "Sensor źródła wody",
+					"order": "Kolejność uruchamiania stref"
+				}
+			},
+			"delete_zone": {
+				"title": "Ustawienia strefy",
+				"description": "",
+				"data": {
+					"zone": "Wybierz strefę do usunięcia"
+				}
+			},
+			"update_zone": {
+				"title": "Ustawienia strefy",
+				"description": "",
+				"data": {
+					"zone": "Wybierz strefę do aktualizacji"
+				}
+			}
+		}
+	}
+}
