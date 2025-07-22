@@ -62,6 +62,9 @@
 			},
 			"remaining_time":{
 				"name":"Tempo restante"
+			},
+			"default_run_time":{
+				"name":"Duração"
 			}
 		},
 		"number":{
@@ -222,7 +225,8 @@
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"vent": "Libertar o excesso de pressão após a paragem da bomba",
-					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			}
 		}
@@ -265,7 +269,8 @@
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"vent": "Libertar o excesso de pressão após a paragem da bomba",
-					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			},
 			"update_program": {

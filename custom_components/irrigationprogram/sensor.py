@@ -53,6 +53,10 @@ async def async_setup_entry(
     sensors.append(sensor)
     config_entry.runtime_data.program.remaining_time = sensor
 
+    sensor = DefaultRunTime(hass, pname, unique_id)
+    sensors.append(sensor)
+    config_entry.runtime_data.program.default_run_time = sensor
+
     zones = data.zone_data
     for i, zone in enumerate(zones):
         zname = zone.name
@@ -72,6 +76,10 @@ async def async_setup_entry(
         sensor = ZoneRemainingTime(hass, pname, zname, unique_id)
         sensors.append(sensor)
         config_entry.runtime_data.zone_data[i].remaining_time = sensor
+
+        sensor = ZoneDefaultRunTime(hass, pname, zname, unique_id)
+        sensors.append(sensor)
+        config_entry.runtime_data.zone_data[i].default_run_time = sensor
 
     async_add_entities(sensors)
 
@@ -220,7 +228,49 @@ class ZoneRemainingTime(SensorEntity):
         # convert seconds to datetime
         minute, second = divmod(value, 60)
         hour, minute = divmod(minute, 60)
-        if value/60/60/24 >= 1:
+        if value / 60 / 60 / 24 >= 1:
+            rem = time(hour=23, minute=59, second=59)
+        else:
+            rem = time(hour=hour, minute=minute, second=second)
+        self._state = rem
+        self.async_schedule_update_ha_state()
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
+
+    @property
+    def native_value(self):
+        """Return the state."""
+        return self._state
+
+    @property
+    def numeric_value(self):
+        """Return the state."""
+        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+
+
+class ZoneDefaultRunTime(SensorEntity):
+    """Next zone run date time class defn."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    _attr_translation_key = "default_run_time"
+    _unrecorded_attributes = frozenset({MATCH_ALL})
+    _attr_device_class = SensorDeviceClass.DATE
+
+    def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
+        self._state: datetime = time(hour=0, minute=0, second=0)
+        self._uuid = slugify(f"{unique_id}_{zone}_default_run_time")
+        self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
+
+    def set_value(self, value):
+        """Set the remaining time state value."""
+        # convert seconds to datetime
+        minute, second = divmod(value, 60)
+        hour, minute = divmod(minute, 60)
+        if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=hour, minute=minute, second=second)
@@ -263,7 +313,50 @@ class RemainingTime(SensorEntity):
         # convert seconds to datetime
         minute, second = divmod(value, 60)
         hour, minute = divmod(minute, 60)
-        if value/60/60/24 >= 1:
+        if value / 60 / 60 / 24 >= 1:
+            rem = time(hour=23, minute=59, second=59)
+        else:
+            rem = time(hour=hour, minute=minute, second=second)
+        self._state = rem
+        self.async_schedule_update_ha_state()
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
+
+    @property
+    def native_value(self):
+        """Return the state."""
+        return self._state
+
+    @property
+    def numeric_value(self):
+        """Return the state."""
+        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+
+
+class DefaultRunTime(SensorEntity):
+    """Next zone run date time class defn."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    _attr_translation_key = "default_run_time"
+    _attr_attribution = "Irrigation Controller"
+    _unrecorded_attributes = frozenset({MATCH_ALL})
+    _attr_device_class = SensorDeviceClass.DATE
+
+    def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
+        self._state: datetime = time(hour=0, minute=0, second=0)
+        self._uuid = slugify(f"{unique_id}_default_run_time")
+        self._attr_attribution = f"Irrigation Controller: {pname}"
+
+    def set_value(self, value):
+        """Set the runtime state value."""
+        # convert seconds to datetime
+        minute, second = divmod(value, 60)
+        hour, minute = divmod(minute, 60)
+        if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=hour, minute=minute, second=second)

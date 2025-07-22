@@ -62,6 +62,9 @@
 			},
 			"remaining_time":{
 				"name":"Remaining time"
+			},
+			"default_run_time":{
+				"name":"Duration"
 			}
 		},
 		"number":{
@@ -221,9 +224,9 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Stop pump before valves at end of progran to prevent execss pressure",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
-
+					"vent": "Stop pump before valves at end of program to prevent excess pressure",
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			}
 		}
@@ -265,8 +268,9 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"vent": "Stop pump before valves at end of program to prevent excess pressure",
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			},
 			"update_program": {

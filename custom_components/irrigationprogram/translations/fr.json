@@ -62,6 +62,9 @@
 			},
 			"remaining_time":{
 				"name":"Temps restant"
+			},
+			"default_run_time":{
+				"name":"Durée"
 			}
 		},
 		"number":{
@@ -222,7 +225,8 @@
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
 					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			}
 		}
@@ -265,7 +269,8 @@
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
 					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			},
 			"update_program": {

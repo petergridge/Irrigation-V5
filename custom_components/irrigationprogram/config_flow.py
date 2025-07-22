@@ -35,6 +35,7 @@ from .const import (
     ATTR_RAIN_SENSOR,
     ATTR_START_LATENCY,
     ATTR_START_TYPE,
+    ATTR_TERMINATE,
     ATTR_VENT,
     ATTR_WATER_ADJUST,
     ATTR_WATER_MAX,
@@ -529,6 +530,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_PAUSE_WATER_SOURCE] = user_input[
                     ATTR_PAUSE_WATER_SOURCE
                 ]
+                self._data[ATTR_TERMINATE] = user_input[ATTR_TERMINATE]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
 
@@ -641,6 +643,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(
                             ATTR_PAUSE_WATER_SOURCE, False
                         )
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_TERMINATE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_TERMINATE, True)
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -762,7 +770,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
         if user_input is not None:
             if not errors:
-                newdata[ATTR_INTERLOCK] = user_input[ATTR_INTERLOCK]
+                newdata[ATTR_INTERLOCK] = user_input.get(ATTR_INTERLOCK, "strict")
                 newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE, "selector")
                 newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
                     ATTR_RAIN_BEHAVIOUR, "stop"
@@ -777,6 +785,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 newdata[ATTR_VENT] = user_input[ATTR_VENT]
                 newdata[ATTR_PAUSE_WATER_SOURCE] = user_input[ATTR_PAUSE_WATER_SOURCE]
+                newdata[ATTR_TERMINATE] = user_input[ATTR_TERMINATE]
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
@@ -901,6 +910,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(
                             ATTR_PAUSE_WATER_SOURCE, False
                         )
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_TERMINATE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_TERMINATE, True)
                     },
                 ): cv.boolean,
                 vol.Optional(

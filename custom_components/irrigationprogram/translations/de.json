@@ -62,6 +62,9 @@
 			},
 			"remaining_time":{
 				"name":"Restzeit"
+			},
+			"default_run_time":{
+				"name":"Dauer"
 			}
 		},
 		"number":{
@@ -222,7 +225,8 @@
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			}
 		}
@@ -265,7 +269,8 @@
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			},
 			"update_program": {

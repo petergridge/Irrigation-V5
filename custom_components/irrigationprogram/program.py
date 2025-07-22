@@ -25,6 +25,7 @@ from . import (
     async_stop_programs_new,
 )
 from .const import (
+    ATTR_DEFAULT_RUN_TIME,
     ATTR_DELAY,
     ATTR_IRRIGATION_ON,
     ATTR_PAUSE,
@@ -75,6 +76,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._last_run = None
         self._program_remaining = 0
+        self._program_default_run_time = 0
 
         self._unsub_point_in_time = None
         self._unsub_start = None
@@ -174,18 +176,22 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             {"entity": self._program.enabled.entity_id, "state": "on"},
         ]
         card += add_entity(self._program.start_time, condition, True)
+        card += add_entity(self._program.default_run_time, condition, True)
         condition = [
             {"entity": self.entity_id, "state_not": "on"},
             {"entity": self._program.config.entity_id, "state_not": "on"},
             {"entity": self._program.enabled.entity_id, "state_not": "on"},
         ]
         card += add_entity(self._program.enabled, condition, True)
+        card += add_entity(self._program.default_run_time, condition, True)
 
         condition = [{"entity": self._program.config.entity_id, "state": "on"}]
         if self._program.sunrise_offset or self._program.sunset_offset:
             card += add_entity(self._program.start_time, condition, True)
+            card += add_entity(self._program.default_run_time, condition, True)
         else:
             card += add_entity(self._program.start_time, condition)
+            card += add_entity(self._program.default_run_time, condition)
         card += add_entity(self._program.sunrise_offset, condition)
         card += add_entity(self._program.sunset_offset, condition)
 
@@ -270,6 +276,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             condition = [{"entity": zone.config.entity_id, "state": "on"}]
             card += add_entity(zone.enabled, condition)
             card += add_entity(zone.frequency, condition)
+            card += add_entity(zone.default_run_time, condition)
             card += add_entity(zone.water, condition)
             card += add_entity(zone.wait, condition)
             card += add_entity(zone.repeat, condition)
@@ -390,9 +397,15 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._paused:
             # don't process changes to when attributes change
             return
-
+        self._program_default_run_time = 0
         for zone in self._zones:
             self.create_task_loop(zone.switch.calc_next_run())
+            # calculate the default run time, when program is not running
+            self._program_default_run_time += zone.switch.calc_default_run_time()
+        if self.enabled is False:
+            self._program_default_run_time = 0
+        self._program.default_run_time.set_value(self._program_default_run_time)
+
         self.async_schedule_update_ha_state()
 
     async def async_added_to_hass(self):
@@ -478,6 +491,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 monitor_append(zone.adjustment, "adjustment")
             if zone.water_source:
                 monitor_append(zone.water_source, "water_source")
+            if zone.water:
+                monitor_append(zone.water.entity_id, "water")
+            if zone.repeat:
+                monitor_append(zone.repeat.entity_id, "repeat")
+            if zone.wait:
+                monitor_append(zone.wait.entity_id, "wait")
 
         self._unsub_monitor = async_track_state_change_event(
             self._hass, tuple(monitor), self.update_next_run
@@ -518,6 +537,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self._program.rain_delay_days.entity_id
             )
         self._extra_attrs[ATTR_REMAINING] = self._program.remaining_time.entity_id
+        self._extra_attrs[ATTR_DEFAULT_RUN_TIME] = (
+            self._program.default_run_time.entity_id
+        )
         self._extra_attrs[ATTR_SHOW_CONFIG] = self._program.config.entity_id
         self._extra_attrs[ATTR_PAUSE] = self._program.pause.entity_id
 
@@ -583,6 +605,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._program.inter_zone_delay:
             return self._program.inter_zone_delay.state
         return 0
+
+    @property
+    def default_run_time(self):
+        """Return the name of the variable."""
+        return self._program_default_run_time
 
     @property
     def name(self):
@@ -693,11 +720,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         event: Event[EventStateChangedData],
     ):
         """Program paused status changes."""
-
-        if event.data["new_state"].state == CONST_ON:
+        if event.data["new_state"].state == CONST_ON and self.state == CONST_ON:
             await self._program.pause.async_turn_off()
 
-        if event.data["new_state"].state == CONST_OFF:
+        if event.data["new_state"].state == CONST_OFF and self.state == CONST_ON:
             await self._program.pause.async_turn_on()
 
     async def pause_program(

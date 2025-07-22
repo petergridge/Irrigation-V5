@@ -1,3 +1,5 @@
+"""Zone definition."""
+
 import asyncio
 from datetime import timedelta
 import logging
@@ -20,6 +22,7 @@ from homeassistant.util import dt as dt_util, slugify
 
 from . import IrrigationProgram, IrrigationZoneData
 from .const import (
+    ATTR_DEFAULT_RUN_TIME,
     ATTR_ENABLE_ZONE,
     ATTR_FLOW_SENSOR,
     ATTR_HISTORICAL_FLOW,
@@ -94,6 +97,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._zonedata = zonedata
 
         self._remaining_time = 0
+        self._default_run_time = 0
         self._state = CONST_OFF  # switch state
         self._status = CONST_OFF  # zone run status
         self._last_status = None
@@ -114,6 +118,9 @@ class Zone(SwitchEntity, RestoreEntity):
         # Build attributes
         self._extra_attrs = {}
         self._extra_attrs[ATTR_SHOW_CONFIG] = self._zonedata.config.entity_id
+        self._extra_attrs[ATTR_DEFAULT_RUN_TIME] = (
+            self._zonedata.default_run_time.entity_id
+        )
         self._extra_attrs[ATTR_REMAINING] = self._zonedata.remaining_time.entity_id
         self._extra_attrs[ATTR_WATER] = self._zonedata.water.entity_id
         if self._zonedata.eco:
@@ -138,7 +145,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._extra_attrs[ATTR_IGNORE_SENSOR] = (
                 self._zonedata.ignore_sensors.entity_id
             )
-
+        self.calc_default_run_time()
         self.async_schedule_update_ha_state()
 
     @property
@@ -255,20 +262,14 @@ class Zone(SwitchEntity, RestoreEntity):
         return self._zonedata.last_ran
 
     @property
+    def default_run_time(self) -> SensorEntity:
+        """Last ran entity time."""
+        return self._default_run_time
+
+    @property
     def remaining_time(self) -> SensorEntity:
         """Remaining time entity number."""
         return self._zonedata.remaining_time
-
-    @property
-    def rain_sensor(self) -> bool:
-        """Raining value Bool."""
-        if self._zonedata.rain_sensor:
-            try:
-                return self.hass.states.get(self._zonedata.rain_sensor).state
-            except AttributeError:
-                # rain sensor is not available
-                return False
-        return None
 
     @property
     def rain_behaviour(self) -> bool:
@@ -285,7 +286,22 @@ class Zone(SwitchEntity, RestoreEntity):
                     return flow
             except AttributeError:
                 return None
+            except ValueError:
+                return self._hist_flow_rate
             return self._hist_flow_rate
+        return None
+
+    @property
+    def rain_sensor(self) -> bool:
+        """Raining value Bool."""
+        if self._zonedata.rain_sensor:
+            try:
+                return self.hass.states.get(self._zonedata.rain_sensor).state
+            except AttributeError:
+                # rain sensor is not available
+                return False
+            except ValueError:
+                return False
         return None
 
     @property
@@ -295,6 +311,8 @@ class Zone(SwitchEntity, RestoreEntity):
             try:
                 return float(self.hass.states.get(self._zonedata.adjustment).state)
             except AttributeError:
+                return 1
+            except ValueError:
                 return 1
         return 1
 
@@ -306,12 +324,19 @@ class Zone(SwitchEntity, RestoreEntity):
                 return self.hass.states.get(self._zonedata.water_source).state
             except AttributeError:
                 return None
+            except ValueError:
+                return None
         return None
 
     @property
     def next_run(self) -> SensorEntity:
         """Next run entity time."""
         return self._zonedata.next_run
+
+    @property
+    def terminate_on_error(self):
+        """Next run entity time."""
+        return self._programdata.terminate_on_latency
 
     @property
     def aborted(self):
@@ -324,7 +349,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._scheduled = scheduled
         self._water_adjust_prior = self.adjustment
         self._remaining_time = await self.calc_run_time(
-            repeats=self.repeat, scheduled=scheduled
+            repeats_remaining=self.repeat, scheduled=scheduled
         )
         await self.remaining_time.set_value(self._remaining_time)
         self._status = CONST_PENDING
@@ -373,9 +398,10 @@ class Zone(SwitchEntity, RestoreEntity):
         return True
 
     # end should_run
-    async def check_off(self):
+
+    async def check_is_off(self):
+        """Ensure the switch is off."""
         for _ in range(self._latency):
-            self._stop = True
             if self._aborted:
                 break
             if self._status == CONST_PAUSED:
@@ -384,27 +410,38 @@ class Zone(SwitchEntity, RestoreEntity):
             # try to turn the switch on again
             # this is an attempt to handle zigbee devices that sleep
             await asyncio.sleep(1)
-            if await self.check_switch_state() is True:
+            check_state, value = await self.check_switch_state()
+            if check_state is True:
                 # if not the expected state loop again
                 await self.async_solenoid_turn_off()
                 await asyncio.sleep(1)
                 continue
-            self._stop = False
+            break
+        else:
+            async_dismiss(self.hass, "irrigation_latency")
+            async_create(
+                self.hass,
+                message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is off.",
+                title="Irrigation Controller",
+                notification_id="irrigation_latency",
+            )
+            event_data = {
+                "action": "error",
+                "error": "Switch exceeds latency limit when turning off",
+                "device_id": self.entity_id,
+                "scheduled": self._scheduled,
+                "program": self.name,
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+            if self.terminate_on_error:
+                self._stop = True
 
     async def pause(self):
         """Pause the zone."""
         if self._status == CONST_PAUSED:
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_on()
-                for _ in range(self._latency):
-                    if self._aborted:
-                        break
-                    if self.hass.states.get(self.solenoid).state in [
-                        CONST_ON,
-                        CONST_OPEN,
-                    ]:
-                        break
-                    await asyncio.sleep(1)
+                await self.check_is_on()
             self._status = self._last_status
             await self.status.set_value(self._status)
         elif self._status in (CONST_ECO, CONST_ON, CONST_PENDING):
@@ -412,7 +449,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._status = CONST_PAUSED
             if self._last_status == CONST_ON:
                 await self.async_solenoid_turn_off()
-                await self.check_off()
+                await self.check_is_off()
             await self.status.set_value(self._status)
         self.async_schedule_update_ha_state()
 
@@ -521,7 +558,8 @@ class Zone(SwitchEntity, RestoreEntity):
             return CONST_PROGRAM_DISABLED
         if self._programdata.pause.is_on:
             return CONST_PAUSED
-        if await self.check_switch_state() is None:
+        check_state, value = await self.check_switch_state()
+        if check_state is None:
             return CONST_UNAVAILABLE
         if self.water_source == CONST_OFF:
             return CONST_NO_WATER_SOURCE
@@ -667,7 +705,6 @@ class Zone(SwitchEntity, RestoreEntity):
             today = v_last_ran.isoweekday()
             v_next_run = v_last_ran + timedelta(days=100)  # arbitary max
             for day in string_freq:
-                # try:
                 if self.get_weekday(day) == today and v_last_ran > dt_util.as_local(
                     dt_util.now()
                 ):
@@ -728,24 +765,25 @@ class Zone(SwitchEntity, RestoreEntity):
                 title="Irrigation Controller",
                 notification_id="irrigation_device_error",
             )
-            return None
+            return None, "Not defined"
         if self.hass.states.get(self.solenoid).state in [
             CONST_OFF,
             CONST_CLOSED,
         ]:
-            return False
+            return False, self.hass.states.get(self.solenoid).state
         if self.hass.states.get(self.solenoid).state in [CONST_ON, CONST_OPEN]:
-            return True
+            return True, self.hass.states.get(self.solenoid).state
 
-        return None
+        return None, self.hass.states.get(self.solenoid).state
 
     async def async_solenoid_turn_on(self):
         """Turn on the zone."""
-        if await self.check_switch_state() is False:
+        check_state, value = await self.check_switch_state()
+        if check_state is False:
             if self.controller_type == RAINBIRD:
                 # RAINBIRD controller requires a different service call
                 duration = await self.calc_run_time(
-                    repeats=self.repeat, scheduled=self.scheduled
+                    repeats_remaining=self.repeat, scheduled=self.scheduled
                 )
 
                 duration = math.ceil(duration / 60)
@@ -761,7 +799,7 @@ class Zone(SwitchEntity, RestoreEntity):
             elif self.controller_type == BHYVE:
                 # B-Hyve controller requires a different service call
                 duration = await self.calc_run_time(
-                    repeats=self.repeat, scheduled=self.scheduled
+                    repeats_remaining=self.repeat, scheduled=self.scheduled
                 )
 
                 duration = math.ceil(duration / 60)
@@ -797,9 +835,42 @@ class Zone(SwitchEntity, RestoreEntity):
                 "repeat": self.repeat,
             }
             self.hass.bus.async_fire("irrigation_event", event_data)
-        if await self.check_switch_state() is True:
-            # check the switch has actually turned on
-            pass
+
+    async def check_is_on(self):
+        """Ensure the switch has turned on."""
+        for _ in range(self._latency):
+            if self._aborted:
+                break
+            if self._status == CONST_PAUSED:
+                break
+            # try to turn the switch on again
+            # this is an attempt to handle zigbee/bluetooth devices that sleep
+            await asyncio.sleep(1)
+            check_state, value = await self.check_switch_state()
+            if check_state is not True:
+                # if not the expected state loop again
+                await self.async_solenoid_turn_on()
+                await asyncio.sleep(1)
+                continue
+            break
+        else:
+            async_dismiss(self.hass, "irrigation_latency")
+            async_create(
+                self.hass,
+                message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is on.",
+                title="Irrigation Controller",
+                notification_id="irrigation_latency",
+            )
+            event_data = {
+                "action": "error",
+                "error": "Switch exceeds latency limit when turning on",
+                "device_id": self.entity_id,
+                "scheduled": self._scheduled,
+                "program": self.name,
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+            if self.terminate_on_error:
+                self._stop = True
 
     async def async_solenoid_turn_off(self):
         """Turn on the zone."""
@@ -832,8 +903,8 @@ class Zone(SwitchEntity, RestoreEntity):
             "state": state,
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
-
-        if await self.check_switch_state() is False:
+        check_state, value = await self.check_switch_state()
+        if check_state is False:
             # check the switch has actually turned off
             pass
 
@@ -841,7 +912,7 @@ class Zone(SwitchEntity, RestoreEntity):
         """Signal the zone to stop."""
         self._status = CONST_ECO
         await self.async_solenoid_turn_off()
-        await self.check_off()
+        await self.check_is_off()
 
         await self.status.set_value(self._status)
 
@@ -859,7 +930,6 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Toggle the entity."""
-        # await self._programdata.switch.entity_toggle_zone(self._zonedata)
         self._aborted = True
         await self.async_turn_off_zone()
 
@@ -870,7 +940,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._hist_flow_rate = self.flow_sensor
 
         await self.async_solenoid_turn_off()
-        await self.check_off()
+        await self.check_is_off()
 
         self._remaining_time = 0
         await self.remaining_time.set_value(self._remaining_time)
@@ -892,39 +962,77 @@ class Zone(SwitchEntity, RestoreEntity):
         """Set the scheduled state."""
         return self._scheduled
 
+    def calc_default_run_time(self):
+        """Update the run time component."""
+        if CONST_OFF in (self.enabled.state, self.water_source):
+            self._default_run_time = 0
+            self._zonedata.default_run_time.set_value(self._default_run_time)
+            return 0
+
+        wait = self.wait
+        if self.ignore_sensors:
+            adjust = 1
+        else:
+            adjust = self.adjustment
+            if self.rain_sensor == CONST_ON:
+                self._default_run_time = 0
+                self._zonedata.default_run_time.set_value(self._default_run_time)
+                return 0
+
+        if self.flow_sensor is None:
+            water = self.water
+            run_time = (water * adjust * self.repeat) + (wait * (self.repeat - 1))
+        else:
+            # volume based/flow sensor
+            water = self.water  # volume
+            flow = self.flow_sensor  # flow rate
+            if flow == 0:
+                self._default_run_time = 999
+                self._zonedata.default_run_time.set_value(self._default_run_time)
+                return 999
+            remaining_volume = water * adjust * self.repeat
+            watertime = remaining_volume / flow * 60
+            run_time = watertime + (wait * (self.repeat - 1))
+
+        # set the zone attribute
+        if math.ceil(run_time) < 0:
+            self._default_run_time = 0
+            self._zonedata.default_run_time.set_value(self._default_run_time)
+            return 0
+        self._default_run_time = math.ceil(run_time)
+        self._zonedata.default_run_time.set_value(self._default_run_time)
+        return math.ceil(run_time)
+
     async def calc_run_time(
-        self, seconds_run=0, volume_delivered=0, repeats=1, scheduled=True
+        self, seconds_run=0, volume_delivered=0, repeats_remaining=1, scheduled=True
     ):
         """Update the run time component."""
-        wait = self.wait
-
         if self.ignore_sensors:
             adjust = 1
         else:
             adjust = self._water_adjust_prior
 
         if self.flow_sensor is None:
-            water = self.water
-            run_time = (water * adjust * repeats) + (wait * (repeats - 1))
+            run_time = (self.water * adjust * repeats_remaining) + (
+                self.wait * (repeats_remaining - 1)
+            )
         else:
             # volume based/flow sensor
-            water = self.water  # volume
-            flow = self.flow_sensor  # flow rate
-            if flow == 0:
+            if self.flow_sensor == 0:
                 return 999
-            delivery_volume = water * adjust
+            delivery_volume = self.water * adjust
             if volume_delivered > 0:  # the cycle has started
                 remaining_volume = (
-                    (delivery_volume * (repeats - 1))
+                    (delivery_volume * (repeats_remaining - 1))
                     + delivery_volume
                     - volume_delivered
                 )
             else:
-                remaining_volume = delivery_volume * repeats
+                remaining_volume = delivery_volume * repeats_remaining
 
-            watertime = remaining_volume / flow * 60
+            watertime = remaining_volume / self.flow_sensor * 60
             # remaining watering time + remaining waits
-            run_time = watertime + (wait * (repeats - 1))
+            run_time = watertime + (self.wait * (repeats_remaining - 1))
 
         # set the program attribute
         if math.ceil(run_time - seconds_run) < 0:
@@ -962,45 +1070,18 @@ class Zone(SwitchEntity, RestoreEntity):
                 continue
             self._status = CONST_ON
             await self.status.set_value(self._status)
-            if await self.check_switch_state() is False and self._stop is False:
-                await self.async_solenoid_turn_on()
-                for _ in range(self._latency):
-                    self._stop = True
-                    if self._aborted:
-                        break
-                    if self._status == CONST_PAUSED:
-                        self._stop = False
-                        break
-                    # try to turn the switch on again
-                    # this is an attempt to handle zigbee devices that sleep
-                    await asyncio.sleep(1)
-                    if await self.check_switch_state() is not True:
-                        # if not the expected state loop again
-                        await self.async_solenoid_turn_on()
-                        await asyncio.sleep(1)
-                        continue
-                    self._stop = False
-                    break
-                else:
-                    async_dismiss(self.hass, "irrigation_latency")
-                    async_create(
-                        self.hass,
-                        message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is on.",
-                        title="Irrigation Controller",
-                        notification_id="irrigation_latency",
-                    )
-                    event_data = {
-                        "action": "error",
-                        "error": "Switch exceeds latency limit",
-                        "device_id": self.entity_id,
-                        "scheduled": self._scheduled,
-                        "program": self.name,
-                    }
-                    self.hass.bus.async_fire("irrigation_event", event_data)
 
+            # check_state, value = await self.check_switch_state()
+            if self._stop is False:
+                await self.async_solenoid_turn_on()
+                # now check it is actually reporting as on with a timeout
+                await self.check_is_on()
+            # abort
+            if self._stop:
+                break
             # track the watering
             if self.flow_sensor is not None:
-                await self.volume(water_adjust_value, reps)
+                volume_delivered = await self.volume(water_adjust_value, reps)
             else:
                 seconds_run = await self.time(water_adjust_value, seconds_run, reps)
             # abort
@@ -1009,11 +1090,13 @@ class Zone(SwitchEntity, RestoreEntity):
             # wait cycle
             if self.wait > 0 and reps > 1:
                 await self.async_eco_turn_off()
-
                 for _ in range(self.wait):
                     seconds_run += 1
                     self._remaining_time = await self.calc_run_time(
-                        seconds_run, repeats=reps, scheduled=self.scheduled
+                        seconds_run=seconds_run,
+                        volume_delivered=volume_delivered,
+                        repeats_remaining=reps,
+                        scheduled=self.scheduled,
                     )
                     await self.remaining_time.set_value(self._remaining_time)
                     if self._stop:
@@ -1032,6 +1115,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def time(self, water_adjust_value, seconds_run, reps):
         """Track watering time based on time."""
+        warning_issued = False
         if self._stop:
             return 0
 
@@ -1049,43 +1133,51 @@ class Zone(SwitchEntity, RestoreEntity):
             await asyncio.sleep(1)
             # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
             await self.handle_validation_error()
-            # seconds_run = (dt_util.now() - start_time).total_seconds()
-            # watertime = math.ceil(self.water * water_adjust_value) - seconds_run
-            # self._remaining_time = await self.calc_run_time(
-            #     seconds_run, repeats=reps, scheduled=self.scheduled
-            # )
-            # await self.remaining_time.set_value(self._remaining_time)
             if self._stop:
                 return 0
 
-            # Check to see if the zone has been stopped
+            # Check to see if the zone has been stopped, this is abnormal
             for _ in range(self._latency):
                 seconds_run = (dt_util.now() - start_time).total_seconds()
                 self._remaining_time = await self.calc_run_time(
-                    seconds_run, repeats=reps, scheduled=self.scheduled
+                    seconds_run, repeats_remaining=reps, scheduled=self.scheduled
                 )
                 await self.remaining_time.set_value(self._remaining_time)
-                self._stop = True
                 if self._aborted:
                     break
-                # switch is off
-                check_state = await self.check_switch_state()
+                # switch is off?
+                check_state, value = await self.check_switch_state()
                 if not check_state:
                     # if not on loop again
-                    _LOGGER.warning(
-                        f"{self.name} returned an unexpected state, {check_state}"
-                    )
                     await asyncio.sleep(1)
                     continue
-                self._stop = False
                 break
-
+            else:
+                if not warning_issued:
+                    _LOGGER.warning(
+                        "Warning, %s returned an unexpected state, %s for %s consecutive checks this may indicate an unstable connection to your device or the device was turned off outside of the custom control",
+                        self.name,
+                        value,
+                        self._latency,
+                    )
+                warning_issued = True
+                if self.terminate_on_error:
+                    self._stop = True
+                event_data = {
+                    "action": "error",
+                    "error": "Switch exceeds latency limit when turning on",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
         return seconds_run
 
     async def volume(self, water_adjust_value, reps):
         """Track watering time based on volume."""
+        warning_issued = False
         if self._stop:
-            return
+            return 0
         volume_remaining = self.water * water_adjust_value
         volume_delivered = 0
         zeroflowcount = 0
@@ -1096,7 +1188,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
             await asyncio.sleep(1)
 
-            # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
+            # check if one of the sensors (water source, rain) has changed that needs the zone to stop
             await self.handle_validation_error()
 
             if self._stop:
@@ -1106,26 +1198,43 @@ class Zone(SwitchEntity, RestoreEntity):
             volume_remaining = volume_required - volume_delivered
             self._remaining_time = await self.calc_run_time(
                 volume_delivered=volume_delivered,
-                repeats=reps,
+                repeats_remaining=reps,
                 scheduled=self.scheduled,
             )
 
-            if volume_remaining < 0:
-                self._remaining_time = 0
-            await self.remaining_time.set_value(self._remaining_time)
-
-            # Check to see if the zone has been stopped
+            # Check to see if the zone is not on, this is abnormal
             for _ in range(self._latency):
-                self._stop = True
+                if volume_remaining < 0:
+                    self._remaining_time = 0
+                await self.remaining_time.set_value(self._remaining_time)
                 if self._aborted:
                     break
-                # switch is off
-                if not await self.check_switch_state():
+                # switch is off?
+                check_state, value = await self.check_switch_state()
+                if not check_state:
                     # if not on loop again
                     await asyncio.sleep(1)
                     continue
-                self._stop = False
                 break
+            else:
+                if not warning_issued:
+                    _LOGGER.warning(
+                        "Warning, %s returned an unexpected state, %s for %s consecutive checks this may indicate an unstable connection to your device or the device was turned off outside of the custom control",
+                        self.name,
+                        value,
+                        self._latency,
+                    )
+                warning_issued = True
+                event_data = {
+                    "action": "error",
+                    "error": "Switch exceeds latency limit when turning on",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+                if self.terminate_on_error:
+                    self._stop = True
 
             # If no flow for 5 cycles, shut off, possible flow sensor has failed
             if self.flow_sensor == 0:
@@ -1137,7 +1246,7 @@ class Zone(SwitchEntity, RestoreEntity):
                         async_dismiss(self.hass, "irrigation_no_flow")
                         async_create(
                             self.hass,
-                            message=f"No flow detected, {self.name} terminated. The flow sensor has been reporting 0 flow for 5 seconds",
+                            message=f"No flow detected, {self.name} terminated. The flow sensor has been reporting 0 flow for {CONST_ZERO_FLOW_DELAY} seconds",
                             title="Irrigation Controller",
                             notification_id="irrigation_no_flow",
                         )
@@ -1149,7 +1258,7 @@ class Zone(SwitchEntity, RestoreEntity):
                             "program": self.name,
                         }
                         self.hass.bus.async_fire("irrigation_event", event_data)
-
                     break
             else:
                 zeroflowcount = 0
+        return volume_delivered

@@ -124,14 +124,18 @@ class IrrigationCard extends HTMLElement {
 
         var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state: "on" }];
         add_simple_entity(config.program, condition, "start_time", entities);
+        add_simple_entity(config.program, condition, "default_run_time", entities);
         var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state_not: "on" }];
         add_simple_entity(config.program, condition, "irrigation_on", entities);
+        add_simple_entity(config.program, condition, "default_run_time", entities);
 
         var condition = [{ entity: showconfig, state: "on" }];
         if (hass.states[config.program].attributes["sunrise"] || hass.states[config.program].attributes["sunset"]) {
           add_simple_entity(config.program, condition, "start_time", entities);
+          add_simple_entity(config.program, condition, "default_run_time", entities);
         } else {
           add_entity(config.program, condition, "start_time", entities);
+          add_entity(config.program, condition, "default_run_time", entities);
         }
         add_entity(config.program,condition, "sunrise", entities);
         add_entity(config.program,condition, "sunset", entities);
@@ -284,6 +288,7 @@ class IrrigationCard extends HTMLElement {
         condition = [{ entity: showconfig, state: "on" }]
         add_entity(zone, condition, "enable_zone", entities)
         add_entity(zone, condition, "run_freq", entities)
+        add_entity(zone, condition, "default_run_time", entities)
         add_entity(zone, condition, "water", entities)
         add_entity(zone, condition, "wait", entities)
         add_entity(zone, condition, "repeat", entities)

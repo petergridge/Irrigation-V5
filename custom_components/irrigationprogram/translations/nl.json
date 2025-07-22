@@ -62,6 +62,9 @@
 			},
 			"remaining_time":{
 				"name":"Resterende tijd"
+			},
+			"default_run_time":{
+				"name":"Duur"
 			}
 		},
 		"number":{
@@ -222,7 +225,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			}
 		}
@@ -265,7 +269,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
 				}
 			},
 			"update_program": {

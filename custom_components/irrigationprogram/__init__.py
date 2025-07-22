@@ -37,6 +37,7 @@ from .const import (
     ATTR_SHOW_CONFIG,
     ATTR_START_LATENCY,
     ATTR_START_TYPE,
+    ATTR_TERMINATE,
     ATTR_VENT,
     ATTR_WATER_ADJUST,
     ATTR_WATER_SOURCE,
@@ -95,6 +96,7 @@ class IrrigationZoneData:
     next_run: SensorEntity
     last_ran: SensorEntity
     remaining_time: SensorEntity
+    default_run_time: SensorEntity
     rain_sensor: str  # sensor.example
     pump: str  # switch.example, valve.example
     flow_sensor: str  # sensor.example
@@ -115,6 +117,7 @@ class IrrigationProgram:
     config: SwitchEntity
     start_time: TimeEntity  # generated
     remaining_time: SensorEntity  # generated
+    default_run_time: SensorEntity
     multitime: TextEntity  # generated
     sunrise_offset: NumberEntity  # generated
     sunset_offset: NumberEntity  # generated
@@ -138,6 +141,7 @@ class IrrigationProgram:
     start_latency: int
     vent: bool
     water_source_pause: bool
+    terminate_on_latency: bool
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -158,6 +162,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config=None,
         start_time=None,
         remaining_time=None,
+        default_run_time=None,
         multitime=None,
         sunrise_offset=None,
         sunset_offset=None,
@@ -181,6 +186,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         card_yaml=config.get("card_yaml", False),
         vent=config.get(ATTR_VENT, False),
         water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
+        terminate_on_latency=config.get(ATTR_TERMINATE, True),
     )
 
     zone_data = []
@@ -203,6 +209,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             next_run=None,
             last_ran=None,
             remaining_time=None,
+            default_run_time=None,
             rain_sensor=zone.get(ATTR_RAIN_SENSOR),
             pump=zone.get(ATTR_PUMP),
             flow_sensor=zone.get(ATTR_FLOW_SENSOR),
@@ -218,8 +225,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
 
-    # # wait for the referenced devices to come online before preceeding to
-    # # the setup
+    # wait for the referenced devices to come online before preceeding to
+    # the setup
     for _ in range(program.start_latency):
         if not hass.states.async_available(z.zone):
             break
@@ -241,13 +248,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
         else:
             msg = f"Warning, {z.flow_sensor} has not initialised before irrigation program, check your configuration"
-            _LOGGER.error(msg)
-            async_create(
-                hass,
-                message=msg,
-                title="Irrigation Controller",
-                notification_id="irrigation_device_error",
-            )
+            _LOGGER.debug(msg)
     if z.adjustment:
         for _ in range(program.start_latency):
             if not hass.states.async_available(z.adjustment):
@@ -255,13 +256,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
         else:
             msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
-            _LOGGER.error(msg)
-            async_create(
-                hass,
-                message=msg,
-                title="Irrigation Controller",
-                notification_id="irrigation_device_error",
-            )
+            _LOGGER.debug(msg)
     if z.rain_sensor:
         for _ in range(program.start_latency):
             if not hass.states.async_available(z.rain_sensor):
@@ -269,13 +264,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
         else:
             msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
-            _LOGGER.error(msg)
-            async_create(
-                hass,
-                message=msg,
-                title="Irrigation Controller",
-                notification_id="irrigation_device_error",
-            )
+            _LOGGER.debug(msg)
     if z.water_source:
         for _ in range(program.start_latency):
             if not hass.states.async_available(z.water_source):
@@ -283,13 +272,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
         else:
             msg = f"Warning, {z.water_source} has not initialised before irrigation program, check your configuration"
-            _LOGGER.error(msg)
-            async_create(
-                hass,
-                message=msg,
-                title="Irrigation Controller",
-                notification_id="irrigation_device_error",
-            )
+            _LOGGER.debug(msg)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
 
@@ -315,6 +298,7 @@ def exclude(hass: HomeAssistant):
                     p.config.entity_id,
                     p.start_time.entity_id,
                     p.remaining_time.entity_id,
+                    p.default_run_time.entity_id,
                 ]
             )
             if p.inter_zone_delay:
@@ -333,6 +317,7 @@ def exclude(hass: HomeAssistant):
                         z.water.entity_id,
                         z.last_ran.entity_id,
                         z.remaining_time.entity_id,
+                        z.default_run_time.entity_id,
                         z.switch.entity_id,
                     ]
                 )
