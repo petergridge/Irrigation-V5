@@ -479,6 +479,20 @@ This option opens one valve for three seconds after the pump has stop on program
 Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+
+### V2025.07.04
+- More control to the system behaviour when latency issues are detected.
+  - Add option to enable/disable zone termination when latency issues are detected.
+  - When enabled the zone will terminat:
+    - when the switch state does not match the expected state for 5 continuous seconds e.g. reports offline.
+    - when the zone switch is turned off outside the custom component
+  - Will attempt to align the state by continuing to send an Off or On command
+  - Raise events when this occurs to enable users to take action in this case
+  - Log a warning message when this occurs
+- Add expected duration to the custom card & entities card yaml alternative.
+- Add Polish translation
+- Correct remaining time calculation for volume/flow based watering
+
 ### V2025.07.03
   - Update Portugese and German translations
   - More work on slow loading devices, provide warnings is referencecd devices are not available before the program is setup/
