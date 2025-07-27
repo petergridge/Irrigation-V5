@@ -286,49 +286,107 @@ This is set after any successful completion of the zone. All zones triggered tog
 ### Events
 The following events are raised by this component and could be used to trigger other actions when the irrigation program is processed.
 
-*program_turned_on*
-- scheduled: false indicates the program was run manually
-```event_type: irrigation_event
-data:
-  action: program_turned_on
-  device_id: switch.test
-  scheduled: true|false
-  program: test
+  ####Program events
+  1. Fired when the program is turned on
 ```
-*program_turned_off*
-- completed:  indicates the program was not terminated during the run by a sensor or manually
+  event_data = {
+      "action": "program_turned_on",
+      "device_id": entity_id,
+      "scheduled": True/False,
+      "program": name,
+  }
 ```
-event_type: irrigation_event
-data:
-  action: program_turned_off
-  device_id: switch.test
-  program: test
+  2. Fired when the program is turned off
 ```
-*zone_turned_on*
-- scheduled: true|false indicates the zone was run manually
+  event_data = {
+    "action": "program_turned_off",
+    "device_id": entity_id,
+    "program": name,
+  }
 ```
-event_type: irrigation_event
-data:
-  action: zone_turned_on
-  device_id: switch.zone_3
-  scheduled: true|false
-  zone:  Zone 3
-  pump: null
-  runtime: 59
-  water: 1
-  wait: 0
-  repeat: 1
+  ####Zone events
+  1. fired when the switch is not reporting 'OFF' after being turned off.
 ```
-*zone_turned_off*
-- state: The state after the zone was turned off
+  event_data = {
+    "action": "error",
+    "error": "Switch can not be confirmed as OFF",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+  }
 ```
-event_type: irrigation_event
-data:
-  action: zone_turned_off
-  device_id: switch.dummy_3
-  zone: dummy_3
-  latency: false
-  state: eco|off|aborted
+  2. fired when the switch is not reporting ON after being turned on.
+```
+  event_data = {
+    "action": "error",
+    "error": "Switch cannot be confirmed as ON",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+  }
+```
+  3. Reported when rain is detected with settings that will stop the program
+```
+  event_data = {
+    "action": "error",
+    "error": "Rain has been detected",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+  }
+```
+  4. Fired when the water source is reporting no water is available
+```
+  event_data = {
+    "action": "error",
+    "error": "No water source detected",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+  }
+```
+  5. Fired when a solenoid is turned on
+```
+  event_data = {
+    "action": "zone_turned_on",
+    "device_id": solenoid,
+    "pump": pump,
+    "scheduled": True/False,
+    "zone": name,
+    "runtime": remaining_time,
+    "water": water,
+    "wait": wait,
+    "repeat": repeat,
+  }
+```
+  6. Fired when a solenoid is turned off
+```
+  event_data = {
+    "action": "zone_turned_off",
+    "device_id": solenoid,
+    "zone": name,
+    "state": state,
+  }
+```
+  7. Fired when an unexpected status is reported continuosly for the latency check period while the solenoid is on
+  event_data = {
+    "action": "error",
+    "error": "Returned an unexpected state",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+    "state":  status
+  }
+```
+  8. Fired when the flow sensor continuously reports 0 flow for the latency check period
+```
+  event_data = {
+    "action": "error",
+    "error": "No flow detected",
+    "device_id": entity_id,
+    "scheduled": True/False,
+    "program": name,
+  }
 ```
 
 An automation can then use this data to fire on the event you can refine it by adding specific event data.
