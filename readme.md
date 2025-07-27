@@ -286,7 +286,7 @@ This is set after any successful completion of the zone. All zones triggered tog
 ### Events
 The following events are raised by this component and could be used to trigger other actions when the irrigation program is processed.
 
-  ####Program events
+  #### Program events
   1. Fired when the program is turned on
 ```
   event_data = {
@@ -304,7 +304,7 @@ The following events are raised by this component and could be used to trigger o
     "program": name,
   }
 ```
-  ####Zone events
+  #### Zone events
   1. fired when the switch is not reporting 'OFF' after being turned off.
 ```
   event_data = {
@@ -369,6 +369,7 @@ The following events are raised by this component and could be used to trigger o
   }
 ```
   7. Fired when an unexpected status is reported continuosly for the latency check period while the solenoid is on
+```
   event_data = {
     "action": "error",
     "error": "Returned an unexpected state",
