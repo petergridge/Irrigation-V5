@@ -472,6 +472,17 @@ The value is multiplied against the watering time/volume.
 💡Check out [OpenWeatherMap History](https://github.com/petergridge/openweathermaphistory)
   - This exposes weather data to support the creation of sensors that can be used for this feature.
 
+#### Using Smart Irrigation - Evapotranspiration watering time calculation.
+
+While you cannot set the watering time directly from another sensor this is a workaround to allow the use of this custom component, https://jeroenterheerdt.github.io/HAsmartirrigation/ available in HACS.
+
+- In the advanced options set the watering unit to seconds:
+- Set the adjustment sensor to the Smart Irrigation sensor that provides the watering time for the zone.
+- In the zone set the watering time to 1s.
+
+Now when the zone runs the watering time (1) will be multiplied by the Smart Irrigation value to provide the actual run time in seconds.
+
+
 ### Rain Sensor
 This expects a true/false binary sensor input. If the value is True, the zone will be suspended and the zone status indication updated.
 - When the ignore senor feature is active, treats this value as false.
