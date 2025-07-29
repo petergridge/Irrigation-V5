@@ -539,18 +539,24 @@ Enables a delay function to add a number of days before the next run of the prog
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
-### V2025.07.04
-- More control to the system behaviour when latency issues are detected.
-  - Add option to enable/disable zone termination when latency issues are detected.
-  - When enabled the zone will terminat:
-    - when the switch state does not match the expected state for 5 continuous seconds e.g. reports offline.
-    - when the zone switch is turned off outside the custom component
-  - Will attempt to align the state by continuing to send an Off or On command
-  - Raise events when this occurs to enable users to take action in this case
-  - Log a warning message when this occurs
-- Add expected duration to the custom card & entities card yaml alternative.
+### V2025.08.01
+- Prevent programs running concurrently is now binary, ON will prevent programs running concurrently, OFF will allow programs to run together
+- Make line venting default not an option
+  - Review pump model to improve responsiveness, i.e. start immediately a zone starts. Wait 3 seconds to shut down in all circumstances
 - Add Polish translation
+- Only create manual card yaml if the configuration has change
+- Remove strict validation and termination when latency issues are detected.
+  - remove the termination of zones if not reporting the correct status, i.e. reporting a state of on when it is expected to be off.
+    - User can control actions by using the events fired to initiate automations to perform the actions required locally.
+    - This functionality has been causing issues with some implementations.
+  - Attempts to align the state by continuing to send an Off or On command for several cycles
+  - Log a debug message when this occurs
+  - Report and handle failure when a zone is renamed or removed, but the program not updated
+- Add defensive coding to default values for dependant devices that are not ready when the program starts
+- Add expected duration to the custom card & entities card yaml alternative.
 - Correct remaining time calculation for volume/flow based watering
+- Reviewed Program and Zone events https://github.com/petergridge/Irrigation-V5/blob/main/readme.md#events
+- Add code to stop zone solenoids and pumps on restart/reload.
 
 ### V2025.07.03
   - Update Portugese and German translations
