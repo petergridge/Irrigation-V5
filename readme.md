@@ -8,40 +8,10 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-## This Release V2025.01.xx
-**BREAKING CHANGE**
-- Depending on the complexity of the implementation some options may need to be transitioned to different entity types.
-- Frequency selection options will need to be updated in the program configuration.
-- The custom card will need to be edited.
-
-This has been a significant redevelopment.
-All helper objects are now created automatically. All you need to configure now are the switches/valves and sensors.
-
-Naming of entities is determined using the translation files. These have gaps so please volunteer to update or provide a new file. Contact me if you can help, it is not a complex process.
-
-The custom card has been updated for this release, the move to entities rather than attributes on the program switch have allowed for a richer experience leveraging the icon translation capabilities.
-
-It is now easier to get support information with the integration of [Diagnostics](#Diagnostics)
-
-Frequency can now be determined as an offset of Sunrise or Sunset.
-
-Add the option to [pause](#Pause-a-program) and resume a running program.
-
-Allow multiple zones to run [concurrently](#Can-multiple-zones-run-at-the-same-time) in a program. If this setting is selected the zone transition is not available.
-
-## Upgrading
-- Once installed:
- - The frequency options will default to a single value '1', reconfigure the program to add additional options.
- - Watering time/volume will default to 1.
- - ECO attributes will default to 1.
- - The previous version supported input types for sensors, these have been limited to sensor, or binary_sensor types. Where the existing configuration does not comply the entry will be removed and a notification raised. Samples of translating input types to sensors can be found in the [test helpers yaml file](https://github.com/petergridge/Irrigation-V5/blob/main/testhelpers.yaml).
- - the custom card will be upgraded, edit the card to select the zones to display. CTRL-Click to select multiple zones.
-
-<img width="366" alt="image" src="https://github.com/user-attachments/assets/5612420b-efdc-4ed5-adc7-0478d7616f34">
-
 ## Experiencing issues with the custom card?
-V2025.01.03 provides the yaml to recreate the custom card as an entities card. The custom card is just an entities card that has been automatically populated.
-- The script is regenerated each time you modify the configuration and on restart.
+Enable the manual card yaml feature in the advanced setting of the program.
+this provides the yaml to recreate the custom card as an entities card.
+- The script is regenerated each time you modify the configuration is modified.
 - Copy the script to a manual card.
 - [More detail here](https://github.com/petergridge/Irrigation-V5/issues/103#issuecomment-2579184201)
 - You need to enable the feature in the advanced setting of the program.
