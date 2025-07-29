@@ -28,7 +28,7 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
+				"strict": "Strict - turn off other programs when starting",
 				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
 				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
 			}
@@ -213,7 +213,7 @@
 				"title": "Advanced Options",
 				"data": {
 					"start_type":"Start time options",
-					"interlock": "Prevent programs running concurrently",
+					"interlock": "Prevent programs running concurrently, set on all programs",
 					"rain_behaviour": "Rain sensor behaviour",
 					"min_sec": "Watering time unit",
 					"water_max": "Maximum watering time/volume",
@@ -224,9 +224,7 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Stop pump before valves at end of program to prevent excess pressure",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			}
 		}
@@ -257,7 +255,7 @@
 				"description": "",
 				"data": {
 					"start_type":"Start time options",
-					"interlock": "Prevent programs running concurrently",
+					"interlock": "Prevent programs running concurrently, set on all programs",
 					"rain_behaviour": "Rain sensor behaviour",
 					"min_sec": "Watering time unit",
 					"water_max": "Maximum watering time/volume",
@@ -268,9 +266,7 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Stop pump before valves at end of program to prevent excess pressure",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {

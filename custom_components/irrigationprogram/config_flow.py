@@ -35,8 +35,6 @@ from .const import (
     ATTR_RAIN_SENSOR,
     ATTR_START_LATENCY,
     ATTR_START_TYPE,
-    ATTR_TERMINATE,
-    ATTR_VENT,
     ATTR_WATER_ADJUST,
     ATTR_WATER_MAX,
     ATTR_WATER_SOURCE,
@@ -61,7 +59,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
     """FLow handler."""
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
-    VERSION = 7
+    VERSION = 8
 
     def __init__(self) -> None:
         """Initialise."""
@@ -139,7 +137,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_START_TYPE] = self._data.get(
                     ATTR_START_TYPE, "selector"
                 )
-                self._data[ATTR_INTERLOCK] = self._data.get(ATTR_INTERLOCK, "strict")
+                self._data[ATTR_INTERLOCK] = self._data.get(ATTR_INTERLOCK, True)
                 # Return the form of the next step.
                 if len(self._data.get(ATTR_ZONES, [])) == 0:
                     return await self.async_step_add_zone()
@@ -382,7 +380,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 optionslist.append(
                     {"label": self.hass.states.get(zone).name, "value": zone}
                 )
-            except:
+            except AttributeError:
                 optionslist.append({"label": zone + " offline!", "value": zone})
 
         list_schema = vol.Schema(
@@ -526,11 +524,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
-                self._data[ATTR_VENT] = user_input[ATTR_VENT]
                 self._data[ATTR_PAUSE_WATER_SOURCE] = user_input[
                     ATTR_PAUSE_WATER_SOURCE
                 ]
-                self._data[ATTR_TERMINATE] = user_input[ATTR_TERMINATE]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
 
@@ -546,14 +542,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 vol.Optional(
                     ATTR_INTERLOCK,
                     description={
-                        "suggested_value": default_input.get(ATTR_INTERLOCK, "strict")
+                        "suggested_value": default_input.get(ATTR_INTERLOCK, True)
                     },
-                ): sel.SelectSelector(
-                    {
-                        "options": ["strict", "loose", "off"],
-                        "translation_key": ATTR_INTERLOCK,
-                    }
-                ),
+                ): cv.boolean,
                 vol.Optional(
                     ATTR_START_TYPE,
                     description={
@@ -632,23 +623,11 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     },
                 ): cv.boolean,
                 vol.Optional(
-                    ATTR_VENT,
-                    description={
-                        "suggested_value": default_input.get(ATTR_VENT, False)
-                    },
-                ): cv.boolean,
-                vol.Optional(
                     ATTR_PAUSE_WATER_SOURCE,
                     description={
                         "suggested_value": default_input.get(
                             ATTR_PAUSE_WATER_SOURCE, False
                         )
-                    },
-                ): cv.boolean,
-                vol.Optional(
-                    ATTR_TERMINATE,
-                    description={
-                        "suggested_value": default_input.get(ATTR_TERMINATE, True)
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -676,7 +655,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 step_id="menu",
                 errors=errors,
             )
-
+        localtimezone = ZoneInfo(self.hass.config.time_zone)
+        updated = datetime.now(localtimezone)
+        self._data.update({"updated": updated})
         # User is done adding, create the config entry.
         return self.async_create_entry(title=self._data.get(CONF_NAME), data=self._data)
 
@@ -691,7 +672,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Option flow."""
 
-    VERSION = 7
+    VERSION = 8
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialise option flow."""
@@ -702,7 +683,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self._data = config_entry.data
         else:
             self._data = config_entry.options
-
+        self._updated = False
         self._exclude = []
         self._remove = []
         self._delete = []
@@ -750,9 +731,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         newdata.update({ATTR_ZONES: sortedzones})
         # the top level of the dictionary needs to change
-        localtimezone = ZoneInfo(self.hass.config.time_zone)
-        updated = datetime.now(localtimezone).strftime("%Y-%m-%d %H:%M:%S.%f")
-        newdata.update({"updated": updated})
+        if self._updated:
+            _LOGGER.debug("updated")
+            localtimezone = ZoneInfo(self.hass.config.time_zone)
+            updated = datetime.now(localtimezone)
+            newdata.update({"updated": updated})
 
         if len(sortedzones) == 1:
             await self.get_er("number", slugify(f"{self._uid}_inter_zone_delay"))
@@ -770,7 +753,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         newdata.update(self._data)
         if user_input is not None:
             if not errors:
-                newdata[ATTR_INTERLOCK] = user_input.get(ATTR_INTERLOCK, "strict")
+                self._updated = True
+                newdata[ATTR_INTERLOCK] = user_input.get(ATTR_INTERLOCK, True)
                 newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE, "selector")
                 newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
                     ATTR_RAIN_BEHAVIOUR, "stop"
@@ -783,9 +767,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_START_LATENCY] = user_input[ATTR_START_LATENCY]
                 newdata[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
-                newdata[ATTR_VENT] = user_input[ATTR_VENT]
                 newdata[ATTR_PAUSE_WATER_SOURCE] = user_input[ATTR_PAUSE_WATER_SOURCE]
-                newdata[ATTR_TERMINATE] = user_input[ATTR_TERMINATE]
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
@@ -817,14 +799,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional(
                     ATTR_INTERLOCK,
                     description={
-                        "suggested_value": default_input.get(ATTR_INTERLOCK, "strict")
+                        "suggested_value": default_input.get(ATTR_INTERLOCK, True)
                     },
-                ): sel.SelectSelector(
-                    {
-                        "options": ["strict", "loose", "off"],
-                        "translation_key": ATTR_INTERLOCK,
-                    }
-                ),
+                ): cv.boolean,
                 vol.Optional(
                     ATTR_START_TYPE,
                     description={"suggested_value": default_input.get(ATTR_START_TYPE)},
@@ -899,23 +876,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     },
                 ): cv.boolean,
                 vol.Optional(
-                    ATTR_VENT,
-                    description={
-                        "suggested_value": default_input.get(ATTR_VENT, False)
-                    },
-                ): cv.boolean,
-                vol.Optional(
                     ATTR_PAUSE_WATER_SOURCE,
                     description={
                         "suggested_value": default_input.get(
                             ATTR_PAUSE_WATER_SOURCE, False
                         )
-                    },
-                ): cv.boolean,
-                vol.Optional(
-                    ATTR_TERMINATE,
-                    description={
-                        "suggested_value": default_input.get(ATTR_TERMINATE, True)
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -987,6 +952,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata["freq_options"] = cleanoptions
 
             if not errors:
+                self._updated = True
                 if user_input["freq"] is False:
                     await self.get_er("select", slugify(f"{self._uid}_frequency"))
 
@@ -1171,6 +1137,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 errors[ATTR_ZONE] = "mandatory"
 
             if not errors:
+                self._updated = True
                 # Input is valid, set data.
                 zone_data = {}
                 for attr in user_input:
@@ -1296,6 +1263,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 errors[ATTR_ZONE] = "mandatory"
 
             if not errors:
+                self._updated = True
                 if user_input == {}:
                     # not data input return to the menu
                     return await self.async_step_init()

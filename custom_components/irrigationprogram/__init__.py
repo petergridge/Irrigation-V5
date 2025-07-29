@@ -5,8 +5,10 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from dataclasses import dataclass
+from datetime import datetime
 import logging
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.persistent_notification import async_create, async_dismiss
@@ -37,8 +39,6 @@ from .const import (
     ATTR_SHOW_CONFIG,
     ATTR_START_LATENCY,
     ATTR_START_TYPE,
-    ATTR_TERMINATE,
-    ATTR_VENT,
     ATTR_WATER_ADJUST,
     ATTR_WATER_SOURCE,
     ATTR_ZONE,
@@ -73,12 +73,16 @@ type IrrigationConfigEntry = ConfigEntry[IrrigationData]
 
 @dataclass
 class IrrigationData:
+    """Irrigation data class."""
+
     program: IrrigationProgram
     zone_data: list[IrrigationZoneData]
 
 
 @dataclass
 class IrrigationZoneData:
+    """Zone data class."""
+
     zone: str  # switch.example, valve.example
     switch: SwitchEntity  # generated object
     type: str  # switch|valve
@@ -107,8 +111,11 @@ class IrrigationZoneData:
 
 @dataclass
 class IrrigationProgram:
+    """Program data class."""
+
     name: str
     switch: SwitchEntity
+    modified: str
     pause: SwitchEntity
     rain_delay_on: bool
     rain_delay: SwitchEntity
@@ -139,9 +146,7 @@ class IrrigationProgram:
     card_yaml: bool
     latency: int
     start_latency: int
-    vent: bool
     water_source_pause: bool
-    terminate_on_latency: bool
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -154,6 +159,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     program = IrrigationProgram(
         name=entry.title,
         switch=None,
+        modified=config.get("updated"),
         pause=None,
         rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
         rain_delay=None,
@@ -184,9 +190,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         zone_delay_max=config.get("zone_delay_max", 120),
         parallel=config.get("parallel", 1),
         card_yaml=config.get("card_yaml", False),
-        vent=config.get(ATTR_VENT, False),
         water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
-        terminate_on_latency=config.get(ATTR_TERMINATE, True),
     )
 
     zone_data = []
@@ -217,6 +221,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             water_source=zone.get(ATTR_WATER_SOURCE),
             flow_rate=None,
         )
+
+        # wait for the referenced devices to come online before preceeding to
+        # the setup
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(z.zone):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"{z.zone} has not initialised before the Irrigation Program, check your configuration"
+            _LOGGER.error(msg)
+            async_create(
+                hass,
+                message=msg,
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
+            continue
         zone_data.append(z)
 
     entry.runtime_data = IrrigationData(program, zone_data)
@@ -225,21 +246,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
 
-    # wait for the referenced devices to come online before preceeding to
-    # the setup
-    for _ in range(program.start_latency):
-        if not hass.states.async_available(z.zone):
-            break
-        await asyncio.sleep(1)
-    else:
-        msg = f"Warning, {z.zone} has not initialised before irrigation program, check your configuration"
-        _LOGGER.error(msg)
-        async_create(
-            hass,
-            message=msg,
-            title="Irrigation Controller",
-            notification_id="irrigation_device_error",
-        )
     # check if dependant objects are ready
     if z.flow_sensor:
         for _ in range(program.start_latency):
@@ -341,17 +347,18 @@ def exclude(hass: HomeAssistant):
 
 async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update listener, called when the config entry options are changed."""
-    _LOGGER.debug("reload %s", ConfigEntry)
+    _LOGGER.debug("reload")
     await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle removal of an entry."""
-    _LOGGER.warning("%s removed from %s configuration", entry.title, entry.domain)
+    _LOGGER.info("%s removed from %s configuration", entry.title, entry.domain)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    _LOGGER.debug("unload")
     # clean up any related helpers
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
@@ -360,7 +367,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_stop_programs_new(hass: HomeAssistant, calling_program):
+async def async_stop_programs(hass: HomeAssistant, calling_program):
     """Stop all running programs."""
 
     async def stop_program():
@@ -376,23 +383,12 @@ async def async_stop_programs_new(hass: HomeAssistant, calling_program):
             )
             await hass.services.async_call(CONST_SWITCH, SERVICE_TURN_OFF, servicedata)
 
-    match calling_program.interlock:
-        case "off":
-            # terminate only 'STRICT' programs
-            for n, data in enumerate(hass.data[DOMAIN].values()):
-                if data.get(ATTR_NAME) == calling_program.name:
-                    continue
-                if data.get(ATTR_INTERLOCK) != "strict":
-                    continue
-                await asyncio.sleep(n)
-                await stop_program()
-        case _:
-            # terminate all running programs
-            for n, data in enumerate(hass.data[DOMAIN].values()):
-                if data.get(ATTR_NAME) == calling_program.name:
-                    continue
-                await asyncio.sleep(n)
-                await stop_program()
+    # terminate all running programs
+    for n, data in enumerate(hass.data[DOMAIN].values()):
+        if data.get(ATTR_NAME) == calling_program.name:
+            continue
+        await asyncio.sleep(n)
+        await stop_program()
 
 
 async def async_setup(hass: HomeAssistant, config):
@@ -425,174 +421,227 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     _LOGGER.info("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 2:
-        if config_entry.options == {}:
-            new = {**config_entry.data}
-        else:
-            new = {**config_entry.options}
-        new.update({ATTR_DEVICE_TYPE: "generic"})
-        with contextlib.suppress(KeyError):
-            new.pop(ATTR_SHOW_CONFIG)
-        hass.config_entries.async_update_entry(config_entry, data=new, version=3)
+        migrate_2(hass, config_entry)
 
     if config_entry.version == 3:
-        if config_entry.options == {}:
-            new = {**config_entry.data}
-        else:
-            new = {**config_entry.options}
-
-        with contextlib.suppress(KeyError):
-            new.pop(ATTR_GROUPS)
-        hass.config_entries.async_update_entry(config_entry, data=new, version=4)
+        migrate_3(hass, config_entry)
 
     if config_entry.version == 4:
-        if config_entry.options == {}:
-            new = {**config_entry.data}
-        else:
-            new = {**config_entry.options}
-
-        with contextlib.suppress(KeyError):
-            new.pop("xx")
-        hass.config_entries.async_update_entry(config_entry, data=new, version=5)
+        migrate_4(hass, config_entry)
 
     if config_entry.version == 5:
-        if config_entry.options == {}:
-            new = {**config_entry.data}
-        else:
-            new = {**config_entry.options}
-
-        msg = "Migration warnings:"
-        msg += (
-            chr(10)
-            + chr(10)
-            + 'Frequency Options have defaulted to "1", reconfigure the program to add more options'
-        )
-        msg += chr(10) + chr(10) + "Remove " + new.get("start_time")
-        with contextlib.suppress(KeyError):
-            new.pop("start_time")
-        # if this has a value set the flag and collect the options
-        if new.get("run_freq", None):
-            msg += chr(10) + chr(10) + "Remove " + new.get("run_freq")
-            with contextlib.suppress(KeyError):
-                new.pop("run_freq")
-            new["freq"] = True
-        if new.get("controller_monitor", None):
-            msg += chr(10) + chr(10) + "Remove " + new.get("controller_monitor")
-            with contextlib.suppress(KeyError):
-                new.pop("controller_monitor")
-        if new.get("inter_zone_delay", None):
-            msg += chr(10) + chr(10) + "Remove " + new.get("inter_zone_delay")
-            with contextlib.suppress(KeyError):
-                new.pop("inter_zone_delay")
-        if new.get("irrigation_on", None):
-            msg += chr(10) + chr(10) + "Remove " + new.get("irrigation_on")
-            with contextlib.suppress(KeyError):
-                new.pop("irrigation_on")
-            # add required defaults
-        new[ATTR_START_TYPE] = "selector"
-        new[ATTR_RAIN_BEHAVIOUR] = "stop"
-
-        # process the zones
-        zones = new.get(ATTR_ZONES)
-        newzones = []
-        for zone in zones:
-            newzone = zone
-            # remove unused
-            if newzone.get("water", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("water")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("water")
-            if newzone.get("wait", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("wait")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("wait")
-                newzone["eco"] = True
-            if newzone.get("repeat", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("repeat")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("repeat")
-            # if this has a value set the flag and collect the options
-            if newzone.get("run_freq", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("run_freq")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("run_freq")
-                newzone["freq"] = True
-            if newzone.get("ignore_rain_sensor", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("ignore_rain_sensor")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("ignore_rain_sensor")
-            if newzone.get("enable_zone", None):
-                msg += chr(10) + chr(10) + "Remove " + newzone.get("enable_zone")
-                with contextlib.suppress(KeyError):
-                    newzone.pop("enable_zone")
-            # remove the entries with wrong data type
-            if newzone.get("water_adjustment", None):
-                if newzone.get("water_adjustment", None).split(".")[0] != "sensor":
-                    msg += (
-                        chr(10)
-                        + chr(10)
-                        + newzone.get("water_adjustment", None)
-                        + ' must of type "sensor"'
-                    )
-                    newzone.pop("water_adjustment")
-            if newzone.get("flow_sensor", None):
-                if newzone.get("flow_sensor", None).split(".")[0] != "sensor":
-                    msg += (
-                        chr(10)
-                        + chr(10)
-                        + newzone.get("flow_sensor")
-                        + ' must be of type "sensor"'
-                    )
-                    newzone.pop("flow_sensor")
-            if newzone.get("rain_sensor", None):
-                if newzone.get("rain_sensor", None).split(".")[0] != "binary_sensor":
-                    msg += (
-                        chr(10)
-                        + chr(10)
-                        + newzone.get("rain_sensor", None)
-                        + ' must it be of type "binary_sensor"'
-                    )
-                    newzone.pop("rain_sensor")
-            if newzone.get("water_source_active", None):
-                if (
-                    newzone.get("water_source_active", None).split(".")[0]
-                    != "binary_sensor"
-                ):
-                    msg += (
-                        chr(10)
-                        + chr(10)
-                        + newzone.get("water_source_active")
-                        + ' must of type "binary_sensor"'
-                    )
-                    newzone.pop("water_source_active")
-
-            newzones.append(newzone)
-
-        new[ATTR_ZONES] = newzones
-
-        # create the persistent notification
-        async_dismiss("irrigation_card")
-        async_create(
-            hass,
-            message=msg,
-            title="Irrigation Controller",
-            notification_id="irrigation_card",
-        )
-
-        hass.config_entries.async_update_entry(config_entry, data=new, version=6)
+        migrate_5(hass, config_entry)
 
     if config_entry.version == 6:
-        if config_entry.options == {}:
-            new = {**config_entry.data}
-        else:
-            new = {**config_entry.options}
+        migrate_6(hass, config_entry)
 
-        if new.get(ATTR_INTERLOCK, True):
-            new.update({ATTR_INTERLOCK: "strict"})
-        else:
-            new.update({ATTR_INTERLOCK: "off"})
-        new[ATTR_MIN_SEC] = "minutes"
-        hass.config_entries.async_update_entry(config_entry, data=new, version=7)
+    if config_entry.version == 7:
+        migrate_7(hass, config_entry)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
 
     return True
+
+
+def migrate_2(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 2 to version 3 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+    new.update({ATTR_DEVICE_TYPE: "generic"})
+    with contextlib.suppress(KeyError):
+        new.pop(ATTR_SHOW_CONFIG)
+    hass.config_entries.async_update_entry(config_entry, data=new, version=3)
+
+
+def migrate_3(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 3 to version 4 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    with contextlib.suppress(KeyError):
+        new.pop(ATTR_GROUPS)
+    hass.config_entries.async_update_entry(config_entry, data=new, version=4)
+
+
+def migrate_4(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 4 to version 5 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    with contextlib.suppress(KeyError):
+        new.pop("xx")
+    hass.config_entries.async_update_entry(config_entry, data=new, version=5)
+
+
+def migrate_5(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 5 to version 6 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    msg = "Migration warnings:"
+    msg += (
+        chr(10)
+        + chr(10)
+        + 'Frequency Options have defaulted to "1", reconfigure the program to add more options'
+    )
+    msg += chr(10) + chr(10) + "Remove " + new.get("start_time")
+    with contextlib.suppress(KeyError):
+        new.pop("start_time")
+    # if this has a value set the flag and collect the options
+    if new.get("run_freq", None):
+        msg += chr(10) + chr(10) + "Remove " + new.get("run_freq")
+        with contextlib.suppress(KeyError):
+            new.pop("run_freq")
+        new["freq"] = True
+    if new.get("controller_monitor", None):
+        msg += chr(10) + chr(10) + "Remove " + new.get("controller_monitor")
+        with contextlib.suppress(KeyError):
+            new.pop("controller_monitor")
+    if new.get("inter_zone_delay", None):
+        msg += chr(10) + chr(10) + "Remove " + new.get("inter_zone_delay")
+        with contextlib.suppress(KeyError):
+            new.pop("inter_zone_delay")
+    if new.get("irrigation_on", None):
+        msg += chr(10) + chr(10) + "Remove " + new.get("irrigation_on")
+        with contextlib.suppress(KeyError):
+            new.pop("irrigation_on")
+        # add required defaults
+    new[ATTR_START_TYPE] = "selector"
+    new[ATTR_RAIN_BEHAVIOUR] = "stop"
+
+    # process the zones
+    zones = new.get(ATTR_ZONES)
+    newzones = []
+    for zone in zones:
+        newzone = zone
+        # remove unused
+        if newzone.get("water", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("water")
+            with contextlib.suppress(KeyError):
+                newzone.pop("water")
+        if newzone.get("wait", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("wait")
+            with contextlib.suppress(KeyError):
+                newzone.pop("wait")
+            newzone["eco"] = True
+        if newzone.get("repeat", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("repeat")
+            with contextlib.suppress(KeyError):
+                newzone.pop("repeat")
+        # if this has a value set the flag and collect the options
+        if newzone.get("run_freq", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("run_freq")
+            with contextlib.suppress(KeyError):
+                newzone.pop("run_freq")
+            newzone["freq"] = True
+        if newzone.get("ignore_rain_sensor", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("ignore_rain_sensor")
+            with contextlib.suppress(KeyError):
+                newzone.pop("ignore_rain_sensor")
+        if newzone.get("enable_zone", None):
+            msg += chr(10) + chr(10) + "Remove " + newzone.get("enable_zone")
+            with contextlib.suppress(KeyError):
+                newzone.pop("enable_zone")
+        # remove the entries with wrong data type
+        if newzone.get("water_adjustment", None):
+            if newzone.get("water_adjustment", None).split(".")[0] != "sensor":
+                msg += (
+                    chr(10)
+                    + chr(10)
+                    + newzone.get("water_adjustment", None)
+                    + ' must of type "sensor"'
+                )
+                newzone.pop("water_adjustment")
+        if newzone.get("flow_sensor", None):
+            if newzone.get("flow_sensor", None).split(".")[0] != "sensor":
+                msg += (
+                    chr(10)
+                    + chr(10)
+                    + newzone.get("flow_sensor")
+                    + ' must be of type "sensor"'
+                )
+                newzone.pop("flow_sensor")
+        if newzone.get("rain_sensor", None):
+            if newzone.get("rain_sensor", None).split(".")[0] != "binary_sensor":
+                msg += (
+                    chr(10)
+                    + chr(10)
+                    + newzone.get("rain_sensor", None)
+                    + ' must it be of type "binary_sensor"'
+                )
+                newzone.pop("rain_sensor")
+        if newzone.get("water_source_active", None):
+            if (
+                newzone.get("water_source_active", None).split(".")[0]
+                != "binary_sensor"
+            ):
+                msg += (
+                    chr(10)
+                    + chr(10)
+                    + newzone.get("water_source_active")
+                    + ' must of type "binary_sensor"'
+                )
+                newzone.pop("water_source_active")
+
+        newzones.append(newzone)
+
+    new[ATTR_ZONES] = newzones
+
+    # create the persistent notification
+    async_dismiss("irrigation_card")
+    async_create(
+        hass,
+        message=msg,
+        title="Irrigation Controller",
+        notification_id="irrigation_card",
+    )
+    hass.config_entries.async_update_entry(config_entry, data=new, version=6)
+
+
+def migrate_6(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 6 to version 7 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    if new.get(ATTR_INTERLOCK, True):
+        new.update({ATTR_INTERLOCK: "strict"})
+    else:
+        new.update({ATTR_INTERLOCK: "off"})
+    new[ATTR_MIN_SEC] = "minutes"
+    hass.config_entries.async_update_entry(config_entry, data=new, version=7)
+
+
+def migrate_7(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 7 to version 8 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    with contextlib.suppress(KeyError):
+        del new["vent"]
+
+    if new.get(ATTR_INTERLOCK) == "strict":
+        new.update({ATTR_INTERLOCK: True})
+    else:
+        new.update({ATTR_INTERLOCK: False})
+    localtimezone = ZoneInfo(hass.config.time_zone)
+    updated = datetime.now(localtimezone).strftime("%Y-%m-%d %H:%M:%S.%f")
+    new.update({"updated": updated})
+
+    hass.config_entries.async_update_entry(
+        config_entry,
+        data=new,
+        options=new,
+        version=8,
+    )
