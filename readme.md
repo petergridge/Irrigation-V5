@@ -13,7 +13,7 @@ Create a PR, contact me using the community link above, or raise and issue on Gi
 
 ## Experiencing issues with the custom card?
 Enable the manual card yaml feature in the advanced setting of the program.This provides the yaml to recreate the custom card as an entities card.
-- The script is regenerated each time you modify the configuration is modified.
+- The script is regenerated each time the configuration is modified.
 - Copy the script to a manual card and save.
 You will now have the equivalent of the custom card.
 
