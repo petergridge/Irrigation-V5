@@ -8,6 +8,9 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
+#### German, Spanish. French, Italian, Dutch, Polish and Portuguese translations are now available.
+
+
 ## Experiencing issues with the custom card?
 Enable the manual card yaml feature in the advanced setting of the program.This provides the yaml to recreate the custom card as an entities card.
 - The script is regenerated each time you modify the configuration is modified.
