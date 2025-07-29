@@ -9,17 +9,11 @@ Now more than in previous versions a translation will help users. Translations a
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
 ## Experiencing issues with the custom card?
-Enable the manual card yaml feature in the advanced setting of the program.
-this provides the yaml to recreate the custom card as an entities card.
+Enable the manual card yaml feature in the advanced setting of the program.This provides the yaml to recreate the custom card as an entities card.
 - The script is regenerated each time you modify the configuration is modified.
-- Copy the script to a manual card.
-- [More detail here](https://github.com/petergridge/Irrigation-V5/issues/103#issuecomment-2579184201)
-- You need to enable the feature in the advanced setting of the program.
+- Copy the script to a manual card and save.
+You will now have the equivalent of the custom card.
 
-## Note:
-- You can remove the helpers that have been created for Frequency, Start time ... These will be automatically created now.
-- The name of entities is dependent on the translation files. Please reach out if you can help translate the files.
-- Setting frequency and start time via a sensor is no longer possible
 
 ## Content
 - [Installation](#Installation)
