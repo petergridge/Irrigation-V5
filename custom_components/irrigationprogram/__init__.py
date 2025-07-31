@@ -387,7 +387,6 @@ async def async_stop_programs(hass: HomeAssistant, calling_program):
     for n, data in enumerate(hass.data[DOMAIN].values()):
         if data.get(ATTR_NAME) == calling_program.name:
             continue
-        await asyncio.sleep(n)
         await stop_program()
 
 

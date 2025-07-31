@@ -353,7 +353,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self.hass.async_create_task(self.async_turn_on())
         self.async_write_ha_state()
 
-    # @callback
     async def update_next_run(self, entity=None, old_status=None, new_status=None):
         """Update the next run callback."""
 
@@ -400,7 +399,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         else:
             self._program.default_run_time.set_value(
                 await self.calculate_program_remaining(
-                    self._zones, izd_remaining=0, duration=True
+                    self._zones, default_run_time=True
                 )
             )
 
@@ -662,7 +661,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             zones.append(zone)
         return zones
 
-    async def calculate_program_remaining(self, zones, izd_remaining=0, duration=False):
+    async def calculate_program_remaining(
+        self, zones, izd_remaining=None, default_run_time=False
+    ):
         """Calculate the remaining time for the program."""
 
         class Stream:
@@ -677,7 +678,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.sum += item
 
         if self.degree_of_parallel > 1:
-            if duration:
+            if default_run_time:
                 remaining = [int(zone.switch.default_run_time) for zone in zones]
             else:
                 remaining = [int(zone.remaining_time.numeric_value) for zone in zones]
@@ -699,22 +700,22 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             for stream in streams:
                 # return the max stream time
                 remaining_time = max(remaining_time, stream.sum)
-
             self._program_remaining = remaining_time
-            if not duration:
-                await self._program.remaining_time.set_value(self._program_remaining)
         else:  # single stream with zone transitions
             self._program_remaining = 0
-            for program_postion, zone in enumerate(zones, 1):
-                if duration:
+            for program_position, zone in enumerate(zones, 1):
+                if default_run_time:
                     self._program_remaining += int(zone.switch.default_run_time)
                 else:
                     self._program_remaining += int(zone.remaining_time.numeric_value)
-                if program_postion < len(zones):
+                # Add izd for the remaining zones
+                if program_position < len(zones):
                     self._program_remaining += int(self.inter_zone_delay)
+
+        # If there is an active izd add it to the total
+        if izd_remaining:
             self._program_remaining += int(izd_remaining)
-            if not duration:
-                await self._program.remaining_time.set_value(self._program_remaining)
+
         return self._program_remaining
 
     async def pause_program_water_source(
@@ -752,7 +753,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._paused:
             await asyncio.sleep(1)
             return running_zones
-
         await asyncio.sleep(1)
 
         if len(running_zones) < self.degree_of_parallel:
@@ -766,13 +766,20 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         rzones = running_zones
 
+        pend = (x for x in all_zones if x.status.state in (CONST_PENDING, CONST_ON))
+        remaining_zones = list(pend)
+
         for running_zone in rzones:
+            # add another zone as required
+            if self.state == CONST_OFF:
+                # break out if program terminated
+                break
+
             if (
                 self.inter_zone_delay <= 0
                 and running_zone.remaining_time.numeric_value
                 <= abs(self.inter_zone_delay)
             ):
-                # zone has turned off remove from the running zones
                 running_zones.remove(running_zone)
 
                 # start the next zone if there is one
@@ -784,31 +791,37 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     break
 
             if (
-                running_zone.remaining_time.numeric_value == 0
+                running_zone.remaining_time.numeric_value <= 0
                 and running_zones.count(running_zone) > 0
             ):
                 running_zones.remove(running_zone)
 
             if (
                 self.inter_zone_delay > 0
-                and running_zone.remaining_time.numeric_value == 0
+                and running_zone.remaining_time.numeric_value <= 0
             ):
                 # there is a + IZD and there is a zone to follow
                 pend = (x for x in all_zones if x.status.state == CONST_PENDING)
-                if len(list(pend)) > 0:
-                    # start the delay before next
-                    izd = int(self.inter_zone_delay)
-                    for _ in range(int(self.inter_zone_delay)):
+                remaining_zones = list(pend)
+                if len(remaining_zones) > 0:
+                    # Delay before next zone
+                    for izd in range(int(self.inter_zone_delay), 0, -1):
                         await asyncio.sleep(1)
-                        izd -= 1
-                        await self.calculate_program_remaining(all_zones, izd)
+                        remaining_time = await self.calculate_program_remaining(
+                            remaining_zones, izd
+                        )
+                        await self._program.remaining_time.set_value(remaining_time)
+                        if self.state == CONST_OFF:
+                            break
+                # Interzone delay is complete
                 for zone in (x for x in all_zones if x.status.state == CONST_PENDING):
                     # get the next pending zone and run it
                     await self.zone_turn_on(zone.switch)
                     running_zones.append(zone.switch)
                     break
 
-        await self.calculate_program_remaining(all_zones)
+        remaining_time = await self.calculate_program_remaining(remaining_zones)
+        await self._program.remaining_time.set_value(remaining_time)
         return running_zones
 
     async def zone_turn_on(self, zone):
