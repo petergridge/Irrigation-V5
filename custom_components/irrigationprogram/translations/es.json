@@ -149,8 +149,10 @@
 					"name": "Nombre",
 					"freq": "Habilitar frecuencia de programa",
 					"freq_options": "Seleccione o agregue opciones de frecuencia",
-					"controller_monitor": "Monitorear sensor binario de la controladora",
-					"device_type": "Tipo de controladora"
+					"device_type": "Tipo de controladora",
+					"flow_sensor": "Sensor de flujo",
+					"water_source_active": "Sensor binario de origen de agua",
+					"pump": "Interruptor de la bomba"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
-					"pump": "Interruptor de la bomba",
-					"flow_sensor": "Sensor de flujo",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
-					"water_source_active": "Sensor binario de origen de agua",
 					"order": "Orden de ejecución de zona"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
-					"pump": "Interruptor de la bomba",
-					"flow_sensor": "Sensor de flujo",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
-					"water_source_active": "Sensor binario de origen de agua",
 					"order": "Orden de ejecución de zona"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Tiempo/volumen máximo de riego",
 					"water_step": "Paso de Tiempo/volumen",
 					"parallel": "Ejecución de zonas en paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			}
 		}
@@ -263,25 +258,25 @@
 					"water_max": "Tiempo/volumen máximo de riego",
 					"water_step": "Paso de Tiempo/volumen",
 					"parallel": "Ejecución de zonas en paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {
 				"title": "Información de programa",
 				"description": "Actualizar programa",
 				"data": {
-					"program": "Aplicar frecuencia en todo el programa",
 					"freq": "Habilitar frecuencia de programa",
 					"freq_options": "Seleccione o agregue opciones de frecuencia",
-					"controller_monitor": "Monitorear sensor binario de la controladora",
-					"device_type": "Tipo de controladora"
+					"device_type": "Tipo de controladora",
+					"flow_sensor": "Sensor de flujo",
+					"water_source_active": "Sensor binario de origen de agua",
+					"pump": "Interruptor de la bomba"
 				}
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
-					"pump": "Interruptor de la bomba",
-					"flow_sensor": "Sensor de flujo",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
-					"water_source_active": "Sensor binario de origen de agua",
 					"order": "Orden de ejecución de zona"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
-					"pump": "Interruptor de la bomba",
-					"flow_sensor": "Sensor de flujo",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
-					"water_source_active": "Sensor binario de origen de agua",
 					"order": "Orden de ejecución de zona"
 				}
 			},

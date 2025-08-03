@@ -149,8 +149,10 @@
 					"name": "Nome",
 					"freq": "Abilita la frequenza del programma",
 					"freq_options": "Seleziona o aggiungi l'opzione frequenza",
-					"controller_monitor": "Entità di monitoraggio dell'interruttore",
-					"device_type": "Tipo interruttore"
+					"device_type": "Tipo interruttore",
+					"flow_sensor": "Entità sensore flusso",
+					"water_source_active": "Entità sorgente irrigazione",
+					"pump": "Entità interruttore pompa"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Entità interruttore zona",
 					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
 					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
-					"pump": "Entità interruttore pompa",
-					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Entità sorgente irrigazione",
 					"order": "Ordine di esecuzione delle zone"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Entità interruttore zona",
 					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
 					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
-					"pump": "Entità interruttore pompa",
-					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Entità sorgente irrigazione",
 					"order": "Ordine di esecuzione delle zone"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Tempo/volume massimo di irrigazione",
 					"water_step": "Intervallo di tempo/volume",
 					"parallel": "Esecuzione parallela a zone",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			}
 		}
@@ -263,25 +258,25 @@
 					"water_max": "Tempo/volume massimo di irrigazione",
 					"water_step": "Intervallo di tempo/volume",
 					"parallel": "Esecuzione parallela a zone",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {
 				"title": "Dati programma",
 				"description": "Aggiorna programma irrigazione",
 				"data": {
-					"name": "Nome",
 					"freq": "Abilita la frequenza del programma",
 					"freq_options": "Seleziona o aggiungi le opzioni di frequenza",
-					"controller_monitor": "Entità monitoraggio interruttore",
-					"device_type": "Tipo di interruttore"
+					"device_type": "Tipo di interruttore",
+					"flow_sensor": "Entità sensore flusso",
+					"water_adjustment": "Entità regolazione irrigazione",
+					"pump": "Entità interruttore pompa"
 				}
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Entità interruttore zona",
 					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
 					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
-					"pump": "Entità interruttore pompa",
-					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Entità sorgente irrigazione",
 					"order": "Ordine di esecuzione delle zone"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Entità interruttore zona",
 					"freq": "La trequenza della zona rimpiazza la frequenza del programma",
 					"eco": "Abilita la funzionalità eco 'aspetta e ripeti'",
-					"pump": "Entità interruttore pompa",
-					"flow_sensor": "Entità sensore flusso",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Entità sensore pioggia",
-					"water_source_active": "Entità sorgente irrigazione",
 					"order": "Ordine di esecuzione delle zone"
 				}
 			},

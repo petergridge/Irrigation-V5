@@ -102,10 +102,7 @@ class IrrigationZoneData:
     remaining_time: SensorEntity
     default_run_time: SensorEntity
     rain_sensor: str  # sensor.example
-    pump: str  # switch.example, valve.example
-    flow_sensor: str  # sensor.example
     adjustment: str  # sensor.example
-    water_source: str  # sensor.example
     flow_rate: str  # sensor.example
 
 
@@ -118,6 +115,9 @@ class IrrigationProgram:
     modified: str
     pause: SwitchEntity
     rain_delay_on: bool
+    pump: str  # switch.example, valve.example
+    flow_sensor: str  # sensor.example
+    water_source: str  # sensor.example
     rain_delay: SwitchEntity
     rain_delay_days: NumberEntity
     unique_id: str
@@ -143,6 +143,7 @@ class IrrigationProgram:
     water_step: int
     zone_delay_max: int
     parallel: int
+    pump_delay: int
     card_yaml: bool
     latency: int
     start_latency: int
@@ -162,6 +163,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         modified=config.get("updated"),
         pause=None,
         rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
+        pump=config.get(ATTR_PUMP, None),
+        flow_sensor=config.get(ATTR_FLOW_SENSOR, None),
+        water_source=config.get(ATTR_WATER_SOURCE, None),
         rain_delay=None,
         rain_delay_days=None,
         unique_id=entry.entry_id,
@@ -189,9 +193,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         water_step=config.get("water_step", 1),
         zone_delay_max=config.get("zone_delay_max", 120),
         parallel=config.get("parallel", 1),
+        pump_delay=config.get("pump_delay", 1),
         card_yaml=config.get("card_yaml", False),
         water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
     )
+
+    # check if dependant objects are ready
+    if program.flow_sensor:
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(program.flow_sensor):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"Warning, {program.flow_sensor} has not initialised before irrigation program, check your configuration"
+            _LOGGER.debug(msg)
+    if program.water_source:
+        for _ in range(program.start_latency):
+            if not hass.states.async_available(program.water_source):
+                break
+            await asyncio.sleep(1)
+        else:
+            msg = f"Warning, {program.water_source} has not initialised before irrigation program, check your configuration"
+            _LOGGER.debug(msg)
 
     zone_data = []
     for zone in config.get(ATTR_ZONES):
@@ -215,10 +238,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             remaining_time=None,
             default_run_time=None,
             rain_sensor=zone.get(ATTR_RAIN_SENSOR),
-            pump=zone.get(ATTR_PUMP),
-            flow_sensor=zone.get(ATTR_FLOW_SENSOR),
             adjustment=zone.get(ATTR_WATER_ADJUST),
-            water_source=zone.get(ATTR_WATER_SOURCE),
             flow_rate=None,
         )
 
@@ -239,47 +259,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
             continue
         zone_data.append(z)
-
+        # check if dependant objects are ready
+        if z.adjustment:
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(z.adjustment):
+                    break
+                await asyncio.sleep(1)
+            else:
+                msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
+                _LOGGER.debug(msg)
+        if z.rain_sensor:
+            for _ in range(program.start_latency):
+                if not hass.states.async_available(z.rain_sensor):
+                    break
+                await asyncio.sleep(1)
+            else:
+                msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
+                _LOGGER.debug(msg)
     entry.runtime_data = IrrigationData(program, zone_data)
 
     # store an object for your platforms to access
     hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
-
-    # check if dependant objects are ready
-    if z.flow_sensor:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(z.flow_sensor):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {z.flow_sensor} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
-    if z.adjustment:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(z.adjustment):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
-    if z.rain_sensor:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(z.rain_sensor):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
-    if z.water_source:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(z.water_source):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {z.water_source} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
 
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
@@ -436,6 +437,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     if config_entry.version == 7:
         migrate_7(hass, config_entry)
+
+    if config_entry.version == 8:
+        migrate_8(hass, config_entry)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
 
@@ -643,4 +647,39 @@ def migrate_7(hass: HomeAssistant, config_entry: ConfigEntry):
         data=new,
         options=new,
         version=8,
+    )
+
+
+def migrate_8(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate from version 8 to version 9 configuration."""
+    if config_entry.options == {}:
+        new = {**config_entry.data}
+    else:
+        new = {**config_entry.options}
+
+    zones = new.get(ATTR_ZONES)
+    newzones = []
+    for zone in zones:
+        newzone = zone
+        if newzone.get("ATTR_PUMP", None):
+            new[ATTR_PUMP] = newzone.get("ATTR_PUMP")
+            newzone.pop(ATTR_PUMP)
+        if newzone.get("ATTR_WATER_SOURCE", None):
+            new[ATTR_WATER_SOURCE] = newzone.get("ATTR_WATER_SOURCE")
+            newzone.pop(ATTR_WATER_SOURCE)
+        if newzone.get("ATTR_FLOW_SENSOR", None):
+            new[ATTR_FLOW_SENSOR] = newzone.get("ATTR_FLOW_SENSOR")
+            newzone.pop(ATTR_FLOW_SENSOR)
+        newzones.append(newzone)
+    new[ATTR_ZONES] = newzones
+
+    localtimezone = ZoneInfo(hass.config.time_zone)
+    updated = datetime.now(localtimezone)
+    new.update({"updated": updated})
+
+    hass.config_entries.async_update_entry(
+        config_entry,
+        data=new,
+        options=new,
+        version=9,
     )

@@ -149,8 +149,10 @@
 					"name": "Nazwa",
 					"freq": "Włącz program według częstotliwości",
 					"freq_options": "Wybierz dni lub częstotliwość",
-					"controller_monitor": "binary sensor monitora sterownika",
-					"device_type": "Typ sterownika"
+					"device_type": "Typ sterownika",
+					"flow_sensor": "Sensor przepływu",
+					"water_source_active": "Sensor źródła wody",
+					"pump": "Włącznik pompy"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"pump": "Włącznik pompy",
-					"flow_sensor": "Sensor przepływu",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "Sensor deszczu",
-					"water_source_active": "Sensor źródła wody",
 					"order": "Kolejność uruchamiania stref"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"pump": "Włącznik pompy",
-					"flow_sensor": "Sensor przepływu",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "Sensor deszczu",
-					"water_source_active": "Sensor źródła wody",
 					"order": "Kolejność uruchamiania stref"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Maksymalny czas podlewania/wartość",
 					"water_step": "Krok zmiany czasu podlewania",
 					"parallel": "Ilość stref jednocześnie",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Generuj yaml karty Encje",
 					"zone_delay_max": "Maksymalna pauza między strefami",
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
-					"vent": "Uwolnij nadmiar ciśnienia po zatrzymaniu pompy",
-					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
 				}
 			}
 		}
@@ -263,25 +258,25 @@
 					"water_max": "Maksymalny czas podlewania/wartość",
 					"water_step": "Krok zmiany czasu podlewania",
 					"parallel": "Ilość stref jednocześnie",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Generuj yaml karty Encje",
 					"zone_delay_max": "Maksymalna pauza między strefami",
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
-					"vent": "Uwolnij nadmiar ciśnienia po zatrzymaniu pompy",
-					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
-				}
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
+					}
 			},
 			"update_program": {
 				"title": "Ustawienia programu",
 				"description": "Aktualizacja programu",
 				"data": {
-					"program": "Włącz program według częstotliwości",
 					"freq": "Włącz program według częstotliwości",
 					"freq_options": "Wybierz dni lub częstotliwość",
-					"controller_monitor": "binary sensor monitora sterownika",
-					"device_type": "Typ sterownika"
+					"device_type": "Typ sterownika",
+					"flow_sensor": "Sensor przepływu",
+					"water_source_active": "Sensor źródła wody",
+					"pump": "Włącznik pompy"
 				}
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"pump": "Włącznik pompy",
-					"flow_sensor": "Sensor przepływu",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "RSensor deszczu",
-					"water_source_active": "Sensor źródła wody",
 					"order": "Kolejność uruchamiania stref"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"pump": "Włącznik pompy",
-					"flow_sensor": "Sensor przepływu",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "Sensor deszczu",
-					"water_source_active": "Sensor źródła wody",
 					"order": "Kolejność uruchamiania stref"
 				}
 			},

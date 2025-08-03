@@ -69,7 +69,7 @@ async def async_setup_entry(
 
         friendly_name = hass.states.get(zone.zone).attributes.get("friendly_name")
         z_name = zone.name
-        if zone.rain_sensor or zone.adjustment or zone.water_source:
+        if zone.rain_sensor or zone.adjustment or data.program.water_source:
             switch = IgnoreRainSensor(unique_id, name, z_name)
             switches.append(switch)
             config_entry.runtime_data.zone_data[i].ignore_sensors = switch

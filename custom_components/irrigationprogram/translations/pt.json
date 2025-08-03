@@ -149,8 +149,10 @@
 					"name": "Nome",
 					"freq": "Ativar o intervalo de rega do programa",
 					"freq_options": "Selecione ou adicione opções do intervalo de rega",
-					"controller_monitor": "Monitorizar o sensor binário do controlador",
-					"device_type": "Tipo de controlador"
+					"device_type": "Tipo de controlador",
+					"flow_sensor": "Sensor de fluxo",
+					"water_source_active": "Sensor binário da fonte de água",
+					"pump": "Comando da bomba"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
-					"pump": "Comando da bomba",
-					"flow_sensor": "Sensor de fluxo",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
-					"water_source_active": "Sensor binário da fonte de água",
 					"order": "Ordem de execução da zona"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
-					"pump": "Comando da bomba",
-					"flow_sensor": "Sensor de fluxo",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
-					"water_source_active": "Sensor binário da fonte de água",
 					"order": "Ordem de execução da zona"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
 					"zone_delay_max": "Atraso máximo de transição de zona",
 					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
-					"vent": "Libertar o excesso de pressão após a paragem da bomba",
-					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
 				}
 			}
 		}
@@ -263,25 +258,25 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
 					"zone_delay_max": "Atraso máximo de transição de zona",
 					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
-					"vent": "Libertar o excesso de pressão após a paragem da bomba",
-					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar"
 				}
 			},
 			"update_program": {
 				"title": "Informação do programa",
 				"description": "Atualizar o programa",
 				"data": {
-					"program": "Ativar a frequência de rega em todo o programa",
 					"freq": "Ativar o intervalo de rega do programa",
 					"freq_options": "Selecione ou adicione opções do intervalo de rega",
-					"controller_monitor": "Monitorizar o sensor binário do controlador",
-					"device_type": "Tipo de controlador"
+					"device_type": "Tipo de controlador",
+					"flow_sensor": "Sensor de fluxo",
+					"water_source_active": "Sensor binário da fonte de água",
+					"pump": "Comando da bomba"
 				}
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
-					"pump": "Comando da bomba",
-					"flow_sensor": "Sensor de fluxo",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
-					"water_source_active": "Sensor binário da fonte de água",
 					"order": "Ordem de execução da zona"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
-					"pump": "Comando da bomba",
-					"flow_sensor": "Sensor de fluxo",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
-					"water_source_active": "Sensor binário da fonte de água",
 					"order": "Ordem de execução da zona"
 				}
 			},

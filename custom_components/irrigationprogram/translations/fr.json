@@ -149,8 +149,10 @@
 					"name": "Nom",
 					"freq": "Fréquence globale pour le programme",
 					"freq_options": "Selectionner ou ajouter des options de fréquence",
-					"controller_monitor": "Surveiller l'entité du contrôleur",
-					"device_type": "Type de contrôleur"
+					"device_type": "Type de contrôleur",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_source_active": "Entité de source d'eau",
+					"pump": "Entité de commutateur de pompe"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
-					"pump": "Entité de commutateur de pompe",
-					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
-					"water_source_active": "Entité de source d'eau",
 					"order": "Ordre de lancement de zone"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
-					"pump": "Entité de commutateur de pompe",
-					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
-					"water_source_active": "Entité de source d'eau",
 					"order": "Ordre de lancement de zone"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Temps/Volume maximum d'arrosage",
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Activer la création de carte d'entité YAML",
 					"zone_delay_max": "Délai max inter zone",
 					"rain_delay_on": "Différer le prochain lancement si pluie",
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			}
 		}
@@ -263,25 +258,25 @@
 					"water_max": "Temps/Volume maximum d'arrosage",
 					"water_step": "Pas de Temps/Volume",
 					"parallel": "Exécution parallèle de zone",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Activer la création de carte d'entité YAML",
 					"zone_delay_max": "Délai max inter zone",
 					"rain_delay_on": "Différer le prochain lancement si pluie",
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
-					"vent": "Vent excess pressure after pump stops",
-					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Pause program when water source sensor turns off"
 				}
 			},
 			"update_program": {
 				"title": "Données du programme",
 				"description": "Mettre à jour le programme",
 				"data": {
-					"program": "Nom du Programme",
 					"freq": "Enable program wide frequency",
 					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Surveiller l'entité du contrôleur",
-					"device_type": "Type de contrôleur"
+					"device_type": "Type de contrôleur",
+					"flow_sensor": "Entité de capteur de débit",
+					"water_source_active": "Entité de source d'eau",
+					"pump": "Entité de commutateur de pompe"
 				}
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
-					"pump": "Entité de commutateur de pompe",
-					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
-					"water_source_active": "Entité de source d'eau",
 					"order": "Ordre de lancement de zone"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
-					"pump": "Entité de commutateur de pompe",
-					"flow_sensor": "Entité de capteur de débit",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
-					"water_source_active": "Entité de source d'eau",
 					"order": "Ordre de lancement de zone"
 				}
 			},

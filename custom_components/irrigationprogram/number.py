@@ -83,7 +83,7 @@ async def async_setup_entry(
             unique_id,
             p.name,
             zone.name,
-            zone.flow_sensor,
+            p.flow_sensor,
             p.water_max,
             p.water_step,
             p.min_sec,

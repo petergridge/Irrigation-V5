@@ -108,6 +108,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._water_adjust_prior = 1
         self._zone_manual_start = False
         self._latency = programdata.latency
+        self._pump_on_delay = 0
 
     async def async_added_to_hass(self):
         """Run when HA starts."""
@@ -132,13 +133,13 @@ class Zone(SwitchEntity, RestoreEntity):
         self._extra_attrs[ATTR_ENABLE_ZONE] = self._zonedata.enabled.entity_id
         if self._zonedata.frequency is not None:
             self._extra_attrs[ATTR_RUN_FREQ] = self._zonedata.frequency.entity_id
-        if self._zonedata.flow_sensor is not None:
-            self._extra_attrs[ATTR_FLOW_SENSOR] = self._zonedata.flow_sensor
+        if self._programdata.flow_sensor is not None:
+            self._extra_attrs[ATTR_FLOW_SENSOR] = self._programdata.flow_sensor
             self._extra_attrs[ATTR_HISTORICAL_FLOW] = self._hist_flow_rate
         if self._zonedata.adjustment is not None:
             self._extra_attrs[ATTR_WATER_ADJUST] = self._zonedata.adjustment
-        if self._zonedata.water_source is not None:
-            self._extra_attrs[ATTR_WATER_SOURCE] = self._zonedata.water_source
+        if self._programdata.water_source is not None:
+            self._extra_attrs[ATTR_WATER_SOURCE] = self._programdata.water_source
         if self._zonedata.rain_sensor is not None:
             self._extra_attrs[ATTR_RAIN_SENSOR] = self._zonedata.rain_sensor
         if self._zonedata.ignore_sensors is not None:
@@ -149,6 +150,11 @@ class Zone(SwitchEntity, RestoreEntity):
         self.async_schedule_update_ha_state()
         # on reload/restart ensure the zone is off
         await self.async_solenoid_turn_off()
+
+    @property
+    def start_pump(self) -> bool:
+        """Return true if switch is on."""
+        return False
 
     @property
     def is_on(self) -> bool:
@@ -170,7 +176,12 @@ class Zone(SwitchEntity, RestoreEntity):
     @property
     def pump(self) -> str:
         """Pump solenoid Entity str."""
-        return self._zonedata.pump
+        return self._programdata.pump
+
+    @property
+    def pump_on_delay(self) -> int:
+        """Delay to start pump before(-) or after(+) zone starts."""
+        return int(self._programdata.pump_delay)  # self._pump_on_delay
 
     @property
     def entity_type(self) -> str:
@@ -281,9 +292,9 @@ class Zone(SwitchEntity, RestoreEntity):
     @property
     def flow_sensor(self) -> float:
         """Flow rate value."""
-        if self._zonedata.flow_sensor:
+        if self._programdata.flow_sensor:
             try:
-                flow = float(self.hass.states.get(self._zonedata.flow_sensor).state)
+                flow = float(self.hass.states.get(self._programdata.flow_sensor).state)
                 if self._state == CONST_ON:
                     return flow
             except AttributeError:
@@ -321,9 +332,9 @@ class Zone(SwitchEntity, RestoreEntity):
     @property
     def water_source(self) -> bool:
         """Water Source value Bool."""
-        if self._zonedata.water_source:
+        if self._programdata.water_source:
             try:
-                return self.hass.states.get(self._zonedata.water_source).state
+                return self.hass.states.get(self._programdata.water_source).state
             except AttributeError:
                 return None
             except ValueError:
@@ -511,7 +522,7 @@ class Zone(SwitchEntity, RestoreEntity):
         if status in (CONST_OFF, CONST_ON, CONST_PENDING, CONST_ECO):
             return status
 
-        if self._status in (CONST_ON, CONST_PENDING, CONST_ECO):
+        if self._status in (CONST_ON, CONST_PENDING, CONST_ECO, CONST_PROGRAM_DISABLED):
             if status == CONST_RAINING:
                 # rain option to continue
                 return self._status
@@ -782,6 +793,30 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_solenoid_turn_on(self):
         """Turn on the zone."""
+
+        if self.pump_on_delay < 0 and self.pump:
+            # start the pump before the zone starts
+            event_data = {
+                "action": "turn_on_pump",
+                "device_id": self.solenoid,
+                "pump": self.pump,
+                "program": self._programdata.switch.entity_id,
+                "delay": 0,
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+            await asyncio.sleep(abs(self.pump_on_delay))
+
+        if self.pump_on_delay >= 0 and self.pump:
+            # turn the pump on after the zone starts
+            event_data = {
+                "action": "turn_on_pump",
+                "device_id": self.solenoid,
+                "pump": self.pump,
+                "program": self._programdata.switch.entity_id,
+                "delay": self.pump_on_delay,
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+
         check_state, value = await self.check_switch_state()
         if check_state is False:
             if self.controller_type == RAINBIRD:
@@ -881,7 +916,6 @@ class Zone(SwitchEntity, RestoreEntity):
         self._status = CONST_ECO
         await self.async_solenoid_turn_off()
         await self.check_is_off()
-
         await self.status.set_value(self._status)
 
     async def async_toggle(self, **kwargs):
@@ -1012,7 +1046,7 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, **kwargs):
+    async def async_turn_on_from_program(self, last=None):
         """Start the zone watering cycle."""
 
         self._status = CONST_ON
@@ -1043,18 +1077,30 @@ class Zone(SwitchEntity, RestoreEntity):
             if self._stop:
                 break
             # track the watering
+
             if self.flow_sensor is not None:
-                volume_delivered = await self.volume(water_adjust_value, reps)
+                volume_delivered = await self.volume(water_adjust_value, reps, last)
             else:
-                seconds_run = await self.time(water_adjust_value, seconds_run, reps)
+                seconds_run = await self.time(
+                    water_adjust_value, seconds_run, reps, last
+                )
             # abort
             if self._stop:
                 break
 
             # wait cycle
             if self.wait > 0 and reps > 1:
+                if self.pump:
+                    event_data = {
+                        "action": "turn_off_pump",
+                        "device_id": self.solenoid,
+                        "pump": self.pump,
+                        "program": self._programdata.switch.entity_id,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
+                    await asyncio.sleep(3)
                 await self.async_eco_turn_off()
-                for _ in range(self.wait):
+                for x in range(self.wait, 0, -1):
                     seconds_run += 1
                     self._remaining_time = await self.calc_run_time(
                         seconds_run=seconds_run,
@@ -1065,6 +1111,21 @@ class Zone(SwitchEntity, RestoreEntity):
                     await self.remaining_time.set_value(self._remaining_time)
                     if self._stop:
                         break
+                    # -- if pump and on_delay < 0:
+                    # -- start the pump
+                    if (
+                        self.pump
+                        and self.pump_on_delay < 0
+                        and x < abs(self.pump_on_delay)
+                    ):
+                        event_data = {
+                            "action": "turn_on_pump",
+                            "device_id": self.solenoid,
+                            "pump": self.pump,
+                            "program": self._programdata.switch.entity_id,
+                            "delay": 0,
+                        }
+                        self.hass.bus.async_fire("irrigation_event", event_data)
                     await asyncio.sleep(1)
 
             # abort
@@ -1078,17 +1139,20 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.last_ran.set_state(last_ran)
         await self.async_turn_off_zone()
 
-    async def time(self, water_adjust_value, seconds_run, reps):
+    async def time(self, water_adjust_value, seconds_run, reps, last=None):
         """Track watering time based on time."""
         warning_issued = False
-        if await self.get_status() not in (
-            CONST_ON,
-            CONST_RAINING,
-        ):
-            self._stop = True
-            self._aborted = True
+        if self._scheduled:
+            if await self.get_status() not in (
+                CONST_ON,
+                CONST_RAINING,
+            ):
+                self._stop = True
+                self._aborted = True
+
         if self._stop:
             return 0
+
         await self.async_solenoid_turn_on()
 
         watertime = math.ceil(self.water * water_adjust_value)
@@ -1096,6 +1160,17 @@ class Zone(SwitchEntity, RestoreEntity):
         end_time = dt_util.now() + timedelta(seconds=watertime)
 
         while dt_util.now() < end_time:
+            # -- if pump turn off when 3 seconds remaining
+            time_difference = (end_time - dt_util.now()).total_seconds()
+            if time_difference <= 3 and self.pump and last:
+                event_data = {
+                    "action": "turn_off_pump",
+                    "device_id": self.solenoid,
+                    "pump": self.pump,
+                    "program": self._programdata.switch.entity_id,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+
             if self._status == CONST_PAUSED:
                 # now I need to add time to the expected end time
                 end_time += timedelta(seconds=1)
@@ -1116,6 +1191,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     repeats_remaining=reps,
                     scheduled=self.scheduled,
                 )
+
                 await self.remaining_time.set_value(self._remaining_time)
                 if self._aborted:
                     break
@@ -1151,19 +1227,24 @@ class Zone(SwitchEntity, RestoreEntity):
 
         return seconds_run
 
-    async def volume(self, water_adjust_value, reps):
+    async def volume(self, water_adjust_value, reps, last=None):
         """Track watering time based on volume."""
+
         warning_issued = False
-        await asyncio.sleep(1)
-        if await self.get_status() not in (
-            CONST_ON,
-            CONST_RAINING,
-        ):
-            self._stop = True
-            self._aborted = True
+        await asyncio.sleep(0)
+
+        if self._scheduled:
+            if await self.get_status() not in (
+                CONST_ON,
+                CONST_RAINING,
+            ):
+                self._stop = True
+                self._aborted = True
         if self._stop:
             return 0
+
         await self.async_solenoid_turn_on()
+
         volume_remaining = self.water * water_adjust_value
         volume_delivered = 0
         zeroflowcount = 0
@@ -1189,6 +1270,17 @@ class Zone(SwitchEntity, RestoreEntity):
                     scheduled=self.scheduled,
                 )
                 await self.remaining_time.set_value(self._remaining_time)
+
+                # -- turn of pump if < 3 seconds remaining
+                if self._remaining_time <= 3 and self.pump and last:
+                    event_data = {
+                        "action": "turn_off_pump",
+                        "device_id": self.solenoid,
+                        "pump": self.pump,
+                        "program": self._programdata.switch.entity_id,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
+
                 if volume_remaining < 0:
                     break
                 if self._aborted:

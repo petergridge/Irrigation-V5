@@ -149,8 +149,10 @@
 					"name": "Name",
 					"freq": "Enable program wide frequency",
 					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Monitor controller binary sensor",
-					"device_type": "Controller type"
+					"device_type": "Controller type",
+					"flow_sensor": "Flow sensor",
+					"water_source_active": "Water source binary sensor",
+					"pump": "Pump switch"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
 					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
 					"order": "Zone run order"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
 					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
 					"order": "Zone run order"
 				}
 			},
@@ -219,9 +215,10 @@
 					"water_max": "Maximum watering time/volume",
 					"water_step": "Time/volume step",
 					"parallel": "Zone parallel execution",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
+					"rain_delay_on": "Enable manual delay of the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off"
@@ -261,9 +258,10 @@
 					"water_max": "Maximum watering time/volume",
 					"water_step": "Time/volume step",
 					"parallel": "Zone parallel execution",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
+					"rain_delay_on": "Enable manual delay of the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off"
@@ -273,11 +271,12 @@
 				"title": "Program Data",
 				"description": "Update program",
 				"data": {
-					"program": "Enable program wide frequency",
 					"freq": "Enable program wide frequency",
 					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Monitor controller binary sensor",
-					"device_type": "Controller type"
+					"device_type": "Controller type",
+					"flow_sensor": "Flow sensor",
+					"water_source_active": "Water source binary sensor",
+					"pump": "Pump switch"
 				}
 			},
 			"add_zone": {
@@ -287,11 +286,8 @@
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
 					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
 					"order": "Zone run order"
 				}
 			},
@@ -302,11 +298,8 @@
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
 					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
 					"order": "Zone run order"
 				}
 			},

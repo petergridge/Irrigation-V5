@@ -149,8 +149,10 @@
 					"name": "Name",
 					"freq": "Häufigkeit progammweit einstellen",
 					"freq_options": "Häufigkeitsauswahl auswählen oder definieren",
-					"controller_monitor": " Binär-Sensor als Monitor",
-					"device_type": "Schaltertyp"
+					"device_type": "Schaltertyp",
+					"flow_sensor": "Durchflusssensor",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"pump": "Pumpenschalter"
 				}
 			},
 			"add_zone": {
@@ -160,11 +162,8 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpenschalter",
-					"flow_sensor": "Durchflusssensor",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
-					"water_source_active": "Wasserquellensensor (Binär)",
 					"order": "Zonenreihenfolge"
 				}
 			},
@@ -182,11 +181,8 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpenschalter",
-					"flow_sensor": "Durchflusssensor",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
-					"water_source_active": "Wasserquellensensor (Binär)",
 					"order": "Zonenreihenfolge"
 				}
 			},
@@ -219,14 +215,13 @@
 					"water_max": "Maximale Bewässerungsdauer/-menge",
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Entities Card YAML generieren",
 					"zone_delay_max": "Maximale Zonenübergangsverzögerung",
 					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
-					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
 				}
 			}
 		}
@@ -256,32 +251,32 @@
 				"title": "Erweiterte Optionen",
 				"description": "",
 				"data": {
-					"sun":"Startzeit Optionen",
+					"start_type":"Startzeit Optionen",
 					"interlock": "Verhindern, dass Programme gleichzeitig laufen",
 					"rain_behaviour": "Regen Sensor Verhalten",
 					"min_sec": "Bewässerungszeit Einheit",
 					"water_max": "Maximale Bewässerungsdauer/-menge",
 					"water_step": "Zeit/Volumen Schritte",
 					"parallel": "Zonen gleichzeitig ausführen",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Entities Card YAML generieren",
 					"zone_delay_max": "Maximale Zonenübergangsverzögerung",
 					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
-					"vent": "Überdruck nach dem Stoppen der Pumpe ablassen",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
-					"terminate_on_latency": "Stop zone when zone switch latency is excesive"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
 				}
 			},
 			"update_program": {
 				"title": "Programmdaten",
 				"description": "Programmdaten aktualisieren",
 				"data": {
-					"program": "Programmname",
 					"freq": "Häufigkeit progammweit einstellen",
 					"freq_options": "Häufigkeitsauswahl auswählen oder definieren",
-					"controller_monitor": "Binärsensor als Monitor",
-					"device_type": "Schaltertyp"
+					"device_type": "Schaltertyp",
+					"flow_sensor": "Durchflusssensor",
+					"water_source_active": "Wasserquellensensor (Binär)",
+					"pump": "Pumpenschalter"
                 }
 			},
 			"add_zone": {
@@ -291,11 +286,8 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpenschalter",
-					"flow_sensor": "Durchflusssensor",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
-					"water_source_active": "Wasserquellensensor (Binär)",
 					"order": "Zonenreihenfolge"
 				}
 			},
@@ -306,11 +298,8 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"pump": "Pumpenschalter",
-					"flow_sensor": "Durchflusssensor",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
-					"water_source_active": "Wasserquellensensor (Binär)",
 					"order": "Zonenreihenfolge"
 				}
 			},
