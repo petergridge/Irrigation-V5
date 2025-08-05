@@ -1,6 +1,14 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?logo=homeassistantcommunitystore)](https://github.com/hacs/integration) [![my_badge](https://img.shields.io/badge/Home%20Assistant-Community-41BDF5.svg?logo=homeassistant)](https://community.home-assistant.io/t/irrigation-custom-component-with-custom-card/124370) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/hassfest.yml?branch=main&label=hassfest) ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/petergridge/Irrigation-V5/HACS.yml?branch=main&label=HACS)  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/petergridge/Irrigation-V5/latest/total) 
 
+
+## V2025.08.02
+### Breaking Change
+Pump, Water Source and Flow Meter definition have moved from the Zone configuration to the Program configuration to support better pump handling functionality.
+
+A migration will run to populate from the configuration from zone information however the configuration should should be checked.
+
+
 # IrrigationProgram Custom Component
 
 ### Can you help with a translation? Contact me!
@@ -516,9 +524,11 @@ This option opens one valve for three seconds after the pump has stop on program
 Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+
+### V2025.08.02
 ### Breaking Change
 Move Pump, Water Source and Flow Meter definition from the Zone to the Program.
-A migration will run to populate from the zone information but should be checked.
+A migration will run to populate from the zone information however configuration should should be checked.
 
 - Rewrite of the pump management
   - New option in the advanced setting to set a lead or lag time for starting the pump
