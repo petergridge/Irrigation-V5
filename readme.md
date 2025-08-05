@@ -516,6 +516,15 @@ This option opens one valve for three seconds after the pump has stop on program
 Enables a delay function to add a number of days before the next run of the program. 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+### Breaking Change
+Move Pump, Water Source and Flow Meter definition from the Zone to the Program.
+A migration will run to populate from the zone information but should be checked.
+
+- Rewrite of the pump management
+  - New option in the advanced setting to set a lead or lag time for starting the pump
+    - Negative values will start the pump before the zone starts
+    - Positive value will start the pump after the zone starts
+- Fix Issue #224, manual start of disabled program
 
 ### V2025.08.01
 - Prevent programs running concurrently is now binary, ON will prevent programs running concurrently, OFF will allow programs to run together
