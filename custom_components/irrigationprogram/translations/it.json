@@ -134,10 +134,10 @@
 	},
 	"config": {
 		"error": {
-			"zone_defined": "La zona specificata è già stata definita in questo programma di irrigazione",
+			"zone_defined": "L'interruttore zona è già stato definito in questo programma di irrigazione",
 			"mandatory": "Il campo richiesto non è stato riempito",
 			"zone_required": "Deve essere definita almeno una zona",
-			"invalid_days_group": "Le opzioni di frequenza nella lista sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
+			"invalid_days_group": "Le opzioni di frequenza sono Lun,Mar,Mer,Gio,Ven,Sab,Dom",
 			"invalid_option": "Le opzioni di frequenza devono essere numeriche o Lun,Mar,Mer,Gio,Ven,Sab,Dom",
 			"invalid_sensor": "Opzioni frequenza, il sensore indicato non è corretto oppure offline"
 		},
@@ -208,7 +208,7 @@
 				"description": "",
 				"title": "Opzioni avanzate",
 				"data": {
-					"sun": "Opzioni per gli orari di inizio",
+					"sun": "Opzioni per l'orario di inizio",
 					"interlock": "Evita che i programmi vengano eseguiti in parallelo",
 					"rain_behaviour": "Comportamento del sensore pioggia",
 					"min_sec": "Unità di tempo di irrigazione",
