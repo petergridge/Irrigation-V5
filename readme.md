@@ -521,7 +521,7 @@ Insert the generated yaml into a Manual Card.
 This option opens one valve for three seconds after the pump has stop on program completion to release presure from the system.
 
 ### Delay next run when rain detected
-Enables a delay function to add a number of days before the next run of the program. 
+Enables a delay function to add a number of days before the next run of the program. This feature is designed to be manually enabled, it is not currently related to the rain sensor.
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
