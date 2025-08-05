@@ -517,8 +517,8 @@ This setting enables the production of yaml to implement the equivalent to the c
 The yaml is generated on start and when a program configuration is created or modified.
 Insert the generated yaml into a Manual Card.
 
-### Vent exccess pressure after pump stop
-This option opens one valve for three seconds after the pump has stop on program completion to release presure from the system.
+### Vent excess pressure after pump stops
+This option stops the pump three seconds before the last zone completes or a zone enters eco mode.
 
 ### Delay next run when rain detected
 Enables a delay function to add a number of days before the next run of the program. This feature is designed to be manually enabled, it is not related to the rain sensor.
