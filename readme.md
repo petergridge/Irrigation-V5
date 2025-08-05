@@ -6,7 +6,7 @@
 ### Breaking Change
 Pump, Water Source and Flow Meter definition have moved from the Zone configuration to the Program configuration to support better pump handling functionality.
 
-A migration will run to populate from the configuration from zone information however the configuration should should be checked.
+A migration will run to populate from the configuration from zone information however the configuration should be checked.
 
 
 # IrrigationProgram Custom Component
