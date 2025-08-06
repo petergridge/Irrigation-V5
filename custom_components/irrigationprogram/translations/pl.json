@@ -8,13 +8,13 @@
 		},
 		"min_sec": {
 			"options": {
-				"minutes": "Minut",
-				"seconds": "Sekund"
+				"minutes": "Minuty",
+				"seconds": "Sekundy"
 			}
 		},
 		"start_type": {
 			"options": {
-				"selector":"Pojedynczy czas",
+				"selector":"Pojedynczy",
 				"multistart":"Wiele razy",
 				"sunrise":"czas przed/po wschodzie słońca (offset)",
 				"sunset":"czas przed/po zachodzie słońca (offset)"
@@ -176,7 +176,7 @@
 			},
 			"update_zone_data": {
 				"title": "Ustawienia strefy",
-				"description": "Aktualizacja strefy",
+				"description": "Edycja strefy",
 				"data": {
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
@@ -190,15 +190,15 @@
 				"title": "Ustawienia strefy",
 				"description": "",
 				"data": {
-					"zone": "Wybierz strefę do aktualizacji"
+					"zone": "Wybierz strefę do edycji"
 				}
 			},
 			"menu": {
 				"description": "",
 				"menu_options": {
-					"user": "Aktualizacja programu",
+					"user": "Edycja programu",
 					"add_zone": "Dodaj strefę",
-					"update_zone": "Aktualizacja strefy",
+					"update_zone": "Edycja strefy",
 					"delete_zone": "Usuń strefę",
 					"finalise": "Zastosuj",
 					"advanced": "Opcje zaawansowane"
@@ -213,9 +213,9 @@
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
 					"water_max": "Maksymalny czas podlewania/wartość",
-					"water_step": "Krok zmiany czasu podlewania",
+					"water_step": "Skok zmiany czasu podlewania",
 					"parallel": "Ilość stref jednocześnie",
-					"pump_delay": "Apply lead or lag time for pump starting",
+					"pump_delay": "Zastosuj wyprzedzenie lub opóźnienie startu pompy",
 					"card_yaml": "Generuj yaml karty Encje",
 					"zone_delay_max": "Maksymalna pauza między strefami",
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
@@ -239,8 +239,8 @@
 			"user": {
 				"description": "",
 				"menu_options": {
-					"update_program": "Aktualizacja programu",
-					"update_zone": "Aktualizacja strefy",
+					"update_program": "Edycja programu",
+					"update_zone": "Edycja strefy",
 					"delete_zone": "Usuń strefę",
 					"add_zone": "Dodaj strefę",
 					"finalise": "Zastosuj",
@@ -256,9 +256,9 @@
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
 					"water_max": "Maksymalny czas podlewania/wartość",
-					"water_step": "Krok zmiany czasu podlewania",
+					"water_step": "Skok zmiany czasu podlewania",
 					"parallel": "Ilość stref jednocześnie",
-					"pump_delay": "Apply lead or lag time for pump starting",
+					"pump_delay": "Zastosuj wyprzedzenie lub opóźnienie startu pompy",
 					"card_yaml": "Generuj yaml karty Encje",
 					"zone_delay_max": "Maksymalna pauza między strefami",
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
@@ -269,7 +269,7 @@
 			},
 			"update_program": {
 				"title": "Ustawienia programu",
-				"description": "Aktualizacja programu",
+				"description": "Edycja programu",
 				"data": {
 					"freq": "Włącz program według częstotliwości",
 					"freq_options": "Wybierz dni lub częstotliwość",
@@ -293,7 +293,7 @@
 			},
 			"update_zone_data": {
 				"title": "Ustawienia strefy",
-				"description": "Aktualizacja strefy",
+				"description": "Edycja strefy",
 				"data": {
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
@@ -314,7 +314,7 @@
 				"title": "Ustawienia strefy",
 				"description": "",
 				"data": {
-					"zone": "Wybierz strefę do aktualizacji"
+					"zone": "Wybierz strefę do edycji"
 				}
 			}
 		}
