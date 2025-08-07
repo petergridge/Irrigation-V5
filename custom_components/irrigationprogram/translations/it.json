@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Tempo",
+				"volume": "Volume"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minuti",
@@ -162,6 +168,7 @@
 					"zone": "Interruttore zona",
 					"freq": "La frequenza della zona sostituisce la frequenza del programma",
 					"eco": "Abilita la funzionalità Eco 'aspetta e ripeti'",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Sensore binario pioggia",
 					"order": "Ordine di esecuzione delle zone"
@@ -181,6 +188,7 @@
 					"zone": "Interruttore zona",
 					"freq": "La frequenza della zona sostituisce la frequenza del programma",
 					"eco": "Abilita la funzionalità Eco 'aspetta e ripeti'",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Sensore binario pioggia",
 					"order": "Ordine di esecuzione delle zone"
@@ -286,6 +294,7 @@
 					"zone": "Interruttore zona",
 					"freq": "La frequenza della zona sostituisce la frequenza del programma",
 					"eco": "Abilita la funzionalità Eco 'aspetta e ripeti'",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Sensore binario pioggia",
 					"order": "Ordine di esecuzione delle zone"
@@ -298,6 +307,7 @@
 					"zone": "Interruttore zona",
 					"freq": "La frequenza della zona sostituisce la frequenza del programma",
 					"eco": "Abilita la funzionalità Eco 'aspetta e ripeti'",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entità regolazione irrigazione",
 					"rain_sensor": "Sensore binario pioggia",
 					"order": "Ordine di esecuzione delle zone"

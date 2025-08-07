@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Temps",
+				"volume": "Volume"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minutes",
@@ -162,6 +168,7 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
 					"order": "Ordre de lancement de zone"
@@ -181,6 +188,7 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
 					"order": "Ordre de lancement de zone"
@@ -286,6 +294,7 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
 					"order": "Ordre de lancement de zone"
@@ -298,6 +307,7 @@
 					"zone": "Entité de commutateur de zone",
 					"freq": "La fréquence de zone remplace la fréquence du programme",
 					"eco": "Activer l'option ECO attente et répétition",
+					"watering_type": "Watering type",
 					"water_adjustment": "Entité d'ajustement de l'exécution",
 					"rain_sensor": "Entité de capteur de pluie",
 					"order": "Ordre de lancement de zone"

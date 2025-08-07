@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Tijd",
+				"volume": "Volume"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minutes",
@@ -162,6 +168,7 @@
 					"zone": "Zone schakelaar",
 					"freq": "Zone frequentie vervangt het programma frequentie",
 					"eco": "Zet wachten aan en herhaal de ECO funtie",
+					"watering_type": "Watering type",
 					"water_adjustment": "Looptijd aanpassing sensor",
 					"rain_sensor": "Regen binary sensor",
 					"order": "Zone run volgorde"
@@ -181,6 +188,7 @@
 					"zone": "Zone schakelaar",
 					"freq": "Zone frequentie vervangt het programma frequentie",
 					"eco": "Schakel wachten in, en herhaal eco functie",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor voor looptijdaanpassing",
 					"rain_sensor": "Regen binary sensor",
 					"order": "Zone run volgorde"
@@ -286,6 +294,7 @@
 					"zone": "Zone schakelaar",
 					"freq": "Zone frequentie vervangt programma frequentie",
 					"eco": "Schakel wachten in, en herhaal de eco optie",
+					"watering_type": "Watering type",
 					"water_adjustment": "Monitor binaire sensor",
 					"rain_sensor": "Regen binary sensor",
 					"order": "Zone start volgorde"
@@ -298,6 +307,7 @@
 					"zone": "Zone schakelaar",
 					"freq": "Zone frequentie vervangt programma frequentie",
 					"eco": "Schakel wachten in, en herhaal de eco optie",
+					"watering_type": "Watering type",
 					"water_adjustment": "Looptijd aanpassing sensor",
 					"rain_sensor": "Regen binari sensor",
 					"order": "Zone start volgorde"

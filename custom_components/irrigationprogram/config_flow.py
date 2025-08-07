@@ -40,6 +40,7 @@ from .const import (
     ATTR_WATER_MAX,
     ATTR_WATER_SOURCE,
     ATTR_WATER_STEP,
+    ATTR_WATER_TYPE,
     ATTR_ZONE,
     ATTR_ZONE_DELAY_MAX,
     ATTR_ZONE_ORDER,
@@ -133,6 +134,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
 
             if not errors:
                 # Input is valid, set data.
+                self._data[ATTR_PUMP] = None
+                self._data[ATTR_FLOW_SENSOR] = None
+                self._data[ATTR_WATER_SOURCE] = None
                 for attr in user_input:
                     self._data[attr] = user_input[attr]
                 self._data[ATTR_START_TYPE] = self._data.get(
@@ -156,7 +160,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             {
                 vol.Required(
                     CONF_NAME,
-                    description={"suggested_value": default_input.get(CONF_NAME, None)},
+                    description={"suggested_value": default_input.get(CONF_NAME)},
                 ): str,
                 vol.Optional(
                     "freq",
@@ -280,20 +284,25 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     "eco",
                     description={"suggested_value": default_input.get("eco", False)},
                 ): cv.boolean,
-                # vol.Optional(
-                #     ATTR_PUMP,
-                #     description={"suggested_value": default_input.get(ATTR_PUMP)},
-                # ): sel.EntitySelector(
-                #     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
-                # ),
-                # vol.Optional(
-                #     ATTR_FLOW_SENSOR,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
-                #     },
-                # ): sel.EntitySelector(
-                #     {"domain": ["sensor"], "exclude_entities": self._exclude}
-                # ),
+            }
+        )
+        if self._data.get(ATTR_FLOW_SENSOR, None):
+            schema = schema.extend(
+                {
+                    vol.Optional(
+                        ATTR_WATER_TYPE,
+                        default=default_input.get(ATTR_WATER_TYPE, "volume"),
+                    ): sel.SelectSelector(
+                        {
+                            "options": ["time", "volume"],
+                            "translation_key": ATTR_WATER_TYPE,
+                        }
+                    )
+                }
+            )
+
+        schema = schema.extend(
+            {
                 vol.Optional(
                     ATTR_WATER_ADJUST,
                     description={
@@ -316,17 +325,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "exclude_entities": self._exclude,
                     }
                 ),
-                # vol.Optional(
-                #     ATTR_WATER_SOURCE,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
-                #     },
-                # ): sel.EntitySelector(
-                #     {
-                #         "domain": ["binary_sensor", "input_boolean"],
-                #         "exclude_entities": self._exclude,
-                #     }
-                # ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
                     description={
@@ -473,20 +471,26 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     "eco",
                     description={"suggested_value": default_input.get("eco", False)},
                 ): cv.boolean,
-                # vol.Optional(
-                #     ATTR_PUMP,
-                #     description={"suggested_value": default_input.get(ATTR_PUMP)},
-                # ): sel.EntitySelector(
-                #     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
-                # ),
-                # vol.Optional(
-                #     ATTR_FLOW_SENSOR,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
-                #     },
-                # ): sel.EntitySelector(
-                #     {"domain": ["sensor"], "exclude_entities": self._exclude}
-                # ),
+            }
+        )
+
+        if self._data.get(ATTR_FLOW_SENSOR, None):
+            schema = schema.extend(
+                {
+                    vol.Optional(
+                        ATTR_WATER_TYPE,
+                        default=default_input.get(ATTR_WATER_TYPE, "volume"),
+                    ): sel.SelectSelector(
+                        {
+                            "options": ["time", "volume"],
+                            "translation_key": ATTR_WATER_TYPE,
+                        }
+                    )
+                }
+            )
+
+        schema = schema.extend(
+            {
                 vol.Optional(
                     ATTR_WATER_ADJUST,
                     description={
@@ -509,17 +513,6 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "exclude_entities": self._exclude,
                     }
                 ),
-                # vol.Optional(
-                #     ATTR_WATER_SOURCE,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
-                #     },
-                # ): sel.EntitySelector(
-                #     {
-                #         "domain": ["binary_sensor", "input_boolean"],
-                #         "exclude_entities": self._exclude,
-                #     }
-                # ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
                     description={
@@ -1251,20 +1244,26 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "eco",
                     description={"suggested_value": default_input.get("eco", False)},
                 ): cv.boolean,
-                # vol.Optional(
-                #     ATTR_PUMP,
-                #     description={"suggested_value": default_input.get(ATTR_PUMP)},
-                # ): sel.EntitySelector(
-                #     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
-                # ),
-                # vol.Optional(
-                #     ATTR_FLOW_SENSOR,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_FLOW_SENSOR)
-                #     },
-                # ): sel.EntitySelector(
-                #     {"domain": ["sensor"], "exclude_entities": self._exclude}
-                # ),
+            }
+        )
+
+        if self._data.get(ATTR_FLOW_SENSOR, None):
+            schema = schema.extend(
+                {
+                    vol.Optional(
+                        ATTR_WATER_TYPE,
+                        default=default_input.get(ATTR_WATER_TYPE, "volume"),
+                    ): sel.SelectSelector(
+                        {
+                            "options": ["time", "volume"],
+                            "translation_key": ATTR_WATER_TYPE,
+                        }
+                    )
+                }
+            )
+
+        schema = schema.extend(
+            {
                 vol.Optional(
                     ATTR_WATER_ADJUST,
                     description={
@@ -1287,17 +1286,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "exclude_entities": self._exclude,
                     }
                 ),
-                # vol.Optional(
-                #     ATTR_WATER_SOURCE,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_WATER_SOURCE)
-                #     },
-                # ): sel.EntitySelector(
-                #     {
-                #         "domain": ["binary_sensor", "input_boolean"],
-                #         "exclude_entities": self._exclude,
-                #     }
-                # ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
                     description={
@@ -1362,19 +1350,26 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "eco",
                     description={"suggested_value": default_input.get("eco", False)},
                 ): cv.boolean,
-                # vol.Optional(
-                #     ATTR_PUMP, description=default_input.get(ATTR_PUMP, None)
-                # ): sel.EntitySelector(
-                #     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
-                # ),
-                # vol.Optional(
-                #     ATTR_FLOW_SENSOR,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_FLOW_SENSOR, None)
-                #     },
-                # ): sel.EntitySelector(
-                #     {"domain": ["sensor"], "exclude_entities": self._exclude}
-                # ),
+            }
+        )
+
+        if self._data.get(ATTR_FLOW_SENSOR, None):
+            schema = schema.extend(
+                {
+                    vol.Optional(
+                        ATTR_WATER_TYPE,
+                        default=default_input.get(ATTR_WATER_TYPE, "volume"),
+                    ): sel.SelectSelector(
+                        {
+                            "options": ["time", "volume"],
+                            "translation_key": ATTR_WATER_TYPE,
+                        }
+                    )
+                }
+            )
+
+        schema = schema.extend(
+            {
                 vol.Optional(
                     ATTR_WATER_ADJUST,
                     description={
@@ -1397,17 +1392,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "exclude_entities": self._exclude,
                     }
                 ),
-                # vol.Optional(
-                #     ATTR_WATER_SOURCE,
-                #     description={
-                #         "suggested_value": default_input.get(ATTR_WATER_SOURCE, None)
-                #     },
-                # ): sel.EntitySelector(
-                #     {
-                #         "domain": ["binary_sensor", "input_boolean"],
-                #         "exclude_entities": self._exclude,
-                #     }
-                # ),
                 vol.Optional(
                     ATTR_ZONE_ORDER,
                     description={

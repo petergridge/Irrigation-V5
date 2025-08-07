@@ -133,7 +133,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._extra_attrs[ATTR_ENABLE_ZONE] = self._zonedata.enabled.entity_id
         if self._zonedata.frequency is not None:
             self._extra_attrs[ATTR_RUN_FREQ] = self._zonedata.frequency.entity_id
-        if self._programdata.flow_sensor is not None:
+        if self._zonedata.watering_type == "volume":
             self._extra_attrs[ATTR_FLOW_SENSOR] = self._programdata.flow_sensor
             self._extra_attrs[ATTR_HISTORICAL_FLOW] = self._hist_flow_rate
         if self._zonedata.adjustment is not None:
@@ -194,10 +194,17 @@ class Zone(SwitchEntity, RestoreEntity):
         return self._programdata.min_sec
 
     @property
+    def watering_type(self) -> str:
+        """Time or volume."""
+        if self._zonedata.watering_type:
+            return self._zonedata.watering_type
+        return "time"
+
+    @property
     def water(self) -> NumberEntity:
         """Water entity number."""
         # allow seconds alongside minutes
-        if self.flow_sensor:
+        if self.watering_type == "volume":
             return int(self._zonedata.water.value)
 
         if self.measurement == "seconds":
@@ -987,7 +994,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 self._zonedata.default_run_time.set_value(self._default_run_time)
                 return 0
 
-        if self.flow_sensor is None:
+        if self.watering_type == "time":
             water = self.water
             run_time = (water * adjust * self.repeat) + (wait * (self.repeat - 1))
         else:

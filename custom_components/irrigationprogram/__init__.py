@@ -89,6 +89,7 @@ class IrrigationZoneData:
     name: str
     config: SwitchEntity  # generated object
     eco: bool
+    watering_type: str
     water: NumberEntity  # generated object
     wait: NumberEntity  # generated object
     repeat: NumberEntity  # generated object
@@ -225,6 +226,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             name=zone.get(ATTR_ZONE).split(".")[1],
             config=None,
             eco=zone.get("eco"),
+            watering_type=zone.get("watering_type"),
             water=None,
             wait=None,
             repeat=None,

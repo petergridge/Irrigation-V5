@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Zeit",
+				"volume": "Volumen"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minuten",
@@ -162,6 +168,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
+					"watering_type": "Watering type",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -181,6 +188,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
+					"watering_type": "Watering type",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -286,6 +294,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
+					"watering_type": "Watering type",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -298,6 +307,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
+					"watering_type": "Watering type",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"

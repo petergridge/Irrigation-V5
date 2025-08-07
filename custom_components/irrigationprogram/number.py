@@ -83,7 +83,7 @@ async def async_setup_entry(
             unique_id,
             p.name,
             zone.name,
-            p.flow_sensor,
+            zone.watering_type,
             p.water_max,
             p.water_step,
             p.min_sec,
@@ -150,7 +150,7 @@ class Water(RestoreNumber):
         unique_id,
         pname,
         zone_name,
-        flow_sensor=None,
+        watering_type,
         water_max=1,
         step=30,
         min_sec="minutes",
@@ -160,7 +160,7 @@ class Water(RestoreNumber):
         self._attr_native_max_value = water_max
         self._attr_native_step = step
         self._attr_native_min_value = step
-        if flow_sensor:
+        if watering_type == "volume":
             self._attr_device_class = NumberDeviceClass.VOLUME
             self._attr_native_unit_of_measurement = "L"
             self._attr_translation_key = "volume"

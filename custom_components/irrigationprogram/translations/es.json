@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Tiempo",
+				"volume": "Volumen"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minutes",
@@ -162,6 +168,7 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
 					"order": "Orden de ejecución de zona"
@@ -181,6 +188,7 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
 					"order": "Orden de ejecución de zona"
@@ -286,6 +294,7 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
 					"order": "Orden de ejecución de zona"
@@ -298,6 +307,7 @@
 					"zone": "Interruptor de Zona",
 					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
 					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste de tiempo de riego",
 					"rain_sensor": "Sensor binario de lluvia",
 					"order": "Orden de ejecución de zona"

@@ -6,6 +6,12 @@
 				"rainbird": "RainBird"
 			}
 		},
+		"watering_type":{
+			"options":{
+				"time": "Tempo",
+				"volume": "Volume"
+			}
+		},
 		"min_sec": {
 			"options": {
 				"minutes": "Minutos",
@@ -162,6 +168,7 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
 					"order": "Ordem de execução da zona"
@@ -181,6 +188,7 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
 					"order": "Ordem de execução da zona"
@@ -286,6 +294,7 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
 					"order": "Ordem de execução da zona"
@@ -298,6 +307,7 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
 					"order": "Ordem de execução da zona"
