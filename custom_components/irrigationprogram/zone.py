@@ -506,6 +506,15 @@ class Zone(SwitchEntity, RestoreEntity):
             self._last_status = self._status
             self._status = CONST_PAUSED
             if self._last_status == CONST_ON:
+                if self.pump:
+                    event_data = {
+                        "action": "turn_off_pump",
+                        "device_id": self.solenoid,
+                        "pump": self.pump,
+                        "program": self._programdata.switch.entity_id,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
+                    await asyncio.sleep(3)
                 await self.async_solenoid_turn_off()
                 await self.check_is_off()
             await self.status.set_value(self._status)
