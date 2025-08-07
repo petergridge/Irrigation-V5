@@ -36,6 +36,10 @@ class PumpClass:
 
     async def handle_event(self, event):
         """Inspect irrigation events."""
+
+        if self._program.entity_id != event.data.get("program"):
+            return
+
         if event.data.get("action") == "turn_on_pump":
             delay = int(event.data.get("delay"))
             await asyncio.sleep(delay)

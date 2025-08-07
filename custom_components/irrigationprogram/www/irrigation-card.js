@@ -6,7 +6,7 @@ class IrrigationCard extends HTMLElement {
     if (!cardConfig.card) cardConfig.card = {};
     if (!cardConfig.card.type) cardConfig.card.type = "entities";
     if (!cardConfig.entities_vars)
-       cardConfig.entities_vars = { type: "entity" };
+      cardConfig.entities_vars = { type: "entity" };
     const element = document.createElement('hui-entities-card');
     this._config = JSON.parse(JSON.stringify(cardConfig));
     customElements.whenDefined("card-mod").then(() => {
@@ -16,6 +16,8 @@ class IrrigationCard extends HTMLElement {
     });
     this.appendChild(element);
   }
+
+
 
   set hass(hass) {
     const config = this._config;
@@ -33,6 +35,10 @@ class IrrigationCard extends HTMLElement {
     let zones = [];
     let entities = [];
 
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     const x = hass.states[config.program];
     if (!x) {
       validconfig == "invalid";
@@ -46,7 +52,19 @@ class IrrigationCard extends HTMLElement {
     }
 
     if (validconfig === "valid") {
-      if (!hass.states[config.program].attributes["zones"]) {
+      let found = false;
+      for (let i = 0; i < 5; i++) {
+        // try a few times for the program to be ready
+        // Sometimes the card tries before the program is full loaded
+        if (!hass.states[config.program].attributes["zones"]) {
+          sleep(500);
+        } else {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
         doErrors.push({
           type: "section",
           label: "Program: not v2024.11 or newer irriation component",
@@ -122,10 +140,10 @@ class IrrigationCard extends HTMLElement {
           }
         });
 
-        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state: "on" }];
+        var condition = [{ entity: config.program, state_not: "on" }, { entity: showconfig, state_not: "on" }, { entity: programenabled, state: "on" }];
         add_simple_entity(config.program, condition, "start_time", entities);
         add_simple_entity(config.program, condition, "default_run_time", entities);
-        var condition = [{ entity: config.program, state_not: "on" },{ entity: showconfig, state_not: "on" },{ entity: programenabled, state_not: "on" }];
+        var condition = [{ entity: config.program, state_not: "on" }, { entity: showconfig, state_not: "on" }, { entity: programenabled, state_not: "on" }];
         add_simple_entity(config.program, condition, "irrigation_on", entities);
         add_simple_entity(config.program, condition, "default_run_time", entities);
 
@@ -137,8 +155,8 @@ class IrrigationCard extends HTMLElement {
           add_entity(config.program, condition, "start_time", entities);
           add_entity(config.program, condition, "default_run_time", entities);
         }
-        add_entity(config.program,condition, "sunrise", entities);
-        add_entity(config.program,condition, "sunset", entities);
+        add_entity(config.program, condition, "sunrise", entities);
+        add_entity(config.program, condition, "sunset", entities);
 
         var condition = [{ entity: config.program, state: "on" }];
         add_entity(config.program, condition, "remaining", entities);
@@ -270,13 +288,13 @@ class IrrigationCard extends HTMLElement {
 
         let zonestatus = hass.states[zone].attributes["status"]
 
-        var condition = [{ entity: zonestatus, state: ["off"]}        ]
+        var condition = [{ entity: zonestatus, state: ["off"] }]
         add_entity(zone, condition, "next_run", entities)
 
-        condition = [{ entity: zonestatus, state_not: ["off", "on", "pending", "eco"]}        ]
+        condition = [{ entity: zonestatus, state_not: ["off", "on", "pending", "eco"] }]
         add_entity(zone, condition, "status", entities)
 
-        condition = [{ entity: zonestatus, state: ["on","eco","pending"]}        ]
+        condition = [{ entity: zonestatus, state: ["on", "eco", "pending"] }]
         add_entity(zone, condition, "remaining", entities)
 
         condition = [
@@ -316,7 +334,7 @@ class IrrigationCard extends HTMLElement {
   }
 
   getCardSize() {
-   return "getCardSize" in this.lastElementChild ? this.lastElementChild.getCardSize() : 1;
+    return "getCardSize" in this.lastElementChild ? this.lastElementChild.getCardSize() : 1;
   }
 }
 
@@ -417,16 +435,16 @@ class IrrigationCardEditor extends HTMLElement {
       select.remove(i);
     }
 
-		//if new card
-		if ( this._config.program.length == 0 ) {
-			let x = "           "
-			let newOption = new Option(x, x);
-			select.add(newOption);
-		}
+    //if new card
+    if (this._config.program.length == 0) {
+      let x = "           "
+      let newOption = new Option(x, x);
+      select.add(newOption);
+    }
 
     // populate the list of programs
     for (var x in this._hass.states) {
-      if (this._hass.states[x].attributes["attribution"] ==  "Irrigation Program") {
+      if (this._hass.states[x].attributes["attribution"] == "Irrigation Program") {
         var friendly_name = this._hass.states[x].attributes["friendly_name"];
         let newOption = new Option(friendly_name, x);
 
@@ -458,7 +476,7 @@ class IrrigationCardEditor extends HTMLElement {
       var friendly_name = this._hass.states[zone].attributes["friendly_name"];
       var zone_name = this._hass.states[zone].entity_id;
 
-      let newOption = new Option(friendly_name,zone_name);
+      let newOption = new Option(friendly_name, zone_name);
       if (entities.includes(zone_name)) {
         newOption.selected = true;
       }
@@ -479,7 +497,7 @@ class IrrigationCardEditor extends HTMLElement {
     }
   }
 
-  doUpdateHass() {}
+  doUpdateHass() { }
 
   doMessageForUpdate(changedEvent) {
     // Update values on change the event
@@ -490,9 +508,9 @@ class IrrigationCardEditor extends HTMLElement {
     if (changedEvent.target.id == "program") {
       // get the selected program
       var selected = this._elements.editor.querySelector("#program");
-			this._elements.entities.value = [];
-			newConfig.entities = [];
- 			newConfig.program = selected.value;
+      this._elements.entities.value = [];
+      newConfig.entities = [];
+      newConfig.program = selected.value;
     } else if (changedEvent.target.id == "entities") {
       // format the list of selected zones
       var selectedentities = [];
@@ -513,7 +531,7 @@ class IrrigationCardEditor extends HTMLElement {
       bubbles: true,
       composed: true,
     });
-		event.detail = { config: newConfig };
+    event.detail = { config: newConfig };
     this.dispatchEvent(event);
   }
 }

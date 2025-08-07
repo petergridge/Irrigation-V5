@@ -429,6 +429,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # set up to monitor these entities
             await self.set_up_entity_monitoring()
             # create pump class to start/stop pumps
+
             for pump, zones in pumps.items():
                 # pass pump_switch, list of zones, off_delay
                 pumpobj = PumpClass(self._hass, pump, zones, self)
@@ -874,6 +875,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # stop all running programs except the calling program
         if self._program.interlock:
             await async_stop_programs(self._hass, self)
+            if self._pumps:
+                await asyncio.sleep(1)
 
         # calculate the remaining time for the program
         # Monitor and start the zone with lead/lag time
