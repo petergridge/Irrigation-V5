@@ -130,9 +130,9 @@ The following items can be configured by adding the configuration using the code
 Support for [Card Mod](https://github.com/thomasloven/lovelace-card-mod).
 Allows you to apply CSS styles to various elements of the Home Assistant frontend.
 
-!\[image](https://user-images.githubusercontent.com/40281772/219922995-611c4fde-9f5f-48ba-8d5e-544149516704.png)
+<img alt="cardmod image" src="https://github.com/petergridge/Irrigation-V5/blob/main/cardmod.png">
 
-[more information can be found here](https://github.com/petergridge/Irrigation-V5/cardmod.md)
+[more information can be found here](https://github.com/petergridge/Irrigation-V5/blob/main/cardmod.md)
 
 
 # Important information[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
