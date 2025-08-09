@@ -950,7 +950,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_off_zone(self, **kwargs):
         """Turn the entity off."""
-        if self.flow_sensor and self._state == CONST_ON:
+        if self.watering_type == "volume" and self._state == CONST_ON:
             self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
             self._hist_flow_rate = self.flow_sensor
 
@@ -1027,7 +1027,7 @@ class Zone(SwitchEntity, RestoreEntity):
         else:
             adjust = self._water_adjust_prior
 
-        if self.flow_sensor is None:
+        if self.watering_type == "time":
             run_time = (self.water * adjust * repeats_remaining) + (
                 self.wait * (repeats_remaining - 1)
             )
@@ -1094,7 +1094,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             # track the watering
 
-            if self.flow_sensor is not None:
+            if self.watering_type == "volume":
                 volume_delivered = await self.volume(water_adjust_value, reps, last)
             else:
                 seconds_run = await self.time(
@@ -1153,6 +1153,7 @@ class Zone(SwitchEntity, RestoreEntity):
         # update last ran only on successful commpletion
         if not self._aborted:
             await self.last_ran.set_state(last_ran)
+        await self.remaining_time.set_value(0)
         await self.async_turn_off_zone()
 
     async def time(self, water_adjust_value, seconds_run, reps, last=None):

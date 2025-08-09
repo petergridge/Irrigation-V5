@@ -679,45 +679,41 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.items.append(item)
                 self.sum += item
 
-        if self.degree_of_parallel > 1:
-            if default_run_time:
-                remaining = [int(zone.switch.default_run_time) for zone in zones]
-            else:
-                remaining = [int(zone.remaining_time.numeric_value) for zone in zones]
-            streams = []
-            # create the streams
-            for _ in range(self.degree_of_parallel):
-                stream = Stream()
-                streams.append(stream)
-            for time in remaining:
-                # put the time in the stream with the lowest time
-                minstream = None
-                for stream in streams:
-                    if minstream is None:
-                        minstream = stream
-                    if minstream.sum > stream.sum:
-                        minstream = stream
-                minstream.append(time)
-            remaining_time = 0
+        if default_run_time:
+            remaining = [int(zone.switch.default_run_time) for zone in zones]
+        else:
+            remaining = [int(zone.remaining_time.numeric_value) for zone in zones]
+        streams = []
+        # create the streams
+        for _ in range(self.degree_of_parallel):
+            stream = Stream()
+            streams.append(stream)
+        for time in remaining:
+            # put the time in the stream with the lowest time
+            minstream = None
             for stream in streams:
-                # return the max stream time
-                remaining_time = max(remaining_time, stream.sum)
-            self._program_remaining = remaining_time
-        else:  # single stream with zone transitions
-            self._program_remaining = 0
-            for program_position, zone in enumerate(zones, 1):
-                if default_run_time:
-                    self._program_remaining += int(zone.switch.default_run_time)
-                else:
-                    self._program_remaining += int(zone.remaining_time.numeric_value)
+                if minstream is None:
+                    minstream = stream
+                if minstream.sum > stream.sum:
+                    minstream = stream
+            minstream.append(time)
+        remaining_time = 0
+        for stream in streams:
+            # return the max stream time
+            remaining_time = max(remaining_time, stream.sum)
+        self._program_remaining = remaining_time
 
-                # Add izd for the remaining zones
-                if program_position < len(zones):
-                    self._program_remaining += int(self.inter_zone_delay)
+        if self.degree_of_parallel == 1:
+            # add in the required zone transitions
+            remaining_zones = len([item for item in stream.items if item > 0])
+            if len([item for item in stream.items if item > 0]) > 1:
+                self._program_remaining += int(self.inter_zone_delay) * (
+                    remaining_zones - 1
+                )
 
-        # If there is an active izd add it to the total
-        if izd_remaining:
-            self._program_remaining += int(izd_remaining)
+            # If there is an active izd add it to the total
+            if izd_remaining:
+                self._program_remaining += int(izd_remaining)
 
         return self._program_remaining
 
