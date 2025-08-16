@@ -6,6 +6,7 @@
 				"rainbird": "RainBird"
 			}
 		},
+		
 		"min_sec": {
 			"options": {
 				"minutes": "Minuter",
@@ -261,62 +262,62 @@
 					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
 					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
-					"vent": "VSlipp ut overtrykk etter pumpestopp"
+					"vent": "Slipp ut overtrykk etter pumpestopp"
 				}
 			},
 			"update_program": {
 				"title": "Programdata",
 				"description": "Oppdater programmet",
 				"data": {
-					"program": "Enable program wide frequency",
-					"freq": "Enable program wide frequency",
-					"freq_options": "Select or add frequency options",
-					"controller_monitor": "Monitor controller binary sensor",
-					"device_type": "Controller type"
+					"program": "Aktiver programomfattende frekvens",
+					"freq": "Aktiver programomfattende frekvens",
+					"freq_options": "Velg eller legg til frekvensalternativer",
+					"controller_monitor": "Overvåk kontrollerens binærsensor",
+					"device_type": "Kontrollertype"
 				}
 			},
 			"add_zone": {
-				"title": "Zone Configuration",
-				"description": "Add zone",
+				"title": "Sonekonfigurasjon",
+				"description": "Legg til sone",
 				"data": {
-					"zone": "Zone switch",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
-					"water_adjustment": "Runtime adjustment sensor",
-					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
-					"order": "Zone run order"
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
 				}
 			},
 			"update_zone_data": {
-				"title": "Zone Configuration",
-				"description": "Update zone",
+				"title": "Sonekonfigurasjon",
+				"description": "Oppdater sone",
 				"data": {
-					"zone": "Zone switch",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
-					"water_adjustment": "Runtime adjustment sensor",
-					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
-					"order": "Zone run order"
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
 				}
 			},
 			"delete_zone": {
-				"title": "Zone Configuration",
+				"title": "Sonekonfigurasjon",
 				"description": "",
 				"data": {
-					"zone": "Select zone to delete"
+					"zone": "Velg sone som skal slettes"
 				}
 			},
 			"update_zone": {
-				"title": "Zone Configuration",
+				"title": "Sonekonfigurasjon",
 				"description": "",
 				"data": {
-					"zone": "Select zone to update"
+					"zone": "Velg sone som skal oppdateres"
 				}
 			}
 		}
