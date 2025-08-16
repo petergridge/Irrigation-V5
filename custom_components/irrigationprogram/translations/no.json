@@ -1,0 +1,324 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Generisk",
+				"rainbird": "RainBird"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "Minuter",
+				"seconds": "Sekunder"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Tidsvelger",
+				"multistart":"Flere Tider",
+				"sunrise":"Soloppgang med forskyvning",
+				"sunset":"Solnedgang med forskyvning"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Stop programmet",
+				"continue": "Fullfør programmet"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "Strengt - slå av andre programmer ved start, slå av når et annet program starter",
+				"loose": "Slapt -  slå av andre programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter",
+				"off": "Av - slå av bare andre 'strenge' programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"Sonestatus",
+				"state": {
+					"off": "Av",
+					"on": "På",
+					"disabled": "Deaktivert",
+					"pending": "Avventer",
+					"eco": "ØKO",
+					"program_disabled": "Programmet deaktivert",
+					"controller_disabled": "Kontroller deaktivert",
+					"unavailable": "Utilgjengelig",
+					"raining": "Regner",
+					"adjusted_off": "Justert av",
+					"no_water_source": "Ingen vannkilde tilgjengelig",
+					"zone_disabled": "Sone deaktivert",
+					"paused": "Program pauset"
+				}
+			},
+			"zone_next_run":{
+				"name":"Neste drift"
+			},
+			"zone_last_ran":{
+				"name":"Siste drift"
+			},
+			"remaining_time":{
+				"name":"Gjenstående tid"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Vanningstid"
+			},
+			"volume":{
+				"name":"Vanningsvolum"
+			},
+			"wait":{
+				"name":"Ventetid"
+			},
+			"repeat":{
+				"name":"Gjentakelser"
+			},
+			"inter_zone_delay":{
+				"name":"Soneovergang"
+			},
+			"sunrise_offset":{
+				"name":"Soloppgangsforskyvning"
+			},
+			"sunset_offset":{
+				"name":"Solnedgangsforskyvning"
+			},
+			"rain_delay_days":{
+				"name":"Regnforsinkelse"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Starttid"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Starttider"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignorer sensorer"
+			},
+			"enable_rain_delay":{
+				"name":"Aktiver regnforsinkelse"
+			},
+			"enable_program":{
+				"name":"Aktiver programmet"
+			},
+			"enable_zone":{
+				"name":"Aktiver sone"
+			},
+			"config":{
+				"name": "Innstillinger"
+			},
+			"zone":{
+				"name": "{zone_name}"
+			},
+			"pause":{
+				"name": "Pause"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Frekvens"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
+			"mandatory": "Required field not filled in",
+			"zone_required": "Påkrevd felt er ikke fylt ut",
+			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
+			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn"
+		},
+		"step": {
+			"user": {
+				"title": "Programdata",
+				"description": "Definer programmet",
+				"data": {
+					"name": "Navn",
+					"freq": "Aktiver programomfattende frekvens",
+					"freq_options": "Velg eller legg til frekvensalternativer",
+					"controller_monitor": "Overvåk kontrollerens binærsensor",
+					"device_type": "Kontrollertype"
+				}
+			},
+			"add_zone": {
+				"title": "Programmer Soner",
+				"description": "Sonekonfigurasjon",
+				"data": {
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
+				}
+			},
+			"delete_zone": {
+				"title": "Zone configuration",
+				"description": "",
+				"data": {
+					"zone": "Select zone to delete"
+				}
+			},
+			"update_zone_data": {
+				"title": "Zone configuration",
+				"description": "Update zone",
+				"data": {
+					"zone": "Zone switch",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Pump switch",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Runtime adjustment sensor",
+					"rain_sensor": "Rain binary sensor",
+					"water_source_active": "Water source binary sensor",
+					"order": "Zone run order"
+				}
+			},
+			"update_zone": {
+				"title": "Zone configuration",
+				"description": "",
+				"data": {
+					"zone": "Select zone to update"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Update program",
+					"add_zone": "Add zone",
+					"update_zone": "Update zone",
+					"delete_zone": "Delete zone",
+					"finalise": "Apply",
+					"advanced": "Advanced options"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Advanced Options",
+				"data": {
+					"start_type":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"min_sec": "Watering time unit",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution",
+					"card_yaml": "Enable creation of entities card yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"vent": "Vent excess pressure after pump stops"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "Zone switch is already defined in this irrigation program",
+			"mandatory": "Required field not filled in",
+			"zone_required": "At least one zone must be defined",
+			"invalid_days_group": "Frequency options must be mon,tue,wed,thu,fri,sat,sun",
+			"invalid_option": "Frequency option must be numeric or mon,tue,wed,thu,fri,sat,sun"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "Update program",
+					"update_zone": "Update zone",
+					"delete_zone": "Delete zone",
+					"add_zone": "Add zone",
+					"finalise": "Apply",
+					"advanced": "Advanced options"
+				}
+			},
+			"advanced": {
+				"title": "Advanced Options",
+				"description": "",
+				"data": {
+					"start_type":"Start time options",
+					"interlock": "Prevent programs running concurrently",
+					"rain_behaviour": "Rain sensor behaviour",
+					"min_sec": "Watering time unit",
+					"water_max": "Maximum watering time/volume",
+					"water_step": "Time/volume step",
+					"parallel": "Zone parallel execution",
+					"card_yaml": "Enable creation of entities card yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"vent": "Vent excess pressure after pump stops"
+				}
+			},
+			"update_program": {
+				"title": "Program Data",
+				"description": "Update program",
+				"data": {
+					"program": "Enable program wide frequency",
+					"freq": "Enable program wide frequency",
+					"freq_options": "Select or add frequency options",
+					"controller_monitor": "Monitor controller binary sensor",
+					"device_type": "Controller type"
+				}
+			},
+			"add_zone": {
+				"title": "Zone Configuration",
+				"description": "Add zone",
+				"data": {
+					"zone": "Zone switch",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Pump switch",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Runtime adjustment sensor",
+					"rain_sensor": "Rain binary sensor",
+					"water_source_active": "Water source binary sensor",
+					"order": "Zone run order"
+				}
+			},
+			"update_zone_data": {
+				"title": "Zone Configuration",
+				"description": "Update zone",
+				"data": {
+					"zone": "Zone switch",
+					"freq": "Zone frequency replaces program frequency",
+					"eco": "Enable wait and repeat eco feature",
+					"pump": "Pump switch",
+					"flow_sensor": "Flow sensor",
+					"water_adjustment": "Runtime adjustment sensor",
+					"rain_sensor": "Rain binary sensor",
+					"water_source_active": "Water source binary sensor",
+					"order": "Zone run order"
+				}
+			},
+			"delete_zone": {
+				"title": "Zone Configuration",
+				"description": "",
+				"data": {
+					"zone": "Select zone to delete"
+				}
+			},
+			"update_zone": {
+				"title": "Zone Configuration",
+				"description": "",
+				"data": {
+					"zone": "Select zone to update"
+				}
+			}
+		}
+	}
+}
