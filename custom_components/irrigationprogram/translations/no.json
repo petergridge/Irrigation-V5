@@ -1,0 +1,325 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Generisk",
+				"rainbird": "RainBird"
+			}
+		},
+		
+		"min_sec": {
+			"options": {
+				"minutes": "Minuter",
+				"seconds": "Sekunder"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"Tidsvelger",
+				"multistart":"Flere Tider",
+				"sunrise":"Soloppgang med forskyvning",
+				"sunset":"Solnedgang med forskyvning"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Stop programmet",
+				"continue": "Fullfør programmet"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "Strengt - slå av andre programmer ved start, slå av når et annet program starter",
+				"loose": "Slapt -  slå av andre programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter",
+				"off": "Av - slå av bare andre 'strenge' programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter"
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"Sonestatus",
+				"state": {
+					"off": "Av",
+					"on": "På",
+					"disabled": "Deaktivert",
+					"pending": "Avventer",
+					"eco": "ØKO",
+					"program_disabled": "Programmet deaktivert",
+					"controller_disabled": "Kontroller deaktivert",
+					"unavailable": "Utilgjengelig",
+					"raining": "Regner",
+					"adjusted_off": "Justert av",
+					"no_water_source": "Ingen vannkilde tilgjengelig",
+					"zone_disabled": "Sone deaktivert",
+					"paused": "Program pauset"
+				}
+			},
+			"zone_next_run":{
+				"name":"Neste drift"
+			},
+			"zone_last_ran":{
+				"name":"Siste drift"
+			},
+			"remaining_time":{
+				"name":"Gjenstående tid"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"Vanningstid"
+			},
+			"volume":{
+				"name":"Vanningsvolum"
+			},
+			"wait":{
+				"name":"Ventetid"
+			},
+			"repeat":{
+				"name":"Gjentakelser"
+			},
+			"inter_zone_delay":{
+				"name":"Soneovergang"
+			},
+			"sunrise_offset":{
+				"name":"Soloppgangsforskyvning"
+			},
+			"sunset_offset":{
+				"name":"Solnedgangsforskyvning"
+			},
+			"rain_delay_days":{
+				"name":"Regnforsinkelse"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"Starttid"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"Starttider"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"Ignorer sensorer"
+			},
+			"enable_rain_delay":{
+				"name":"Aktiver regnforsinkelse"
+			},
+			"enable_program":{
+				"name":"Aktiver programmet"
+			},
+			"enable_zone":{
+				"name":"Aktiver sone"
+			},
+			"config":{
+				"name": "Innstillinger"
+			},
+			"zone":{
+				"name": "{zone_name}"
+			},
+			"pause":{
+				"name": "Pause"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"Frekvens"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
+			"mandatory": "Påkrevd felt er ikke fylt ut",
+			"zone_required": "Minst én sone må være definert",
+			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
+			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn"
+		},
+		"step": {
+			"user": {
+				"title": "Programdata",
+				"description": "Definer programmet",
+				"data": {
+					"name": "Navn",
+					"freq": "Aktiver programomfattende frekvens",
+					"freq_options": "Velg eller legg til frekvensalternativer",
+					"controller_monitor": "Overvåk kontrollerens binærsensor",
+					"device_type": "Kontrollertype"
+				}
+			},
+			"add_zone": {
+				"title": "Programmer Soner",
+				"description": "Sonekonfigurasjon",
+				"data": {
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
+				}
+			},
+			"delete_zone": {
+				"title": "Sonekonfigurasjon",
+				"description": "",
+				"data": {
+					"zone": "Velg sone som skal slettes"
+				}
+			},
+			"update_zone_data": {
+				"title": "Sonekonfigurasjon",
+				"description": "Oppdater sone",
+				"data": {
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
+				}
+			},
+			"update_zone": {
+				"title": "Sonekonfigurasjon",
+				"description": "",
+				"data": {
+					"zone": "Velg sone som skal oppdateres"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Oppdater programmet",
+					"add_zone": "Legg til sone",
+					"update_zone": "Oppdater sone",
+					"delete_zone": "Slett sone",
+					"finalise": "Lagre",
+					"advanced": "Avanserte innstillinger"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Avanserte innstillinger",
+				"data": {
+					"start_type":"Alternativer for starttid",
+					"interlock": "Unngå parallell kjøring av programmer",
+					"rain_behaviour": "Regnsensorens oppførsel",
+					"min_sec": "Tidsenhet for vanning",
+					"water_max": "Maksimal vanningstid/-mengde",
+					"water_step": "Trinn for tid/volum",
+					"parallel": "Parallel kjøring av soner",
+					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
+					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
+					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
+					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
+					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
+					"vent": "Slipp ut overtrykk etter pumpestopp"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
+			"mandatory": "Påkrevd felt er ikke fylt ut",
+			"zone_required": "Minst én sone må være definert",
+			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
+			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "Oppdater programmet",
+					"update_zone": "Oppdater sone",
+					"delete_zone": "Slett sone",
+					"add_zone": "Legg til sone",
+					"finalise": "Lagre",
+					"advanced": "Avanserte innstillinger"
+				}
+			},
+			"advanced": {
+				"title": "Avanserte innstillinger",
+				"description": "",
+				"data": {
+					"start_type":"Alternativer for starttid",
+					"interlock": "Unngå parallell kjøring av programmer",
+					"rain_behaviour": "Regnsensorens oppførsel",
+					"min_sec": "Tidsenhet for vanning",
+					"water_max": "Maksimal vanningstid/-mengde",
+					"water_step": "Trinn for tid/volum",
+					"parallel": "Parallel kjøring av soner",
+					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
+					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
+					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
+					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
+					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
+					"vent": "Slipp ut overtrykk etter pumpestopp"
+				}
+			},
+			"update_program": {
+				"title": "Programdata",
+				"description": "Oppdater programmet",
+				"data": {
+					"program": "Aktiver programomfattende frekvens",
+					"freq": "Aktiver programomfattende frekvens",
+					"freq_options": "Velg eller legg til frekvensalternativer",
+					"controller_monitor": "Overvåk kontrollerens binærsensor",
+					"device_type": "Kontrollertype"
+				}
+			},
+			"add_zone": {
+				"title": "Sonekonfigurasjon",
+				"description": "Legg til sone",
+				"data": {
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
+				}
+			},
+			"update_zone_data": {
+				"title": "Sonekonfigurasjon",
+				"description": "Oppdater sone",
+				"data": {
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
+				}
+			},
+			"delete_zone": {
+				"title": "Sonekonfigurasjon",
+				"description": "",
+				"data": {
+					"zone": "Velg sone som skal slettes"
+				}
+			},
+			"update_zone": {
+				"title": "Sonekonfigurasjon",
+				"description": "",
+				"data": {
+					"zone": "Velg sone som skal oppdateres"
+				}
+			}
+		}
+	}
+}
