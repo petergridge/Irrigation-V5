@@ -132,8 +132,8 @@
 	"config": {
 		"error": {
 			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
-			"mandatory": "Required field not filled in",
-			"zone_required": "Påkrevd felt er ikke fylt ut",
+			"mandatory": "Påkrevd felt er ikke fylt ut",
+			"zone_required": "Minst én sone må være definert",
 			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
 			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn"
 		},
@@ -165,108 +165,108 @@
 				}
 			},
 			"delete_zone": {
-				"title": "Zone configuration",
+				"title": "Sonekonfigurasjon",
 				"description": "",
 				"data": {
-					"zone": "Select zone to delete"
+					"zone": "Velg sone som skal slettes"
 				}
 			},
 			"update_zone_data": {
-				"title": "Zone configuration",
-				"description": "Update zone",
+				"title": "Sonekonfigurasjon",
+				"description": "Oppdater sone",
 				"data": {
-					"zone": "Zone switch",
-					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
-					"pump": "Pump switch",
-					"flow_sensor": "Flow sensor",
-					"water_adjustment": "Runtime adjustment sensor",
-					"rain_sensor": "Rain binary sensor",
-					"water_source_active": "Water source binary sensor",
-					"order": "Zone run order"
+					"zone": "Sonebryter",
+					"freq": "Sonefrekvens erstatter programfrekvens",
+					"eco": "Aktiver vent-og-repeter økofunksjon",
+					"pump": "Pumpebryter",
+					"flow_sensor": "Flowsensor",
+					"water_adjustment": "Sensor for justering av driftstid",
+					"rain_sensor": "Binær Regnsensor",
+					"water_source_active": "Binær Vannkildesensor",
+					"order": "Sonekjørerekkefølge"
 				}
 			},
 			"update_zone": {
-				"title": "Zone configuration",
+				"title": "Sonekonfigurasjon",
 				"description": "",
 				"data": {
-					"zone": "Select zone to update"
+					"zone": "Velg sone som skal oppdateres"
 				}
 			},
 			"menu": {
 				"description": "",
 				"menu_options": {
-					"user": "Update program",
-					"add_zone": "Add zone",
-					"update_zone": "Update zone",
-					"delete_zone": "Delete zone",
-					"finalise": "Apply",
-					"advanced": "Advanced options"
+					"user": "Oppdater programmet",
+					"add_zone": "Legg til sone",
+					"update_zone": "Oppdater sone",
+					"delete_zone": "Slett sone",
+					"finalise": "Lagre",
+					"advanced": "Avanserte innstillinger"
 				}
 			},
 			"advanced": {
 				"description": "",
-				"title": "Advanced Options",
+				"title": "Avanserte innstillinger",
 				"data": {
-					"start_type":"Start time options",
-					"interlock": "Prevent programs running concurrently",
-					"rain_behaviour": "Rain sensor behaviour",
-					"min_sec": "Watering time unit",
-					"water_max": "Maximum watering time/volume",
-					"water_step": "Time/volume step",
-					"parallel": "Zone parallel execution",
-					"card_yaml": "Enable creation of entities card yaml",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"start_type":"Alternativer for starttid",
+					"interlock": "Unngå parallell kjøring av programmer",
+					"rain_behaviour": "Regnsensorens oppførsel",
+					"min_sec": "Tidsenhet for vanning",
+					"water_max": "Maksimal vanningstid/-mengde",
+					"water_step": "Trinn for tid/volum",
+					"parallel": "Parallel kjøring av soner",
+					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
+					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
+					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
+					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
+					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
+					"vent": "Slipp ut overtrykk etter pumpestopp"
 				}
 			}
 		}
 	},
  	"options": {
 		"error": {
-			"zone_defined": "Zone switch is already defined in this irrigation program",
-			"mandatory": "Required field not filled in",
-			"zone_required": "At least one zone must be defined",
-			"invalid_days_group": "Frequency options must be mon,tue,wed,thu,fri,sat,sun",
-			"invalid_option": "Frequency option must be numeric or mon,tue,wed,thu,fri,sat,sun"
+			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
+			"mandatory": "Påkrevd felt er ikke fylt ut",
+			"zone_required": "Minst én sone må være definert",
+			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
+			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn"
 		},
 		"step": {
 			"user": {
 				"description": "",
 				"menu_options": {
-					"update_program": "Update program",
-					"update_zone": "Update zone",
-					"delete_zone": "Delete zone",
-					"add_zone": "Add zone",
-					"finalise": "Apply",
-					"advanced": "Advanced options"
+					"update_program": "Oppdater programmet",
+					"update_zone": "Oppdater sone",
+					"delete_zone": "Slett sone",
+					"add_zone": "Legg til sone",
+					"finalise": "Lagre",
+					"advanced": "Avanserte innstillinger"
 				}
 			},
 			"advanced": {
-				"title": "Advanced Options",
+				"title": "Avanserte innstillinger",
 				"description": "",
 				"data": {
-					"start_type":"Start time options",
-					"interlock": "Prevent programs running concurrently",
-					"rain_behaviour": "Rain sensor behaviour",
-					"min_sec": "Watering time unit",
-					"water_max": "Maximum watering time/volume",
-					"water_step": "Time/volume step",
-					"parallel": "Zone parallel execution",
-					"card_yaml": "Enable creation of entities card yaml",
-					"zone_delay_max": "Maximum zone transition delay",
-					"rain_delay_on": "Delay the next run when rain detected",
-					"latency": "Wait time for slow responding (high latency) devices",
-					"start_latency": "Wait time for devices that load slowly on startup",
-					"vent": "Vent excess pressure after pump stops"
+					"start_type":"Alternativer for starttid",
+					"interlock": "Unngå parallell kjøring av programmer",
+					"rain_behaviour": "Regnsensorens oppførsel",
+					"min_sec": "Tidsenhet for vanning",
+					"water_max": "Maksimal vanningstid/-mengde",
+					"water_step": "Trinn for tid/volum",
+					"parallel": "Parallel kjøring av soner",
+					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
+					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
+					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
+					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
+					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
+					"vent": "VSlipp ut overtrykk etter pumpestopp"
 				}
 			},
 			"update_program": {
-				"title": "Program Data",
-				"description": "Update program",
+				"title": "Programdata",
+				"description": "Oppdater programmet",
 				"data": {
 					"program": "Enable program wide frequency",
 					"freq": "Enable program wide frequency",
