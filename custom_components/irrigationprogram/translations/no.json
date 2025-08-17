@@ -8,8 +8,8 @@
 		},
 		"watering_type":{
 			"options":{
-				"time": "Time",
-				"volume": "Volume"
+				"time": "Tid",
+				"volume": "Volum"
 			}
 		},
 		"min_sec": {
@@ -54,7 +54,7 @@
 					"controller_disabled": "Kontroller deaktivert",
 					"unavailable": "Utilgjengelig",
 					"raining": "Regner",
-					"adjusted_off": "Justert av",
+					"adjusted_off": "Justert 'av'",
 					"no_water_source": "Ingen vannkilde tilgjengelig",
 					"zone_disabled": "Sone deaktivert",
 					"paused": "Program pauset"
@@ -70,7 +70,7 @@
 				"name":"Gjenstående tid"
 			},
 			"default_run_time":{
-				"name":"Duration"
+				"name":"Varighet"
 			}
 		},
 		"number":{
@@ -145,7 +145,7 @@
 			"zone_required": "Minst én sone må være definert",
 			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
 			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Frekvensalternativet, den angitte sensoren er feil eller frakoblet"
 		},
 		"step": {
 			"user": {
@@ -156,9 +156,9 @@
 					"freq": "Aktiver programomfattende frekvens",
 					"freq_options": "Velg eller legg til frekvensalternativer",
 					"device_type": "Kontrollertype",
-					"flow_sensor": "Flow sensor",
-					"water_source_active": "Water source binary sensor",
-					"pump": "Pump switch"
+					"flow_sensor": "Flowsensor",
+					"water_source_active": "Binærsensor for vannkilde",
+					"pump": "Pumpebryter"
 				}
 			},
 			"add_zone": {
@@ -188,7 +188,7 @@
 					"zone": "Sonebryter",
 					"freq": "Sonefrekvens erstatter programfrekvens",
 					"eco": "Aktiver vent-og-repeter økofunksjon",
-					"watering_type": "Watering type",
+					"watering_type": "Vanningsmetode",
 					"water_adjustment": "Sensor for justering av driftstid",
 					"rain_sensor": "Binær Regnsensor",
 					"order": "Sonekjørerekkefølge"
@@ -223,13 +223,13 @@
 					"water_max": "Maksimal vanningstid/-mengde",
 					"water_step": "Trinn for tid/volum",
 					"parallel": "Parallel kjøring av soner",
-					"pump_delay": "Apply lead or lag time for pump starting",
+					"pump_delay": "Bruk for- eller etterslepstid ved oppstart av pumpe",
 					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
 					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
 					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
 					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av"
 				}
 			}
 		}
@@ -241,7 +241,7 @@
 			"zone_required": "Minst én sone må være definert",
 			"invalid_days_group": "Frekvensalternativer i listen må være man,tir,ons,tor,fre,lør,søn",
 			"invalid_option": "Frekvensalternativet må være numerisk eller man,tir,ons,tor,fre,lør,søn",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"invalid_sensor": "Frekvensalternativet, den angitte sensoren er feil eller frakoblet"
 		},
 		"step": {
 			"user": {
@@ -266,13 +266,13 @@
 					"water_max": "Maksimal vanningstid/-mengde",
 					"water_step": "Trinn for tid/volum",
 					"parallel": "Parallel kjøring av soner",
-					"pump_delay": "Apply lead or lag time for pump starting",
+					"pump_delay": "Bruk for- eller etterslepstid ved oppstart av pumpe",
 					"card_yaml": "Aktiver opprettelse av YAML for enhetskort",
 					"zone_delay_max": "Maksimal overgangsforsinkelse mellom soner",
 					"rain_delay_on": "Utsett neste kjøring ved oppdaget regn",
 					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av"
 				}
 			},
 			"update_program": {
@@ -283,8 +283,8 @@
 					"freq_options": "Velg eller legg til frekvensalternativer",
 					"device_type": "Kontrollertype",
 					"flow_sensor": "Flow sensor",
-					"water_source_active": "Water source binary sensor",
-					"pump": "Pump switch"
+					"water_source_active": "Binærsensor for vannkilde",
+					"pump": "Pumpebryter"
 				}
 			},
 			"add_zone": {
@@ -294,7 +294,7 @@
 					"zone": "Sonebryter",
 					"freq": "Sonefrekvens erstatter programfrekvens",
 					"eco": "Aktiver vent-og-repeter økofunksjon",
-					"watering_type": "Watering type",
+					"watering_type": "Vanningsmetode",
 					"water_adjustment": "Sensor for justering av driftstid",
 					"rain_sensor": "Binær Regnsensor",
 					"order": "Sonekjørerekkefølge"
@@ -307,7 +307,7 @@
 					"zone": "Sonebryter",
 					"freq": "Sonefrekvens erstatter programfrekvens",
 					"eco": "Aktiver vent-og-repeter økofunksjon",
-					"watering_type": "Watering type",
+					"watering_type": "Vanningsmetode",
 					"water_adjustment": "Sensor for justering av driftstid",
 					"rain_sensor": "Binær Regnsensor",
 					"order": "Sonekjørerekkefølge"
