@@ -8,7 +8,6 @@ Pump, Water Source and Flow Meter definition have moved from the Zone configurat
 
 A migration will run to populate the configuration from the zone information however the configuration should be checked.
 
-
 # IrrigationProgram Custom Component
 
 ### Can you help with a translation? Contact me!
@@ -17,8 +16,7 @@ Now more than in previous versions a translation will help users. Translations a
 
 Create a PR, contact me using the community link above, or raise and issue on GitHub, [tutorial](https://github.com/petergridge/Irrigation-V5/blob/main/translate.md).
 
-#### German, Spanish. French, Italian, Dutch, Polish and Portuguese translations are now available.
-
+#### German, Spanish, French, Italian, Dutch, Norwegian, Polish and Portuguese translations are now available.
 
 ## Experiencing issues with the custom card?
 
@@ -629,6 +627,10 @@ If you want to delay the start of the program for a number of days after the rai
 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+
+### V2025.08.02
+* Add Norwegian translation
+* Add Odd/Even run frequency, will run on odd or even numbered calendar days.
 
 ### V2025.08.02
 
