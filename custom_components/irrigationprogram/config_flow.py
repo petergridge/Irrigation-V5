@@ -50,7 +50,17 @@ from .const import (
 from .utils import bubble_sort
 
 OPTIONS_DAYS_GROUPED: list = ["Wed,Sat", "Thu,Sun"]
-OPTIONS_DAYS_OF_WEEK: list = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+OPTIONS_DAYS_OF_WEEK: list = [
+    "Odd",
+    "Even",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+]
 OPTIONS_DAYS: list = ["1", "2", "3", "4", "5"]
 
 _LOGGER = logging.getLogger(__name__)
@@ -1007,9 +1017,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ): cv.boolean,
                 vol.Required(
                     "freq_options",
-                    description={
-                        "suggested_value": default_input.get("freq_options", None)
-                    },
+                    description={"suggested_value": default_input.get("freq_options")},
                 ): sel.SelectSelector(
                     {
                         "options": OPTIONS_DAYS

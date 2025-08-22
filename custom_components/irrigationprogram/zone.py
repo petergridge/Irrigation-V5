@@ -1,7 +1,7 @@
 """Zone definition."""
 
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 import math
 
@@ -102,7 +102,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._status = CONST_OFF  # zone run status
         self._last_status = None
         self._stop = False
-        self._aborted = True
+        self._aborted = False
         self._scheduled = False
         self._hist_flow_rate = 1
         self._water_adjust_prior = 1
@@ -742,23 +742,30 @@ class Zone(SwitchEntity, RestoreEntity):
                 ) + timedelta(days=frq)
 
         except ValueError:
-            # Frq is days of week
-            string_freq = self.frequency
             string_freq = self.clean_up_string(self.frequency)
             v_last_ran = dt_util.as_local(dt_util.now()).replace(
                 hour=starthour, minute=startmin, second=00, microsecond=00
             )
-            today = v_last_ran.isoweekday()
-            v_next_run = v_last_ran + timedelta(days=100)  # arbitary max
-            for day in string_freq:
-                if self.get_weekday(day) == today and v_last_ran > dt_util.as_local(
-                    dt_util.now()
-                ):
-                    v_next_run = v_last_ran
-                else:
-                    v_next_run = min(
-                        self.get_next_dayofweek_datetime(v_last_ran, day), v_next_run
-                    )
+            day = v_last_ran.day
+
+            if self.frequency == "Odd" :
+                    v_next_run = self.get_next_odd_day(v_last_ran)
+            elif self.frequency == "Even" :
+                    v_next_run = self.get_next_even_day(v_last_ran)
+            else:
+                # Frq is days of week
+                today = v_last_ran.isoweekday()
+                v_next_run = v_last_ran + timedelta(days=100)  # arbitary max
+                for day in string_freq:
+                    if self.get_weekday(day) == today and v_last_ran > dt_util.as_local(
+                        dt_util.now()
+                    ):
+                        v_next_run = v_last_ran
+                    else:
+                        v_next_run = min(
+                            self.get_next_dayofweek_datetime(v_last_ran, day), v_next_run
+                        )
+
         if v_next_run is None:
             _LOGGER.debug(
                 "No next run calculated for %s. Your frequency may not be set correctly",
@@ -796,6 +803,34 @@ class Zone(SwitchEntity, RestoreEntity):
                 title="Irrigation Controller",
                 notification_id="irrigation_frequency",
             )
+
+    def get_next_even_day(self, start_date=None):
+        """Next even numbered day."""
+        if start_date is None:
+            start_date = datetime.today()
+        # today is odd and run time is in the future
+        if start_date.day % 2 == 0 and start_date > dt_util.as_local(
+                        dt_util.now()
+                    ):
+            return start_date
+        next_day = start_date + timedelta(days=1)
+        while next_day.day % 2 == 1:
+            next_day += timedelta(days=1)
+        return next_day
+
+    def get_next_odd_day(self, start_date=None):
+        """Next odd numbered day."""
+        if start_date is None:
+            start_date = datetime.today()
+        # today is odd and run time is in the future
+        if start_date.day % 2 == 1 and start_date > dt_util.as_local(
+                        dt_util.now()
+                    ):
+            return start_date
+        next_day = start_date + timedelta(days=1)
+        while next_day.day % 2 == 0:
+            next_day += timedelta(days=1)
+        return next_day
 
     def get_next_dayofweek_datetime(self, date_time, dayofweek):
         """Next date for the given day."""
@@ -946,6 +981,7 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_turn_off(self, **kwargs):
         """Toggle the entity."""
         self._aborted = True
+        _LOGGER.debug('zone turned off')
         await self.async_turn_off_zone()
 
     async def async_turn_off_zone(self, **kwargs):
@@ -1166,6 +1202,7 @@ class Zone(SwitchEntity, RestoreEntity):
             ):
                 self._stop = True
                 self._aborted = True
+                _LOGGER.debug('zone aborted, %s',self.get_status())
 
         if self._stop:
             return 0
@@ -1257,6 +1294,7 @@ class Zone(SwitchEntity, RestoreEntity):
             ):
                 self._stop = True
                 self._aborted = True
+                _LOGGER.debug('zone aborted, %s',self.get_status())
         if self._stop:
             return 0
 
@@ -1355,8 +1393,6 @@ class Zone(SwitchEntity, RestoreEntity):
                             "program": self.name,
                         }
                         self.hass.bus.async_fire("irrigation_event", event_data)
-                        self._stop = True
-                        self._aborted = True
                     break
             else:
                 zeroflowcount = 0

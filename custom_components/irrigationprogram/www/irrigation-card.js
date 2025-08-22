@@ -17,8 +17,6 @@ class IrrigationCard extends HTMLElement {
     this.appendChild(element);
   }
 
-
-
   set hass(hass) {
     const config = this._config;
     config.card.title = config.title;
@@ -35,10 +33,6 @@ class IrrigationCard extends HTMLElement {
     let zones = [];
     let entities = [];
 
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     const x = hass.states[config.program];
     if (!x) {
       validconfig == "invalid";
@@ -46,50 +40,28 @@ class IrrigationCard extends HTMLElement {
         type: "section",
         label: "Program: Select a program",
       });
-    } else {
-      validconfig = "valid";
-      console.log("valid program");
     }
 
-    if (validconfig === "valid") {
-      let found = false;
-      for (let i = 0; i < 5; i++) {
-        // try a few times for the program to be ready
-        // Sometimes the card tries before the program is full loaded
-        if (!hass.states[config.program].attributes["zones"]) {
-          sleep(500);
-        } else {
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        doErrors.push({
-          type: "section",
-          label: "Program: not v2024.11 or newer irriation component",
-        });
-        config.card.title = "ERROR: " + config.program;
-        validconfig = "invalid";
-        console.log("Invalid version");
-      }
-    }
-
-    if (validconfig === "valid") {
-      console.log("call doRenderProgram()");
-      config.card.entities = doRenderProgram(hass);
-      console.log("call setConfig");
-    } else {
+    if (!hass.states[config.program].attributes["zones"]) {
+      doErrors.push({
+        type: "section",
+        label: "Refresh screen (F5)",
+      });
+      config.card.title = "ERROR: " + config.program;
       config.card.entities = doErrors;
+    } else {
+      // console.log("call doRenderProgram()");
+      config.card.entities = doRenderProgram(hass);
+      // console.log(config.card.entities)
     }
-
+    // console.log("call setConfig");
     this.lastElementChild.setConfig(config.card);
     this.lastElementChild.hass = hass;
 
     // Functions
 
     function doRenderProgram(hass) {
-      console.log("doRenderProgram()");
+      // console.log("doRenderProgram()");
       // Build the Card
       if (config.show_program === true) {
         let showconfig = hass.states[config.program].attributes["show_config"]
@@ -347,7 +319,7 @@ class IrrigationCardEditor extends HTMLElement {
   // lifecycle
   constructor() {
     super();
-    console.log("editor:constructor()");
+    // console.log("editor:constructor()");
     this.doEditor();
     this.doStyle();
     this.doAttach();
@@ -356,19 +328,19 @@ class IrrigationCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    console.log("editor:setConfig()");
+    // console.log("editor:setConfig()");
     this._config = config;
     this.doUpdateConfig();
   }
 
   set hass(hass) {
-    console.log("editor.hass()");
+    // console.log("editor.hass()");
     this._hass = hass;
     this.doUpdateHass();
   }
 
   onChanged(event) {
-    console.log("editor.onChanged()");
+    // console.log("editor.onChanged()");
     this.doMessageForUpdate(event);
   }
 
@@ -458,7 +430,7 @@ class IrrigationCardEditor extends HTMLElement {
 
   doBuildEntityOptions(program, entities) {
     // build the list of zones in the program
-    console.log("do build entity options")
+    // console.log("do build entity options")
     //var zones = Number(this._hass.states[program].attributes["zone_count"]);
     var select = this._elements.editor.querySelector("#entities");
     //remove existing options
@@ -467,7 +439,7 @@ class IrrigationCardEditor extends HTMLElement {
     var i = 0;
 
     for (i = l; i >= 0; i--) {
-      console.log("do build entity options - remove")
+      // console.log("do build entity options - remove")
       select.remove(i);
     }
 
