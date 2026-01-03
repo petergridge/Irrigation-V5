@@ -126,7 +126,7 @@
 				"name": "Ustawienia"
 			},
 			"zone":{
-				"name": "{nazwa_strefy}"
+				"name": "{zone_name}"
 			},
 			"pause":{
 				"name": "Wstrzymano"
@@ -296,7 +296,7 @@
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
 					"watering_type": "Watering type",
 					"water_adjustment": "Sensor czasu pracy",
-					"rain_sensor": "RSensor deszczu",
+					"rain_sensor": "Sensor deszczu",
 					"order": "Kolejność uruchamiania stref"
 				}
 			},
