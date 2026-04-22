@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Name",
 					"freq": "Enable program wide frequency",
+					"repeat": "Repeat program, replaces zone ECO mode",
 					"freq_options": "Select or add frequency options",
 					"device_type": "Controller type",
 					"flow_sensor": "Flow sensor",
@@ -167,7 +168,7 @@
 				"data": {
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"eco": "Enable wait and repeat ECO feature",
 					"watering_type": "Watering type",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
@@ -187,7 +188,7 @@
 				"data": {
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"eco": "Enable wait and repeat ECO feature",
 					"watering_type": "Watering type",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
@@ -280,6 +281,7 @@
 				"description": "Update program",
 				"data": {
 					"freq": "Enable program wide frequency",
+					"repeat": "Repeat program, replaces zone ECO mode",
 					"freq_options": "Select or add frequency options",
 					"device_type": "Controller type",
 					"flow_sensor": "Flow sensor",
@@ -293,7 +295,7 @@
 				"data": {
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"eco": "Enable wait and repeat ECO feature",
 					"watering_type": "Watering type",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",
@@ -306,7 +308,7 @@
 				"data": {
 					"zone": "Zone switch",
 					"freq": "Zone frequency replaces program frequency",
-					"eco": "Enable wait and repeat eco feature",
+					"eco": "Enable wait and repeat ECO feature",
 					"watering_type": "Watering type",
 					"water_adjustment": "Runtime adjustment sensor",
 					"rain_sensor": "Rain binary sensor",

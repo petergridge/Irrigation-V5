@@ -132,6 +132,8 @@ class IrrigationProgram:
     frequency: Any|SelectEntity  # generated
     freq_options: list
     freq: bool
+    repeat: bool
+    repeats: Any|NumberEntity
     rain_behaviour: str  # stop|continue
     enabled: Any|SwitchEntity  # generated
     controller_type: str  # rainbird|generic
@@ -181,6 +183,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         frequency=None,
         freq_options=config.get("freq_options",[]),
         freq=config.get("freq",False),
+        repeat=config.get("repeat",False),
+        repeats=None,
         rain_behaviour=config.get(ATTR_RAIN_BEHAVIOUR, "stop"),
         enabled=None,
         controller_type=config.get(ATTR_DEVICE_TYPE,"Generic"),
@@ -316,6 +320,8 @@ def exclude(hass: HomeAssistant):
                 output.append(p.inter_zone_delay.entity_id)
             if p.frequency:
                 output.append(p.frequency.entity_id)
+            if p.repeat:
+                output.append(p.repeats.entity_id)
             zs: list[IrrigationZoneData] = i.zone_data
             for zone in zs:
                 z: IrrigationZoneData = zone

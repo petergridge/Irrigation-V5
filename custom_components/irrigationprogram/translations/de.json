@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Name",
 					"freq": "Häufigkeit progammweit einstellen",
+					"repeat": "Programm wiederholen, ersetzt Zonen-Eco-Modus",
 					"freq_options": "Häufigkeitsauswahl auswählen oder definieren",
 					"device_type": "Schaltertyp",
 					"flow_sensor": "Durchflusssensor",
@@ -168,7 +169,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"watering_type": "Watering type",
+					"watering_type": "Bewässerungstyp",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -188,7 +189,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"watering_type": "Watering type",
+					"watering_type": "Bewässerungstyp",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -280,6 +281,7 @@
 				"description": "Programmdaten aktualisieren",
 				"data": {
 					"freq": "Häufigkeit progammweit einstellen",
+					"repeat": "Programm wiederholen, ersetzt Zonen-Eco-Modus",
 					"freq_options": "Häufigkeitsauswahl auswählen oder definieren",
 					"device_type": "Schaltertyp",
 					"flow_sensor": "Durchflusssensor",
@@ -294,7 +296,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"watering_type": "Watering type",
+					"watering_type": "Bewässerungstyp",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"
@@ -307,7 +309,7 @@
 					"zone": "Zonenschalter",
 					"freq": "Zonenhäufigkeit ersetzt Programmhäufigkeit",
 					"eco": "Wiederholung mit Wartezeit ermöglichen (Eco Schaltung)",
-					"watering_type": "Watering type",
+					"watering_type": "Bewässerungstyp",
 					"water_adjustment": "Laufzeitanpassungssensor",
 					"rain_sensor": "Regensensor (Binär)",
 					"order": "Zonenreihenfolge"

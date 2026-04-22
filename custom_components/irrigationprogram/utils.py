@@ -1,6 +1,8 @@
 """Utils."""
 
 import asyncio
+from collections import Counter
+import heapq
 import logging
 
 from aiohttp import web
@@ -88,3 +90,44 @@ def bubble_sort(zones)->list:
     for n, zone in enumerate(zones):
         zone["order"] = (n + 1) * 10
     return zones
+
+
+
+
+
+
+def rearrange_list(lst):
+    """Interleave a list."""
+    # 1. Count frequencies
+    counts = Counter(lst)
+
+    # 2. Use a max-heap to manage items by frequency
+    # We use negative count to make it a max-heap
+    max_heap = [(-count, char) for char, count in counts.items()]
+    heapq.heapify(max_heap)
+
+    result = []
+    prev_count, prev_char = 0, ''
+
+    # 3. Interleave items
+    while max_heap:
+        count, char = heapq.heappop(max_heap)
+        result.append(char)
+
+        # If the previous char still has remaining counts, push it back
+        if prev_count < 0:
+            heapq.heappush(max_heap, (prev_count, prev_char))
+
+        # Update previous char and decrement its count
+        prev_count = count + 1
+        prev_char = char
+
+    # Check if a solution exists
+    if len(result) != len(lst):
+        return "No valid arrangement exists"
+    return result
+
+    # # Example Usage
+    # data = ['a', 'b', 1, 2, 'a', 'a', 2, 'c', 'c', 2]
+    # _LOGGER.debug(rearrange_list(data))
+    # # Output: ['a', 'c', 2, 'a', 'c', 2, 'a', 'b', 1]

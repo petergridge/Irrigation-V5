@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Naam",
 					"freq": "Hoe frequent moet het programma",
+					"repeat": "Herhaal programma, vervangt ECO-modus van de zone",
 					"freq_options": "Selecteer of voeg toe de  frequentie",
 					"device_type": "regelaar type",
 					"flow_sensor": "Stromings sensor",
@@ -280,6 +281,7 @@
 				"description": "Update programma",
 				"data": {
 					"freq": "Schakel programma frequentie in",
+					"repeat": "Herhaal programma, vervangt ECO-modus van de zone",
 					"freq_options": "Selecteer of voeg programma frequentie toe",
 					"device_type": "Controller soort",
 					"flow_sensor": "Flow sensor",

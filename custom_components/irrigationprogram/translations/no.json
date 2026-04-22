@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Navn",
 					"freq": "Aktiver programomfattende frekvens",
+					"repeat": "Gjenta program, erstatter sone ECO-modus",
 					"freq_options": "Velg eller legg til frekvensalternativer",
 					"device_type": "Kontrollertype",
 					"flow_sensor": "Flowsensor",
@@ -280,6 +281,7 @@
 				"description": "Oppdater programmet",
 				"data": {
 					"freq": "Aktiver programomfattende frekvens",
+					"repeat": "Gjenta program, erstatter sone ECO-modus",
 					"freq_options": "Velg eller legg til frekvensalternativer",
 					"device_type": "Kontrollertype",
 					"flow_sensor": "Flow sensor",

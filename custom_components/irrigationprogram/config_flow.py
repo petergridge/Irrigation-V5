@@ -175,6 +175,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     "freq",
                     description={"suggested_value": default_input.get("freq", True)},
                 ): cv.boolean,
+                vol.Optional(
+                    "repeat",
+                    description={"suggested_value": default_input.get("repeat", True)},
+                ): cv.boolean,
                 vol.Required(
                     "freq_options",
                     description={
@@ -773,6 +777,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if zone["freq"] is False:
                 # ensure program freq is enabled
                 newdata.update({"freq": True})
+            if newdata["repeat"] is True:
+                zone.update({"eco":False})
 
         newdata.update({ATTR_ZONES: sortedzones})
         localtimezone = ZoneInfo(self.hass.config.time_zone)
@@ -814,13 +820,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
-                if user_input[ATTR_START_TYPE] not in ["sunset"]:
+                if user_input[ATTR_START_TYPE] != "sunset":
                     await self.get_er("number", slugify(f"{self._uid}_sunset_offset"))
-                if user_input[ATTR_START_TYPE] not in ["sunrise"]:
+                if user_input[ATTR_START_TYPE] != "sunrise":
                     await self.get_er("number", slugify(f"{self._uid}_sunrise_offset"))
-                if user_input[ATTR_START_TYPE] in ["multistart"]:
+                if user_input[ATTR_START_TYPE] == "multistart":
                     await self.get_er("time", slugify(f"{self._uid}_start_time"))
-                if user_input[ATTR_START_TYPE] not in ["multistart"]:
+                if user_input[ATTR_START_TYPE] != "multistart":
                     await self.get_er("text", slugify(f"{self._uid}_start_times"))
                 if not user_input[ATTR_RAIN_DELAY]:
                     await self.get_er("number", slugify(f"{self._uid}_rain_delay_days"))
@@ -1042,6 +1048,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional(
                     "freq",
                     description={"suggested_value": default_input.get("freq", True)},
+                ): cv.boolean,
+                vol.Optional(
+                    "repeat",
+                    description={"suggested_value": default_input.get("repeat", False)},
                 ): cv.boolean,
                 vol.Required(
                     "freq_options",

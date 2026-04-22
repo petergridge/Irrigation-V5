@@ -145,7 +145,7 @@
 			"zone_required": "Au moins une zone doit être définie",
 			"invalid_days_group": "Les options de fréquence dans la liste doivent être Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_option": "Les options de fréquence dans la liste doivent être numeriques ou Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_sensor": "Option de fréquence, le capteur saisis est erroné ou déconnecté"
+			"invalid_sensor": "Options de fréquences, Le capteur saidi est erronee ou innaccessible"
 		},
 		"step": {
 			"user": {
@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Nom",
 					"freq": "Fréquence globale pour le programme",
+					"repeat": "Répéter le programme, remplace le mode ECO de la zone",
 					"freq_options": "Selectionner ou ajouter des options de fréquence",
 					"device_type": "Type de contrôleur",
 					"flow_sensor": "Entité de capteur de débit",
@@ -241,7 +242,7 @@
 			"zone_required": "Au moins une zone doit être définie",
 			"invalid_days_group": "Les options de fréquence dans la liste doivent être Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_option": "Les options de fréquence dans la liste doivent être numeriques ou Mon,Tue,Wed,Thu,Fri,Sat,Sun",
-			"invalid_sensor": "Option de fréquence, le capteur saisis est erroné ou déconnecté"
+			"invalid_sensor": "Option de fréquence, Le capteur saisis est erronné ou déconnecté"
 		},
 		"step": {
 			"user": {
@@ -280,6 +281,7 @@
 				"description": "Mettre à jour le programme",
 				"data": {
 					"freq": "Enable program wide frequency",
+					"repeat": "Répéter le programme, remplace le mode ECO de la zone",
 					"freq_options": "Select or add frequency options",
 					"device_type": "Type de contrôleur",
 					"flow_sensor": "Entité de capteur de débit",

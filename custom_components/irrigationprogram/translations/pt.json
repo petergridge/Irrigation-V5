@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Nome",
 					"freq": "Ativar o intervalo de rega do programa",
+					"repeat": "Repetir programa, substitui o modo ECO da zona",
 					"freq_options": "Selecione ou adicione opções do intervalo de rega",
 					"device_type": "Tipo de controlador",
 					"flow_sensor": "Sensor de fluxo",
@@ -280,6 +281,7 @@
 				"description": "Atualizar o programa",
 				"data": {
 					"freq": "Ativar o intervalo de rega do programa",
+					"repeat": "Repetir programa, substitui o modo ECO da zona",
 					"freq_options": "Selecione ou adicione opções do intervalo de rega",
 					"device_type": "Tipo de controlador",
 					"flow_sensor": "Sensor de fluxo",

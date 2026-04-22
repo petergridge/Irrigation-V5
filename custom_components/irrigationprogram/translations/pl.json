@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Nazwa",
 					"freq": "Włącz program według częstotliwości",
+					"repeat": "Powtórz program, zastępuje tryb ECO strefy",
 					"freq_options": "Wybierz dni lub częstotliwość",
 					"device_type": "Typ sterownika",
 					"flow_sensor": "Sensor przepływu",
@@ -280,6 +281,7 @@
 				"description": "Edycja programu",
 				"data": {
 					"freq": "Włącz program według częstotliwości",
+					"repeat": "Powtórz program, zastępuje tryb ECO strefy",
 					"freq_options": "Wybierz dni lub częstotliwość",
 					"device_type": "Typ sterownika",
 					"flow_sensor": "Sensor przepływu",

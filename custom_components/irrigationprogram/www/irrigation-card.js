@@ -143,6 +143,7 @@ class IrrigationCard extends HTMLElement {
         add_entity(config.program, condition, "irrigation_on", entities);
         add_entity(config.program, condition, "run_freq", entities);
         add_entity(config.program, condition, "inter_zone_delay", entities);
+        add_entity(config.program, condition, "repeats", entities);
         add_entity(config.program, condition, "enable_rain_delay", entities);
         add_entity(config.program, condition, "rain_delay_days", entities);
       }

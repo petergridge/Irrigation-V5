@@ -38,6 +38,19 @@ async def async_setup_entry(
         sensors.append(sensor)
         config_entry.runtime_data.program.rain_delay_days = sensor
 
+    if p.repeat:
+        sensor = InputNumberProgram(
+            unique_id,
+            p.name,
+            "repeat",
+            "",
+            10,
+            1,
+            1,
+        )
+        sensors.append(sensor)
+        config_entry.runtime_data.program.repeats = sensor
+
     # Inter Zone Delay for program
     if p.zone_count > 1 and p.parallel == 1:
         sensor = InputNumberProgram(

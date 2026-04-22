@@ -154,6 +154,7 @@
 				"data": {
 					"name": "Nome",
 					"freq": "Abilita la frequenza a livello del programma",
+					"repeat": "Ripeti programma, sostituisce la modalità ECO della zona",
 					"freq_options": "Seleziona o aggiungi le opzioni di frequenza",
 					"device_type": "Tipo controller",
 					"flow_sensor": "Sensore flusso",
@@ -280,6 +281,7 @@
 				"description": "Aggiorna programma irrigazione",
 				"data": {
 					"freq": "Abilita la frequenza a livello del programma",
+					"repeat": "Ripeti programma, sostituisce la modalità ECO della zona",
 					"freq_options": "Seleziona o aggiungi le opzioni di frequenza",
 					"device_type": "Tipo controller",
 					"flow_sensor": "Sensore flusso",

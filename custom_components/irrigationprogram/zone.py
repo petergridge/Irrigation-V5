@@ -64,7 +64,7 @@ from .const import (
     RAINBIRD_TURN_ON,
     TIME_STR_FORMAT,
 )
-from .globals import ZONES
+from .globals import REMAINING_ZONES, RUNNING_ZONES, ZONES
 
 VALID_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -477,11 +477,8 @@ class Zone(SwitchEntity, RestoreEntity):
             blocking=True,
         )
 
-
-
     async def prepare_to_run(self, scheduled=True):
         """Initialise the remaining time when the program is started."""
-
         self._scheduled = scheduled
         self._water_adjust_prior = self.adjustment
         self._remaining_time = await self.calc_run_time(
@@ -491,7 +488,7 @@ class Zone(SwitchEntity, RestoreEntity):
         self._status_sensor =self._status = CONST_PENDING
         self._state = CONST_ON
         await self.status_sensor_set()
-        self.async_schedule_update_ha_state()
+        # self.async_schedule_update_ha_state()
 
     async def should_run_ex(self, scheduled=True):
         """Determine if the zone should run."""
@@ -1066,8 +1063,8 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_solenoid_turn_off(self):
         """Turn on the zone."""
-
         # is it a valve or a switch
+        await asyncio.sleep(0)
         if self.controller_type == BHYVE:
             await self.hass.services.async_call(
                 BHYVE, "stop_watering", {ATTR_ENTITY_ID: self.solenoid}
@@ -1083,15 +1080,15 @@ class Zone(SwitchEntity, RestoreEntity):
             )
 
         # raise an event
-        state = CONST_OFF
-        if self._status == CONST_ECO:
-            state = CONST_ECO
+        # state = CONST_OFF
+        # if self._status == CONST_ECO:
+        #     state = CONST_ECO
 
         event_data = {
             "action": "zone_turned_off",
             "device_id": self.solenoid,
             "zone": self.name,
-            "state": state,
+            "state": self._state,
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
         check_state, _value = await self.check_switch_state()
@@ -1126,8 +1123,35 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_turn_off(self, **kwargs):
         """Toggle the entity."""
         self._aborted = True
-        _LOGGER.debug('zone turned off')
         await self.async_turn_off_zone()
+
+    async def async_turn_off_zone_natural(self, **kwargs):
+        """Turn the entity off."""
+        if self.watering_type == "volume" and self._state == CONST_ON:
+            self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
+            self._hist_flow_rate = self.flow_sensor
+
+        await self.async_solenoid_turn_off()
+        self._remaining_time = 0
+        await self.remaining_time_set()
+        await asyncio.sleep(0)
+        if self._zonedata in REMAINING_ZONES:
+            #set the remaining time to to allow it to restart when program loops
+            await self.prepare_to_run(scheduled=True)
+        else:
+            if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
+                self._status_sensor = CONST_OFF
+                await self.status_sensor_set()
+            self._state = CONST_OFF
+            self._status = CONST_OFF
+            self._stop = True
+            self._zone_manual_start = False
+
+        if self._zonedata in RUNNING_ZONES:
+            RUNNING_ZONES.remove(self._zonedata)
+
+        await self.check_is_off()
+        self.async_schedule_update_ha_state()
 
     async def async_turn_off_zone(self, **kwargs):
         """Turn the entity off."""
@@ -1140,6 +1164,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
         self._remaining_time = 0
         await self.remaining_time_set()
+
         if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
             self._status_sensor = CONST_OFF
             await self.status_sensor_set()
@@ -1246,6 +1271,7 @@ class Zone(SwitchEntity, RestoreEntity):
     async def async_turn_on_from_program(self, last=None):
         """Start the zone watering cycle."""
         self._state = self._status_sensor = self._status = CONST_ON
+
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
         self._stop = False
@@ -1334,7 +1360,7 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.sensor_last_ran_set()
         self._remaining_time = 0
         await self.remaining_time_set()
-        await self.async_turn_off_zone()
+        await self.async_turn_off_zone_natural()
 
     async def time(self, water_adjust_value:float, seconds_run:int, reps:int, last=None):
         """Track watering time based on time."""
@@ -1346,7 +1372,7 @@ class Zone(SwitchEntity, RestoreEntity):
             ):
                 self._stop = True
                 self._aborted = True
-                _LOGGER.debug('zone aborted, %s',self.get_status())
+                _LOGGER.debug('zone aborted, %s',await self.get_status())
 
         if self._stop:
             return 0

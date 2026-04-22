@@ -10,7 +10,6 @@ from homeassistant.components.sensor import (
     SensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util, slugify
@@ -375,7 +374,7 @@ class RemainingTime(SensorEntity):
         if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
-            rem = time(hour=hour, minute=minute, second=second)
+            rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
         self._state = rem
         self.async_schedule_update_ha_state()
 
@@ -428,7 +427,7 @@ class DefaultRunTime(SensorEntity):
         if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
-            rem = time(hour=hour, minute=minute, second=second)
+            rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
         self._state = rem
         self.async_schedule_update_ha_state()
 
