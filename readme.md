@@ -264,6 +264,8 @@ You can define a pump or master solenoid to be triggered with each zone. This va
 
 Configuring ECO mode on a zone will provision the wait and repeat options. This is used to limit run off by allowing for multiple short watering cycles to encourage the water to penetrate the soil. Ideal for pot plants.
 
+An alternative model is available to repeat the entire program, this has the benefit of shortening the over all run time.
+
 ### Next run behaviour
 
 The next run is set from the start time and frequency provided. Changing the start time forward will initialise a new run even if it has already run on that day.
@@ -444,6 +446,10 @@ The name you enter for the program is used to generate a recognisable switch ent
 ### Program wide frequency
 
 Selecting this provides the frequency of operation for all zones that do not have a zone frequency option defined. If you do not select this a zone frequency will be automatically created for each zone.
+
+### Program repeat
+
+Selecting this will provide the option to repeat the program cycle multiple times. The Zone level ECO mode is disabled when this option is selected.
 
 ### Frequency options
 
