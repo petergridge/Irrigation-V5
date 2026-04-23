@@ -1,0 +1,332 @@
+{
+  "selector": {
+    "device_type": {
+      "options": {
+        "generic": "Generické",
+        "rainbird": "RainBird"
+      }
+    },
+    "watering_type": {
+      "options": {
+        "time": "Čas",
+        "volume": "Objem"
+      }
+    },
+    "min_sec": {
+      "options": {
+        "minutes": "Minúty",
+        "seconds": "Sekundy"
+      }
+    },
+    "start_type": {
+      "options": {
+        "selector": "Výber času",
+        "multistart": "Viacero časov",
+        "sunrise": "Východ slnka s posunom",
+        "sunset": "Západ slnka s posunom"
+      }
+    },
+    "rain_behaviour": {
+      "options": {
+        "stop": "Zastaviť program",
+        "continue": "Povoliť dokončenie programu"
+      }
+    },
+    "interlock": {
+      "options": {
+        "strict": "Prísne - vypnúť ostatné programy pri štarte",
+        "loose": "Voľné - vypnúť všetky ostatné programy pri štarte, bežať ďalej pokiaľ nezačne 'prísny' program",
+        "off": "Vypnuté - vypnúť iba 'prísne' programy, bežať ďalej pokiaľ nezačne 'prísny' program"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "zone_status": {
+        "name": "Stav zóny",
+        "state": {
+          "off": "Vypnuté",
+          "on": "Zapnuté",
+          "disabled": "Zakázané",
+          "pending": "Čaká",
+          "eco": "EKO",
+          "program_disabled": "Program zakázaný",
+          "controller_disabled": "Riadiaca jednotka zakázaná",
+          "unavailable": "Nedostupné",
+          "raining": "Prší",
+          "adjusted_off": "Vypnuté (upravené)",
+          "no_water_source": "Nezistený zdroj vody",
+          "zone_disabled": "Zóna zakázaná",
+          "paused": "Program pozastavený"
+        }
+      },
+      "zone_next_run": {
+        "name": "Ďalšie spustenie"
+      },
+      "zone_last_ran": {
+        "name": "Posledné spustenie"
+      },
+      "remaining_time": {
+        "name": "Zostávajúci čas"
+      },
+      "default_run_time": {
+        "name": "Dĺžka trvania"
+      }
+    },
+    "number": {
+      "water": {
+        "name": "Čas zavlažovania"
+      },
+      "volume": {
+        "name": "Objem zavlažovania"
+      },
+      "wait": {
+        "name": "Čas čakania"
+      },
+      "repeat": {
+        "name": "Počet opakovaní"
+      },
+      "inter_zone_delay": {
+        "name": "Prechod medzi zónami"
+      },
+      "sunrise_offset": {
+        "name": "Posun východu slnka"
+      },
+      "sunset_offset": {
+        "name": "Posun západu slnka"
+      },
+      "rain_delay_days": {
+        "name": "Oneskorenie dažďa"
+      }
+    },
+    "time": {
+      "start_time": {
+        "name": "Čas spustenia"
+      }
+    },
+    "text": {
+      "start_times": {
+        "name": "Časy spustenia"
+      }
+    },
+    "switch": {
+      "ignore_sensor": {
+        "name": "Ignorovať senzory"
+      },
+      "enable_rain_delay": {
+        "name": "Povoliť oneskorenie dažďa"
+      },
+      "enable_program": {
+        "name": "Povoliť program"
+      },
+      "enable_zone": {
+        "name": "Povoliť zónu"
+      },
+      "config": {
+        "name": "Nastavenia"
+      },
+      "zone": {
+        "name": "{zone_name}"
+      },
+      "pause": {
+        "name": "Pozastaviť"
+      }
+    },
+    "select": {
+      "frequency": {
+        "name": "Frekvencia"
+      }
+    }
+  },
+  "config": {
+    "error": {
+      "zone_defined": "Zvolený prepínač zóny už je definovaný v tomto zavlažovacom programe",
+      "mandatory": "Povinné pole nie je vyplnené",
+      "zone_required": "Musí byť definovaná aspoň jedna zóna",
+      "invalid_days_group": "Možnosti frekvencie musia byť Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+      "invalid_option": "Možnosť frekvencie musí byť číslo alebo Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+      "invalid_sensor": "Možnosť frekvencie, zadaný senzor je nesprávny alebo offline"
+    },
+    "step": {
+      "user": {
+        "title": "Dáta programu",
+        "description": "Definuj program",
+        "data": {
+          "name": "Názov",
+          "freq": "Povoliť globálnu frekvenciu programu",
+          "freq_options": "Vyber alebo pridaj možnosti frekvencie",
+          "device_type": "Typ riadiacej jednotky",
+          "flow_sensor": "Senzor prietoku",
+          "water_source_active": "Binárny senzor zdroja vody",
+          "pump": "Prepínač čerpadla"
+        }
+      },
+      "add_zone": {
+        "title": "Zóny programu",
+        "description": "Konfigurácia zóny",
+        "data": {
+          "zone": "Prepínač zóny",
+          "freq": "Frekvencia zóny nahrádza frekvenciu programu",
+          "eco": "Povoliť ECO funkciu čakania a opakovania",
+          "watering_type": "Typ zavlažovania",
+          "water_adjustment": "Senzor úpravy času behu",
+          "rain_sensor": "Binárny senzor dažďa",
+          "order": "Poradie spúšťania zón"
+        }
+      },
+      "delete_zone": {
+        "title": "Konfigurácia zóny",
+        "description": "",
+        "data": {
+          "zone": "Vyber zónu na odstránenie"
+        }
+      },
+      "update_zone_data": {
+        "title": "Konfigurácia zóny",
+        "description": "Aktualizovať zónu",
+        "data": {
+          "zone": "Prepínač zóny",
+          "freq": "Frekvencia zóny nahrádza frekvenciu programu",
+          "eco": "Povoliť ECO funkciu čakania a opakovania",
+          "watering_type": "Typ zavlažovania",
+          "water_adjustment": "Senzor úpravy času behu",
+          "rain_sensor": "Binárny senzor dažďa",
+          "order": "Poradie spúšťania zón"
+        }
+      },
+      "update_zone": {
+        "title": "Konfigurácia zóny",
+        "description": "",
+        "data": {
+          "zone": "Vyber zónu na úpravu"
+        }
+      },
+      "menu": {
+        "description": "",
+        "menu_options": {
+          "user": "Upraviť program",
+          "add_zone": "Pridať zónu",
+          "update_zone": "Upraviť zónu",
+          "delete_zone": "Odstrániť zónu",
+          "finalise": "Použiť",
+          "advanced": "Pokročilé nastavenia"
+        }
+      },
+      "advanced": {
+        "description": "",
+        "title": "Pokročilé nastavenia",
+        "data": {
+          "start_type": "Možnosti času spustenia",
+          "interlock": "Zabrániť súbežnému spusteniu programov",
+          "rain_behaviour": "Správanie pri daždi",
+          "min_sec": "Jednotka času zavlažovania",
+          "water_max": "Maximálny čas/objem zavlažovania",
+          "water_step": "Krok času/objemu",
+          "parallel": "Paralelné spúšťanie zón",
+          "pump_delay": "Oneskorenie štartu čerpadla",
+          "card_yaml": "Povoliť vytvorenie YAML karty",
+          "zone_delay_max": "Maximálne oneskorenie medzi zónami",
+          "rain_delay_on": "Povoliť manuálne oneskorenie po daždi",
+          "latency": "Čas čakania pre pomalé zariadenia",
+          "start_latency": "Čas čakania pri štarte",
+          "pause_on_water_source": "Pozastaviť pri strate zdroja vody"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "zone_defined": "Zóna už existuje v programe",
+      "mandatory": "Povinné pole nie je vyplnené",
+      "zone_required": "Musí byť definovaná aspoň jedna zóna",
+      "invalid_days_group": "Možnosti musia byť mon,tue,wed,thu,fri,sat,sun",
+      "invalid_option": "Neplatná možnosť",
+      "invalid_sensor": "Senzor je nesprávny alebo offline"
+    },
+    "step": {
+      "user": {
+        "description": "",
+        "menu_options": {
+          "update_program": "Upraviť program",
+          "update_zone": "Upraviť zónu",
+          "delete_zone": "Odstrániť zónu",
+          "add_zone": "Pridať zónu",
+          "finalise": "Použiť",
+          "advanced": "Pokročilé nastavenia"
+        }
+      },
+      "advanced": {
+        "title": "Pokročilé nastavenia",
+        "description": "",
+        "data": {
+          "start_type": "Možnosti času spustenia",
+          "interlock": "Zabrániť súbežnému spusteniu programov",
+          "rain_behaviour": "Správanie pri daždi",
+          "min_sec": "Jednotka času zavlažovania",
+          "water_max": "Maximálny čas/objem zavlažovania",
+          "water_step": "Krok času/objemu",
+          "parallel": "Paralelné spúšťanie zón",
+          "pump_delay": "Oneskorenie štartu čerpadla",
+          "card_yaml": "Povoliť vytvorenie YAML karty",
+          "zone_delay_max": "Maximálne oneskorenie medzi zónami",
+          "rain_delay_on": "Povoliť manuálne oneskorenie po daždi",
+          "latency": "Čas čakania pre pomalé zariadenia",
+          "start_latency": "Čas čakania pri štarte",
+          "pause_on_water_source": "Pozastaviť pri strate zdroja vody"
+        }
+      },
+      "update_program": {
+        "title": "Dáta programu",
+        "description": "Upraviť program",
+        "data": {
+          "freq": "Povoliť globálnu frekvenciu programu",
+          "freq_options": "Vyber alebo pridaj možnosti frekvencie",
+          "device_type": "Typ riadiacej jednotky",
+          "flow_sensor": "Senzor prietoku",
+          "water_source_active": "Binárny senzor zdroja vody",
+          "pump": "Prepínač čerpadla"
+        }
+      },
+      "add_zone": {
+        "title": "Konfigurácia zóny",
+        "description": "Pridať zónu",
+        "data": {
+          "zone": "Prepínač zóny",
+          "freq": "Frekvencia zóny nahrádza frekvenciu programu",
+          "eco": "Povoliť ECO funkciu čakania a opakovania",
+          "watering_type": "Typ zavlažovania",
+          "water_adjustment": "Senzor úpravy času behu",
+          "rain_sensor": "Binárny senzor dažďa",
+          "order": "Poradie spúšťania zón"
+        }
+      },
+      "update_zone_data": {
+        "title": "Konfigurácia zóny",
+        "description": "Aktualizovať zónu",
+        "data": {
+          "zone": "Prepínač zóny",
+          "freq": "Frekvencia zóny nahrádza frekvenciu programu",
+          "eco": "Povoliť ECO funkciu čakania a opakovania",
+          "watering_type": "Typ zavlažovania",
+          "water_adjustment": "Senzor úpravy času behu",
+          "rain_sensor": "Binárny senzor dažďa",
+          "order": "Poradie spúšťania zón"
+        }
+      },
+      "delete_zone": {
+        "title": "Konfigurácia zóny",
+        "description": "",
+        "data": {
+          "zone": "Vyber zónu na odstránenie"
+        }
+      },
+      "update_zone": {
+        "title": "Konfigurácia zóny",
+        "description": "",
+        "data": {
+          "zone": "Vyber zónu na úpravu"
+        }
+      }
+    }
+  }
+}
