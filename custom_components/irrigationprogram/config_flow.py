@@ -777,7 +777,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if zone["freq"] is False:
                 # ensure program freq is enabled
                 newdata.update({"freq": True})
-            if newdata["repeat"] is True:
+            if newdata.get("repeat", False) is True:
                 zone.update({"eco":False})
 
         newdata.update({ATTR_ZONES: sortedzones})

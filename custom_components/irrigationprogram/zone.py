@@ -477,6 +477,7 @@ class Zone(SwitchEntity, RestoreEntity):
             blocking=True,
         )
 
+
     async def prepare_to_run(self, scheduled=True):
         """Initialise the remaining time when the program is started."""
         self._scheduled = scheduled
@@ -1122,7 +1123,8 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Toggle the entity."""
-        self._aborted = True
+        if self._remaining_time != 0:
+            self._aborted = True
         await self.async_turn_off_zone()
 
     async def async_turn_off_zone_natural(self, **kwargs):
@@ -1268,10 +1270,9 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, last=None):
+    async def async_turn_on_from_program(self, last=False):
         """Start the zone watering cycle."""
         self._state = self._status_sensor = self._status = CONST_ON
-
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
         self._stop = False
@@ -1306,6 +1307,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     water_adjust_value, seconds_run, reps, last
                 )
             # abort
+
             if self._stop:
                 break
 
@@ -1362,7 +1364,7 @@ class Zone(SwitchEntity, RestoreEntity):
         await self.remaining_time_set()
         await self.async_turn_off_zone_natural()
 
-    async def time(self, water_adjust_value:float, seconds_run:int, reps:int, last=None):
+    async def time(self, water_adjust_value:float, seconds_run:int, reps:int, last=False):
         """Track watering time based on time."""
         warning_issued = False
         if self._scheduled:
@@ -1372,7 +1374,6 @@ class Zone(SwitchEntity, RestoreEntity):
             ):
                 self._stop = True
                 self._aborted = True
-                _LOGGER.debug('zone aborted, %s',await self.get_status())
 
         if self._stop:
             return 0
@@ -1382,6 +1383,8 @@ class Zone(SwitchEntity, RestoreEntity):
         watertime = math.ceil(self.water * water_adjust_value)
         start_time = dt_util.now()
         end_time = dt_util.now() + timedelta(seconds=watertime)
+        if last and self._pump:
+            end_time += timedelta(seconds=3)
 
         while dt_util.now() < end_time:
             # if pump turn off when 3 seconds remaining
@@ -1464,7 +1467,6 @@ class Zone(SwitchEntity, RestoreEntity):
             ):
                 self._stop = True
                 self._aborted = True
-                _LOGGER.debug('zone aborted, %s',self.get_status())
         if self._stop:
             return 0
 

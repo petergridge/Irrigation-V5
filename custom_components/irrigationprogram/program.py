@@ -963,7 +963,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         return RUNNING_ZONES
 
-    async def zone_turn_on(self, zone, last=None):
+    async def zone_turn_on(self, zone, last=False):
         """Turn on the irrigation zone."""
         await zone.switch.set_scheduled(self._scheduled)
         # run in the event loop to support independant executions

@@ -4,24 +4,13 @@ import asyncio
 import logging
 
 from homeassistant.components.persistent_notification import async_create
-
-# from homeassistant.const import (
-#     ATTR_ENTITY_ID,
-#     SERVICE_CLOSE_VALVE,
-#     SERVICE_OPEN_VALVE,
-#     SERVICE_TURN_OFF,
-#     SERVICE_TURN_ON,
-# )
 from homeassistant.core import HomeAssistant
-
-# from homeassistant.helpers.event import async_track_state_change_event
-#from .const import CONST_OFF_DELAY, CONST_ON, CONST_OPEN, CONST_SWITCH
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class MonitorClass:
-    """Pump class."""
+    """Monitor class to track load time of a device and log if it exceeds start latency."""
 
     def __init__(self, hass: HomeAssistant, device,start_latency) -> None:  # noqa: D107
         self.hass = hass
@@ -31,7 +20,7 @@ class MonitorClass:
         hass.async_create_task(self.async_monitor())
 
     async def async_monitor(self):
-
+        """Monitor the load time of the device and log if it exceeds start latency."""
         msg = None
         loadtime = 0
 
