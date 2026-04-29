@@ -849,6 +849,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._program_remaining = remaining_time
             await self.remaining_time_set()
 
+        self.async_schedule_update_ha_state()
+
         return remaining_time
 
     async def pause_program_water_source(
@@ -909,17 +911,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await asyncio.sleep(1)
             return RUNNING_ZONES
 
-        await asyncio.sleep(1)
         await self.calculate_program_remaining(
             RUNNING_ZONES, REMAINING_ZONES
         )
+        await asyncio.sleep(1)
 
         if len(RUNNING_ZONES) < self.degree_of_parallel and len(REMAINING_ZONES) > 0:
             await self.zone_turn_on(REMAINING_ZONES[0], len(REMAINING_ZONES) == 1)
             RUNNING_ZONES.append(REMAINING_ZONES[0])
             del REMAINING_ZONES[0]
             return RUNNING_ZONES
-
 
         rzones = RUNNING_ZONES
         for running_zone in rzones:
