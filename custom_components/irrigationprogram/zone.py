@@ -1125,7 +1125,7 @@ class Zone(SwitchEntity, RestoreEntity):
         """Toggle the entity."""
         if self._remaining_time != 0:
             self._aborted = True
-        await self.async_turn_off_zone()
+        # await self.async_turn_off_zone()
 
     async def async_turn_off_zone_natural(self, **kwargs):
         """Turn the entity off."""
@@ -1155,33 +1155,9 @@ class Zone(SwitchEntity, RestoreEntity):
         await self.check_is_off()
         self.async_schedule_update_ha_state()
 
-    async def async_turn_off_zone(self, **kwargs):
-        """Turn the entity off."""
-        if self.watering_type == "volume" and self._state == CONST_ON:
-            self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
-            self._hist_flow_rate = self.flow_sensor
-
-        await self.async_solenoid_turn_off()
-        await self.check_is_off()
-
-        self._remaining_time = 0
-        await self.remaining_time_set()
-
-        if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
-            self._status_sensor = CONST_OFF
-            await self.status_sensor_set()
-        self._state = CONST_OFF
-        self._status = CONST_OFF
-        self._stop = True
-        self._zone_manual_start = False
-
-        self.async_schedule_update_ha_state()
-
     async def set_scheduled(self, scheduled: bool):
         """Set the scheduled state."""
         self._scheduled = scheduled
-
-
 
     async def calc_default_run_time(self):
         """Update the run time component."""

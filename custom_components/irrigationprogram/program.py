@@ -74,8 +74,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._stop = False
 
         self._program_remaining = 0
-        # self._program_default_run_time = 0
-
+        self._default_run_time = 0
 
         self._unsub_point_in_time = None
         self._unsub_start = None
@@ -86,10 +85,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._pumps = []
         self._run_zones = []  # list of zones to run
         self._running_zone: ZoneData | None = (
-            None  # []  # list of currently running zones
+            None  # list of currently running zones
         )
         self._extra_attrs = {}
-        self._default_run_time = 0
         self._localtimezone = ZoneInfo(self._hass.config.time_zone)
 
         PROGRAMS.update({self._name: self})
@@ -467,7 +465,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._paused:
             # don't process changes to when attributes change
             return
-        # self._program_default_run_time = 0
+
         for zone in self._zones:
             kwargs = {}
             kwargs["action"] = "update_next_run"
@@ -507,7 +505,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                         pumps[self._program.pump].append(zone)
 
             # Build Zone Attributes to support the custom card
-            self.hass.async_create_task(self.define_program_attributes())
+            # self.hass.async_create_task(await self.define_program_attributes())
+            await self.define_program_attributes()
+
             # create pump class to start/stop pumps
             for pump, zones in pumps.items():
                 # pass pump_switch, list of zones, off_delay
@@ -534,10 +534,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     async def set_up_entity_monitoring(self):
         """Set up to monitor these entities to change the next run data."""
 
-        def monitor_append(object, name=None):
-            if object not in monitor:
+        def monitor_append(object, name=None, table=None):
+            if object not in table:
                 try:
-                    monitor.append(object)
+                    table.append(object)
                 except AttributeError:
                     async_dismiss(self.hass, "irrigation_device_error1")
                     async_create(
@@ -549,46 +549,44 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         monitor = []
 
-        monitor_append(self._program.start_time.entity_id, "start_time")
+        monitor_append(self._program.start_time.entity_id, "start_time", monitor)
         if self._program.sunrise_offset:
-            monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset")
-            monitor_append("sensor.sun_next_rising", None)
+            monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset", monitor)
+            monitor_append("sensor.sun_next_rising", None, monitor)
         if self._program.sunset_offset:
-            monitor_append(self._program.sunset_offset.entity_id, "sunset_offset")
-            monitor_append("sensor.sun_next_setting", None)
-        monitor_append(self._program.enabled.entity_id, "enabled")
+            monitor_append(self._program.sunset_offset.entity_id, "sunset_offset", monitor)
+            monitor_append("sensor.sun_next_setting", None, monitor)
+        monitor_append(self._program.enabled.entity_id, "enabled", monitor)
         if self._program.rain_delay:
-            monitor_append(self._program.rain_delay.entity_id, "rain_delay")
-            monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days")
+            monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor)
+            monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days", monitor)
         if self._program.frequency:
-            monitor_append(self._program.frequency.entity_id, "frequency")
+            monitor_append(self._program.frequency.entity_id, "frequency", monitor)
         if self._program.inter_zone_delay:
-            monitor_append(self._program.inter_zone_delay.entity_id, "inter_zone_delay")
+            monitor_append(self._program.inter_zone_delay.entity_id, "inter_zone_delay", monitor)
         if self._program.repeats:
-            monitor_append(self._program.repeats.entity_id, "repeats")
+            monitor_append(self._program.repeats.entity_id, "repeats", monitor)
         if self._program.water_source:
-            monitor_append(self._program.water_source, "water_source")
+            monitor_append(self._program.water_source, "water_source", monitor)
 
         for zone in self._zones:
-            monitor_append(zone.switch.entity_id, "zone")
-            while zone.enabled.entity_id is None:
-                await asyncio.sleep(1)
-            monitor_append(zone.enabled.entity_id, "enabled")
+            monitor_append(zone.switch.entity_id, "zone", monitor)
+            monitor_append(zone.enabled.entity_id, "enabled", monitor)
             if zone.frequency:
-                monitor_append(zone.frequency.entity_id, "frequency")
+                monitor_append(zone.frequency.entity_id, "frequency", monitor)
             if zone.rain_sensor:
-                monitor_append(zone.rain_sensor, "rain_sensor")
+                monitor_append(zone.rain_sensor, "rain_sensor", monitor)
             if zone.ignore_sensors:
                 # possible problem
-                monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors")
+                monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors", monitor)
             if zone.adjustment:
-                monitor_append(zone.adjustment, "adjustment")
+                monitor_append(zone.adjustment, "adjustment", monitor)
             if zone.water:
-                monitor_append(zone.water.entity_id, "water")
+                monitor_append(zone.water.entity_id, "water", monitor)
             if zone.repeat:
-                monitor_append(zone.repeat.entity_id, "repeat")
+                monitor_append(zone.repeat.entity_id, "repeat", monitor)
             if zone.wait:
-                monitor_append(zone.wait.entity_id, "wait")
+                monitor_append(zone.wait.entity_id, "wait", monitor)
 
         self._unsub_monitor = async_track_state_change_event(
             self._hass, tuple(monitor), self.update_next_run
@@ -597,13 +595,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         monitor2 = []
 
         if self._program.water_source and self._program.water_source_pause:
-            monitor_append(self._program.water_source, "water_source")
+            monitor_append(self._program.water_source, "water_source", monitor2 )
         self._unsub_pause_water = async_track_state_change_event(
             self._hass, tuple(monitor2), self.pause_program_water_source
         )
 
         monitor3 = []
-        monitor_append(self._program.pause.entity_id, "pause")
+        monitor_append(self._program.pause.entity_id, "pause", monitor3 )
         self._unsub_pause = async_track_state_change_event(
             self._hass, tuple(monitor3), self.pause_program
         )
@@ -670,7 +668,8 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._running_zone = zone
             self._scheduled = False
             self._run_zones.append(zone)
-            self.hass.async_create_task(self.async_turn_on())
+            # self.hass.async_create_task(self.async_turn_on())
+            await self.async_turn_on()
         elif self._run_zones.count(zone) == 0:
             # program is running add the zone to the list to run
             self._run_zones.append(zone)
