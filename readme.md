@@ -221,7 +221,7 @@ Automate the watering season using inbuilt [calendar funtionality](https://githu
 
   * This will ignore the state of the Rain Sensor
   * Adjustment will default to one (1)
-  * Water source sensor will be ignored
+  * Water source sensor will continue to be honoured
 
 ### What is zone transition?
 
