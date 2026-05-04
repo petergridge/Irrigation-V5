@@ -177,7 +177,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 ): cv.boolean,
                 vol.Optional(
                     "repeat",
-                    description={"suggested_value": default_input.get("repeat", True)},
+                    description={"suggested_value": default_input.get("repeat", False)},
                 ): cv.boolean,
                 vol.Required(
                     "freq_options",
@@ -1259,7 +1259,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     zones[zone_pos] = zone_data
                 self._data = newdata
 
-                # remove the wait and repeate if ECO is disabled
+                # remove the wait and repeat if ECO is disabled
                 friendlyname = user_input[ATTR_ZONE].split(".")[1]
                 if user_input["eco"] is False:
                     await self.get_er(

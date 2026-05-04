@@ -20,7 +20,13 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.text import TextEntity
 from homeassistant.components.time import TimeEntity
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.const import ATTR_NAME, Platform
+from homeassistant.const import (
+    ATTR_NAME,
+    EVENT_HOMEASSISTANT_STARTED,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+    Platform,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 
@@ -47,7 +53,6 @@ from .const import (
     DOMAIN,
 )
 from .globals import QUEUEDPROGRAMS
-from .monitor import MonitorClass
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 PLATFORMS: list[str] = [
@@ -152,6 +157,7 @@ class IrrigationProgram:
     water_source_pause: bool = False
 
 
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up irrigation from a config entry."""
 
@@ -160,139 +166,171 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         config = entry.data
 
-    program = IrrigationProgram(
-        name=entry.title,
-        switch=None,
-        modified=config.get("updated",""),
-        pause=None,
-        rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
-        pump=config.get(ATTR_PUMP, None),
-        flow_sensor=config.get(ATTR_FLOW_SENSOR, None),
-        water_source=config.get(ATTR_WATER_SOURCE, None),
-        rain_delay=None,
-        rain_delay_days=None,
-        unique_id=entry.entry_id,
-        config=None,
-        start_time=None,
-        remaining_time=None,
-        default_run_time=None,
-        multitime=None,
-        sunrise_offset=None,
-        sunset_offset=None,
-        start_type=config.get(ATTR_START_TYPE, "selector"),
-        frequency=None,
-        freq_options=config.get("freq_options",[]),
-        freq=config.get("freq",False),
-        repeat=config.get("repeat",False),
-        repeats=None,
-        rain_behaviour=config.get(ATTR_RAIN_BEHAVIOUR, "stop"),
-        enabled=None,
-        controller_type=config.get(ATTR_DEVICE_TYPE,"Generic"),
-        inter_zone_delay=None,
-        interlock=config.get(ATTR_INTERLOCK, "strict"),
-        zone_count=len(config.get(ATTR_ZONES,0)),
-        min_sec=config.get(ATTR_MIN_SEC, "minutes"),
-        water_max=config.get("water_max", 30),
-        latency=int(config.get(ATTR_LATENCY, 5)),
-        start_latency=max(int(config.get(ATTR_START_LATENCY,60)), 60),
-        water_step=config.get("water_step", 1),
-        zone_delay_max=config.get("zone_delay_max", 120),
-        parallel=config.get("parallel", 1),
-        pump_delay=config.get("pump_delay", 1),
-        card_yaml=config.get("card_yaml", False),
-        water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
-    )
-    # check if dependant objects are ready
-    if program.flow_sensor:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(program.flow_sensor):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {program.flow_sensor} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
-    if program.water_source:
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(program.water_source):
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"Warning, {program.water_source} has not initialised before irrigation program, check your configuration"
-            _LOGGER.debug(msg)
+    TIMEOUT_SECONDS = max(int(config.get(ATTR_START_LATENCY,60)), 60)
+    REQUIRED_OBJECTS = []
 
-    zone_data = []
     for zone in config.get(ATTR_ZONES,[]):
-        z = IrrigationZoneData(
-            zone=zone.get(ATTR_ZONE),
+        REQUIRED_OBJECTS.append(zone.get(ATTR_ZONE))
+        if zone.get(ATTR_RAIN_SENSOR,None):
+            REQUIRED_OBJECTS.append(zone.get(ATTR_RAIN_SENSOR))
+        if zone.get(ATTR_WATER_ADJUST,None):
+            REQUIRED_OBJECTS.append(zone.get(ATTR_WATER_ADJUST))
+    if config.get(ATTR_FLOW_SENSOR, None):
+        REQUIRED_OBJECTS.append(config.get(ATTR_FLOW_SENSOR))
+    if config.get(ATTR_WATER_SOURCE, None):
+        REQUIRED_OBJECTS.append(config.get(ATTR_WATER_SOURCE))
+
+
+    async def _async_finish_setup(_event=None):
+        """Perform the actual setup logic after HA has started."""
+        try:
+            # Wait for all objects with a strict timeout
+            await asyncio.wait_for(_wait_for_objects(), timeout=TIMEOUT_SECONDS)
+        except asyncio.TimeoutError:
+            _LOGGER.warning(
+                "Timed out waiting for objects: %s, Proceeding with partial setup",
+                REQUIRED_OBJECTS
+            )
+
+        program = IrrigationProgram(
+            name=entry.title,
             switch=None,
-            type=zone.get(ATTR_ZONE).split(".")[0],
-            name=zone.get(ATTR_ZONE).split(".")[1],
+            modified=config.get("updated",""),
+            pause=None,
+            rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
+            pump=config.get(ATTR_PUMP, None),
+            flow_sensor=config.get(ATTR_FLOW_SENSOR, None),
+            water_source=config.get(ATTR_WATER_SOURCE, None),
+            rain_delay=None,
+            rain_delay_days=None,
+            unique_id=entry.entry_id,
             config=None,
-            eco=zone.get("eco"),
-            watering_type=zone.get("watering_type"),
-            water=None,
-            wait=None,
-            repeat=None,
-            frequency=None,
-            freq=zone.get("freq"),
-            ignore_sensors=None,
-            enabled=None,
-            status=None,
-            next_run=None,
-            last_ran=None,
+            start_time=None,
             remaining_time=None,
             default_run_time=None,
-            rain_sensor=zone.get(ATTR_RAIN_SENSOR),
-            adjustment=zone.get(ATTR_WATER_ADJUST),
-            flow_rate=None,
+            multitime=None,
+            sunrise_offset=None,
+            sunset_offset=None,
+            start_type=config.get(ATTR_START_TYPE, "selector"),
+            frequency=None,
+            freq_options=config.get("freq_options",[]),
+            freq=config.get("freq",False),
+            repeat=config.get("repeat",False),
+            repeats=None,
+            rain_behaviour=config.get(ATTR_RAIN_BEHAVIOUR, "stop"),
+            enabled=None,
+            controller_type=config.get(ATTR_DEVICE_TYPE,"Generic"),
+            inter_zone_delay=None,
+            interlock=config.get(ATTR_INTERLOCK, "strict"),
+            zone_count=len(config.get(ATTR_ZONES,0)),
+            min_sec=config.get(ATTR_MIN_SEC, "minutes"),
+            water_max=config.get("water_max", 30),
+            latency=int(config.get(ATTR_LATENCY, 5)),
+            start_latency=max(int(config.get(ATTR_START_LATENCY,60)), 60),
+            water_step=config.get("water_step", 1),
+            zone_delay_max=config.get("zone_delay_max", 120),
+            parallel=config.get("parallel", 1),
+            pump_delay=config.get("pump_delay", 1),
+            card_yaml=config.get("card_yaml", False),
+            water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
         )
+        # Report if any of the dependant objects haven't loaded,
+        # this could be due to a slow registering device or an incorrect entity id,
+        # the program will still be loaded but these features won't work until the objects are available
+        if program.flow_sensor:
+            state = hass.states.get(program.flow_sensor)
+            if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                msg = f"Warning, {program.flow_sensor} has not initialised before irrigation program, check your configuration"
+                _LOGGER.debug(msg)
+        if program.water_source:
+            state = hass.states.get(program.water_source)
+            if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                msg = f"Warning, {program.water_source} has not initialised before irrigation program, check your configuration"
+                _LOGGER.debug(msg)
 
-
-        # spawn a monitoring job to determine how long a switch has taken to load
-        MonitorClass(hass, z.zone, program.start_latency)
-
-        for _ in range(program.start_latency):
-            if not hass.states.async_available(z.zone): #name is no longer avaiable object is now loaded
-                break
-            await asyncio.sleep(1)
-        else:
-            msg = f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options."
-            _LOGGER.error(msg)
-            async_create(
-                hass,
-                message=msg,
-                title="Irrigation Controller",
-                notification_id="irrigation_device_error",
+        zone_data = []
+        for zone in config.get(ATTR_ZONES,[]):
+            z = IrrigationZoneData(
+                zone=zone.get(ATTR_ZONE),
+                switch=None,
+                type=zone.get(ATTR_ZONE).split(".")[0],
+                name=zone.get(ATTR_ZONE).split(".")[1],
+                config=None,
+                eco=zone.get("eco"),
+                watering_type=zone.get("watering_type"),
+                water=None,
+                wait=None,
+                repeat=None,
+                frequency=None,
+                freq=zone.get("freq"),
+                ignore_sensors=None,
+                enabled=None,
+                status=None,
+                next_run=None,
+                last_ran=None,
+                remaining_time=None,
+                default_run_time=None,
+                rain_sensor=zone.get(ATTR_RAIN_SENSOR),
+                adjustment=zone.get(ATTR_WATER_ADJUST),
+                flow_rate=None,
             )
-            continue
-        zone_data.append(z)
-        # check if dependant objects are ready
-        if z.adjustment:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.adjustment):
+
+            state = hass.states.get(z.zone)
+            if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                msg = f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options."
+                async_create(
+                    hass,
+                    message=msg,
+                    title="Irrigation Controller",
+                    notification_id="irrigation_device_error",
+                )
+                continue
+            zone_data.append(z)
+            # check if dependant objects are ready
+            if z.adjustment:
+                state = hass.states.get(z.adjustment)
+                if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                    msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
+                    _LOGGER.debug(msg)
+            if z.rain_sensor:
+                state = hass.states.get(z.rain_sensor)
+                if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                    msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
+                    _LOGGER.debug(msg)
+
+        entry.runtime_data = IrrigationData(program, zone_data)
+
+        # store an object for your platforms to access
+        hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
+
+        entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
+
+
+    async def _wait_for_objects():
+        """Wait until all target objects are actually in the state machine."""
+        while True:
+            all_loaded = True
+            for entity_id in REQUIRED_OBJECTS:
+                state = hass.states.get(entity_id)
+                # Check if state exists and isn't 'unknown' or 'unavailable'
+                if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                    all_loaded = False
                     break
-                await asyncio.sleep(1)
-            else:
-                msg = f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
-                _LOGGER.debug(msg)
-        if z.rain_sensor:
-            for _ in range(program.start_latency):
-                if not hass.states.async_available(z.rain_sensor):
-                    break
-                await asyncio.sleep(1)
-            else:
-                msg = f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
-                _LOGGER.debug(msg)
 
-    entry.runtime_data = IrrigationData(program, zone_data)
+            if all_loaded:
+                break
 
-    # store an object for your platforms to access
-    hass.data[DOMAIN][entry.entry_id] = {ATTR_NAME: entry.data.get(ATTR_NAME)}
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS1)
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS2)
+            # Wait a short period before checking again to avoid blocking
+            await asyncio.sleep(1)
 
-    entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
-
+    # Create background task so async_setup can return True immediately
+    # 1. Wait for HA to finish its internal startup first
+    if  hass.is_running:
+        await _async_finish_setup()
+    else:
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _async_finish_setup)
     return True
 
 

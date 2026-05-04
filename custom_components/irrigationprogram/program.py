@@ -646,8 +646,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         zones = []
         for zone in self._zones:
             try:
+                # wait for the entity_id to be available before trying to access it
+                timeout = 5
+                starttime = datetime.now()
+                while zone.switch.entity_id is None and datetime.now() - starttime < timedelta(seconds=timeout):
+                    await asyncio.sleep(.1)
                 zones.append(zone.switch.entity_id)
             except AttributeError:
+                _LOGGER.error(zone.switch.entity_id)
                 async_dismiss(self.hass, "irrigation_device_error2")
                 async_create(
                     self.hass,
@@ -752,7 +758,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         value = 1
         if self._program.repeat is True:
             value = self._program.repeats.native_value
-        return int(value)
+        return max(1, int(value))
 
     @property
     def start_time_value(self) -> int:
@@ -847,7 +853,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             remaining_time = 0
 
         if default_run_time is True:
-            # remaining_time = remaining_time * self.repeats_value
             self._default_run_time = remaining_time
             await self.default_run_time_set()
         else:
