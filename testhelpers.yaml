@@ -1,51 +1,5 @@
-
 # create helpers to support testing the irrigation custom control.
 # supports creating 3 zones with all attributes configured
-
-
-switch:
-  - platform: template
-    switches:
-      dummy_1:
-        friendly_name: Zone 1
-        value_template: "{{ is_state('input_boolean.dummy_switch_1', 'on') }}"
-        turn_on:
-          - delay: '00:00:00'
-          - service: input_boolean.turn_on
-            entity_id: input_boolean.dummy_switch_1
-        turn_off:
-          - delay: '00:00:00'
-          - service: input_boolean.turn_off
-            entity_id: input_boolean.dummy_switch_1
-      dummy_2:
-        friendly_name: Zone 2
-        value_template: "{{ is_state('input_boolean.dummy_switch_2', 'on') }}"
-        turn_on:
-          - delay: '00:00:00'
-          - service: input_boolean.turn_on
-            entity_id: input_boolean.dummy_switch_2
-        turn_off:
-          - delay: '00:00:00'
-          - service: input_boolean.turn_off
-            entity_id: input_boolean.dummy_switch_2
-      dummy_3:
-        friendly_name: Zone 3
-        value_template: "{{ is_state('input_boolean.dummy_switch_3', 'on') }}"
-        turn_on:
-          - service: input_boolean.turn_on
-            entity_id: input_boolean.dummy_switch_3
-        turn_off:
-          - service: input_boolean.turn_off
-            entity_id: input_boolean.dummy_switch_3
-      dummy_pump:
-        friendly_name: Pump
-        value_template: "{{ is_state('input_boolean.dummy_pump', 'on') }}"
-        turn_on:
-          - service: input_boolean.turn_on
-            entity_id: input_boolean.dummy_pump
-        turn_off:
-          - service: input_boolean.turn_off
-            entity_id: input_boolean.dummy_pump
 
 input_boolean:
   dummy_switch_1:
@@ -56,15 +10,13 @@ input_boolean:
     name: rain
   dummy_pump:
     icon: mdi:pump
-    name: pump
+    name: pump 2
   well:
     icon: mdi:water-well-outline
     name: well
-  controller:
-    icon: mdi:alarm-panel
-    name: controller
 
 template:
+
   - binary_sensor:
       - name: Rain
         state: "{{ is_state('input_boolean.rain','on') }}"
@@ -76,22 +28,67 @@ template:
         state: "{{ is_state('input_boolean.controller','on') }}"
         icon: mdi:alarm-panel
   - sensor:
-    - name: Adjustment
-      state: "{{ states('input_number.adjustment') }}"
-      icon: mdi:knob
+      - name: Adjustment
+        state: "{{ states('input_number.adjustment') }}"
+        icon: mdi:knob
   - sensor:
-    - name: Flow Sensor
-      state: "{{ states('input_number.flow_sensor') }}"
-      icon: mdi:waves-arrow-right
+      - name: Flow Sensor
+        state: "{{ states('input_number.flow_sensor') }}"
+        icon: mdi:waves-arrow-right
+  - switch:
+    - name: Zone 1
+      state: "{{ is_state('input_boolean.dummy_switch_1', 'on') }}"
+      turn_on:
+        - delay: "00:00:00"
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.dummy_switch_1
+      turn_off:
+        - delay: "00:00:00"
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.dummy_switch_1
+    - name: Zone 2
+      state: "{{ is_state('input_boolean.dummy_switch_2', 'on') }}"
+      turn_on:
+        - delay: "00:00:00"
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.dummy_switch_2
+      turn_off:
+        - delay: "00:00:00"
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.dummy_switch_2
+    - name: Zone 3
+      state: "{{ is_state('input_boolean.dummy_switch_3', 'on') }}"
+      turn_on:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.dummy_switch_3
+      turn_off:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.dummy_switch_3
+    - name: Pump
+      state: "{{ is_state('input_boolean.dummy_pump', 'on') }}"
+      turn_on:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.dummy_pump
+      turn_off:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.dummy_pump
+    - name: Pump 2
+      state: "{{ is_state('input_boolean.dummy_pump2', 'on') }}"
+      turn_on:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.dummy_pump2
+      turn_off:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.dummy_pump2
 
 input_number:
   flow_sensor:
-    name: 'Flow Sensor'
+    name: "Flow Sensor"
     min: 0
     max: 20
     step: 1
     icon: mdi:waves-arrow-right
-    unit_of_measurement: 'L/min'
+    unit_of_measurement: "L/min"
   adjustment:
     min: 0
     max: 2
