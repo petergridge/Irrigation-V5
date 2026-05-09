@@ -484,10 +484,6 @@ When defined the system operates on the delivery of volume rather than watering 
 
 This expects a true/false binary sensor input. Used to monitor a well status and prevent watering if the water drops below a certain level. Watering will be stopped if this sensor is activated.
 
-* When the ignore senor feature is active, treats this value as true.
-
-
-
 ## Zone Definition
 
 ### Zone Group
