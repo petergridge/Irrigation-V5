@@ -622,6 +622,9 @@ This option will pause the program until the water source sensor indicates there
 
 Enables a delay function to add a number of days before the next run of the program. This feature is designed to be manually enabled, it is not related to the rain sensor.
 
+Calculated based on the datetime that delay was enabled + days delay
+**Note:** last_updated is reset when HA restarts or the program is reloaded, as a result rain delay is turned off on restart/reload
+
 If you want to delay the start of the program for a number of days after the rain sensor has turn on try this template binary sensor to replace the rain sensor.
 
 ``` yaml
@@ -641,6 +644,26 @@ If you want to delay the start of the program for a number of days after the rai
 
 
 # Release history[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
+
+### V2026.05.03
+- Improve behaviour when zone turned off outside of the app model
+  - Persistent notification
+  - New advanced option to choose either stop the current zone and continue to next zone or continue. Useful if your zones are not reporting accurately
+- Improve accuracy of the pause function, currently continues for five seconds before pause status takes affect
+- Clean up behaviour of manually stopping a zone when the program has repeats. Clear all iterations of the zone so it does not restart in the next repeat cycle.
+- Optimise delaying the start of zone until after the pump has started. Checks if the pump is already running from a previous zone. Prevents an unwanted delay between zones starting
+- When changing the zone and program level frequency options the process is not intuitive.
+  - When program level setting is unchecked set zone level as checked for all zones
+  - If a zone is unchecked, then check the program level when applying the change
+  - If all zones are checked remove the program level when applying the change
+  - if program level is set on do not change zone level as this may be the default for an unchecked zone, and will be tidied up when applied
+- Rain delay:
+  - Calculated based on the datetime that delay was enabled + days delay
+  - Note: last_updated is reset when HA restarts or the program is reloaded, as a result rain delay is turned off on restart/reload
+- Correct behaviour when running past midnight, the last ran is set to the start time of the program to ensure zones run consistently in the next cycle
+
+
+
 ### V2026.03.03
 * Add Ukrainian and Russian translations
 * fix issues 251, 252, 253, 254, 255
