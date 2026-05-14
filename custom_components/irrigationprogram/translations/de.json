@@ -3,7 +3,8 @@
 		"device_type": {
 			"options": {
 				"generic": "Generisch",
-				"rainbird": "RainBird"
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
 			}
 		},
 		"watering_type":{
@@ -230,7 +231,8 @@
 					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
 				}
 			}
 		}
@@ -273,7 +275,8 @@
 					"rain_delay_on": "Verzögerung des nächsten Laufs bei Regen",
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
-					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet"
+					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
 				}
 			},
 			"update_program": {

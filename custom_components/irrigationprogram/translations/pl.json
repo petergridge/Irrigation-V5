@@ -3,13 +3,14 @@
 		"device_type": {
 			"options": {
 				"generic": "Ogólny",
-				"rainbird": "RainBird"
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
 			}
 		},
 		"watering_type":{
 			"options":{
 				"time": "Czas",
-				"volume": "Volume"
+				"volume": "Objętość"
 			}
 		},
 		"min_sec": {
@@ -55,7 +56,7 @@
 					"unavailable": "Niedostępny",
 					"raining": "Pada deszcz",
 					"adjusted_off": "Dostosowano",
-					"no_water_source": "No water source detected",
+						"no_water_source": "Nie wykryto źródła wody",
 					"zone_disabled": "Strefa wyłączona",
 					"paused": "Program wstrzymany"
 				}
@@ -142,7 +143,7 @@
 		"error": {
 			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
 			"mandatory": "Nie wprowadzono wymaganych danych",
-			"zone_required": "Przynajmniej jedna strfa musi być zdefiniowana",
+						"zone_required": "Przynajmniej jedna strefa musi być zdefiniowana",
 			"invalid_days_group": "Wybrana opcja musi być jak: Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_option": "Wybrana opcja musi być numeryczna lub Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_sensor": "Wprowadzony sensor jest niepoprawny lub jest offline"
@@ -169,7 +170,7 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"watering_type": "Watering type",
+					"watering_type": "Typ podlewania",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "Sensor deszczu",
 					"order": "Kolejność uruchamiania stref"
@@ -189,7 +190,7 @@
 					"zone": "Włącznik strefy",
 					"freq": "Częstotliwość strefy zastępuje częstotliwość programu",
 					"eco": "Włącz funkcję czekania i powtarzania ECO",
-					"watering_type": "Watering type",
+					"watering_type": "Typ podlewania",
 					"water_adjustment": "Sensor czasu pracy",
 					"rain_sensor": "Sensor deszczu",
 					"order": "Kolejność uruchamiania stref"
@@ -218,7 +219,7 @@
 				"title": "Opcje zaawansowane",
 				"data": {
 					"start_type":"Opcje czasu startu",
-					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
+					"interlock": "Wybrane - programy będą w kolejce. Niewybrane - będą uruchamiane jednocześnie",
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
 					"water_max": "Maksymalny czas podlewania/wartość",
@@ -230,7 +231,8 @@
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
-					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
+					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy"
 				}
 			}
 		}
@@ -239,7 +241,7 @@
 		"error": {
 			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
 			"mandatory": "Nie wprowadzono wymaganych danych",
-			"zone_required": "Przynajmniej jedna strfa musi być zdefiniowana",
+			"zone_required": "Przynajmniej jedna strefa musi być zdefiniowana",
 			"invalid_days_group": "Wybrana opcja musi być jak: Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_option": "Wybrana opcja musi być numeryczna lub Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_sensor": "Wprowadzony sensor jest niepoprawny lub jest offline"
@@ -261,7 +263,7 @@
 				"description": "",
 				"data": {
 					"start_type":"Opcje czasu startu",
-					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
+					"interlock": "Wybrane - programy będą w kolejce. Niewybrane - będą uruchamiane jednocześnie",
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
 					"water_max": "Maksymalny czas podlewania/wartość",
@@ -273,7 +275,8 @@
 					"rain_delay_on": "Czas opóźnienia po wykryciu deszczu",
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
-					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak"
+					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
+					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy"
 					}
 			},
 			"update_program": {

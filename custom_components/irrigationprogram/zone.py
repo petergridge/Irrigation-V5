@@ -96,8 +96,6 @@ class Zone(SwitchEntity, RestoreEntity):
         self.translation_placeholders = {"zone_name": f"{zfriendly_name}"}
         self._programdata = programdata
         self._zonedata = zonedata
-        self._rain_stop_count = 0
-        self._source_stop_count = 0
         self._remaining_time = 0
         self._default_run_time = 0
         self._state = CONST_OFF  # switch state
@@ -111,8 +109,8 @@ class Zone(SwitchEntity, RestoreEntity):
         self._water_adjust_prior = 1
         self._zone_manual_start = False
         self._latency = programdata.latency
-        self._pump_on_delay = 0
         self._pump = programdata.pump
+        self._continue_on_unexpected_state = programdata.continue_on_unexpected_state
         self._next_run = None
         self._last_ran = dt_util.as_local(dt_util.now())
         self._should_run = False
@@ -176,6 +174,7 @@ class Zone(SwitchEntity, RestoreEntity):
     def solenoid(self) -> str:
         """Zone solenoid Entity str."""
         return self._zonedata.zone
+
     @property
     def solenoid_state(self) -> str:
         """Zone solenoid Entity str."""
@@ -217,13 +216,11 @@ class Zone(SwitchEntity, RestoreEntity):
         # allow seconds alongside minutes
         if self.watering_type == "volume" and self._zonedata.water.value:
             return int(self._zonedata.water.value)
-
         if self.measurement == "seconds" and self._zonedata.water.value:
             return int(self._zonedata.water.value)
         if self.measurement == "minutes" and self._zonedata.water.value:
             return int(self._zonedata.water.value) * 60
-
-        return 0 #int(self._zonedata.water.value)
+        return 0
 
     @property
     def wait(self) -> int:
@@ -256,7 +253,7 @@ class Zone(SwitchEntity, RestoreEntity):
             if frq == "unknown":
                 frq = self._programdata.freq_options[0]
             if frq and frq.isnumeric():
-                return int(frq) + delay
+                return int(frq)
             return self._zonedata.frequency.state
 
         if self._programdata.frequency:
@@ -268,7 +265,7 @@ class Zone(SwitchEntity, RestoreEntity):
             if frq == "unknown":
                 frq = "1"  # self._programdata.freq_options[0]
             if frq and frq.isnumeric():
-                return int(frq) + delay
+                return int(frq)
 
         return self._programdata.frequency.state
 
@@ -351,10 +348,8 @@ class Zone(SwitchEntity, RestoreEntity):
                 state = self.hass.states.get(self._zonedata.rain_sensor)
                 if state:
                     return state.state
-            except AttributeError:
+            except (AttributeError, ValueError):
                 # rain sensor is not available
-                return CONST_OFF
-            except ValueError:
                 return CONST_OFF
         return CONST_OFF
 
@@ -366,9 +361,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 state = self.hass.states.get(self._zonedata.adjustment)
                 if state:
                     return float(state.state)
-            except AttributeError:
-                return 1
-            except ValueError:
+            except (AttributeError, ValueError):
                 return 1
         return 1
 
@@ -388,6 +381,7 @@ class Zone(SwitchEntity, RestoreEntity):
     def next_run(self) -> SensorEntity:
         """Next run entity time."""
         return self._zonedata.next_run
+
     @property
     def next_run_value(self):
         """Next run value for sensor."""
@@ -433,6 +427,7 @@ class Zone(SwitchEntity, RestoreEntity):
             },
             blocking=True,
         )
+
     async def remaining_time_set(self):
         """Update the remaining time sensor."""
         await self.hass.services.async_call(
@@ -477,7 +472,6 @@ class Zone(SwitchEntity, RestoreEntity):
             blocking=True,
         )
 
-
     async def prepare_to_run(self, scheduled=True):
         """Initialise the remaining time when the program is started."""
         self._scheduled = scheduled
@@ -489,11 +483,9 @@ class Zone(SwitchEntity, RestoreEntity):
         self._status_sensor =self._status = CONST_PENDING
         self._state = CONST_ON
         await self.status_sensor_set()
-        # self.async_schedule_update_ha_state()
 
     async def should_run_ex(self, scheduled=True):
         """Determine if the zone should run."""
-
         if self.status.state in [
             CONST_DISABLED,
             CONST_UNAVAILABLE,
@@ -503,7 +495,7 @@ class Zone(SwitchEntity, RestoreEntity):
         ]:
             return False
 
-        # Zone is diabled and not started from the zone (from the program)
+        # Zone is disabled and not started from the zone (from the program)
         if self.status.state == CONST_ZONE_DISABLED and not self._zone_manual_start:
             return False
 
@@ -520,11 +512,7 @@ class Zone(SwitchEntity, RestoreEntity):
             if dt > dt_util.as_local(dt_util.now()):
                 return False
         else:
-            # report an issue
-            _LOGGER.debug(
-                "No next run calculated for %s. Your frequency may not be set correctly",
-                self.name,
-            )
+            # no next run time set, likely due to a frequency issue, do not run and alert the user
             async_dismiss(self.hass, "irrigation_frequency")
             async_create(
                 self.hass,
@@ -554,15 +542,17 @@ class Zone(SwitchEntity, RestoreEntity):
     async def check_is_on(self):
         """Ensure the switch has turned on."""
         await self.async_solenoid_turn_on()
-
-        for _ in range(self._latency):
+        timeout = self._latency
+        starttime = datetime.now()
+        while datetime.now() - starttime < timedelta(seconds=timeout):
+        # for _ in range(self._latency):
             if self._aborted:
                 break
             if self._status == CONST_PAUSED:
                 break
             # try to turn the switch on again
             # this is an attempt to handle zigbee/bluetooth devices that sleep
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
             check_state, _value = await self.check_switch_state()
             if check_state is not True:
                 # if not the expected state loop again
@@ -570,10 +560,12 @@ class Zone(SwitchEntity, RestoreEntity):
                 continue
             break
         else:
-            _LOGGER.debug(
-                "Switch has latency exceeding %s seconds, cannot confirm %s state is ON",
-                self._latency,
-                self.name,
+            async_dismiss(self.hass, "irrigation_latency")
+            async_create(
+                self.hass,
+                message=f"Switch has latency exceeding {self._latency} seconds, cannot confirm {self.name} state is ON",
+                title="Irrigation Controller",
+                notification_id="irrigation_latency",
             )
             event_data = {
                 "action": "error",
@@ -586,7 +578,10 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def check_is_off(self):
         """Ensure the switch is off."""
-        for _ in range(self._latency):
+        timeout = self._latency
+        starttime = datetime.now()
+        while datetime.now() - starttime < timedelta(seconds=timeout):
+        # for _ in range(self._latency):
             if self._aborted:
                 break
             if self._status == CONST_PAUSED:
@@ -594,7 +589,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             # try to turn the switch on again
             # this is an attempt to handle zigbee devices that sleep
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
             check_state, _value = await self.check_switch_state()
             if check_state is not False:
                 # if not the expected state loop again
@@ -602,11 +597,6 @@ class Zone(SwitchEntity, RestoreEntity):
                 continue
             break
         else:
-            _LOGGER.debug(
-                "Switch has latency exceeding %s seconds, cannot confirm %s state is OFF",
-                self._latency,
-                self.name,
-            )
             async_dismiss(self.hass, "irrigation_latency")
             async_create(
                 self.hass,
@@ -679,7 +669,6 @@ class Zone(SwitchEntity, RestoreEntity):
                 self.hass.bus.async_fire("irrigation_event", event_data)
 
                 # rain option to stop
-                _LOGGER.debug("Rain has been detected, %s terminated", self.name)
                 async_dismiss(self.hass, "irrigation_rain_detected")
                 async_create(
                     self.hass,
@@ -692,10 +681,6 @@ class Zone(SwitchEntity, RestoreEntity):
 
             if status in (CONST_NO_WATER_SOURCE):
                 # No water source, sensor is off
-                _LOGGER.debug(
-                    "No water source detected, %s terminated",
-                    self.name,
-                )
                 async_dismiss(self.hass, "irrigation_water_source")
                 async_create(
                     self.hass,
@@ -747,7 +732,6 @@ class Zone(SwitchEntity, RestoreEntity):
         if check_state is None:
             status = CONST_UNAVAILABLE
 
-
         # Clear the next run sensor when the program is not enabled to run
         if status in (CONST_RAINING, CONST_RAINING_STOP, CONST_ADJUSTED_OFF,CONST_NO_WATER_SOURCE,CONST_ZONE_DISABLED,CONST_PROGRAM_DISABLED):
             self._next_run = None
@@ -768,7 +752,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def calc_next_run(self):
         """Determine when a zone will next attempt to run."""
-
+        #1. ensure that the state/status is understood
         # something has changed recalculate the run time
         if self._status in (CONST_ECO, CONST_ON, CONST_PENDING):
             # zone is running no need to recalc next run until it has completed
@@ -783,26 +767,9 @@ class Zone(SwitchEntity, RestoreEntity):
                 )
             return
 
-        if self._status == CONST_PENDING:
-            await self.prepare_to_run(scheduled=True)
-
-        # check the sensor states
-        status = await self.handle_state_change()
-        if status not in (CONST_OFF):
-            # real issue reset the zone
-            self._status = CONST_RAINING if status == CONST_RAINING_STOP else status
-            self._status_sensor = self._status
-            await self.status_sensor_set()
-            self._remaining_time = 0
-            await self.remaining_time_set()
-            return
-
-        # it must be off
-        self._status_sensor = self._state = self._status = CONST_OFF
-        await self.status_sensor_set()
-        self.async_schedule_update_ha_state()
-
-        # now the state/status is sorted calc the next start
+        #2. now the state/status is clarified, calculate the next start
+        # treat th start time as string and clean it up to allow multiple start times in a day,
+        # this allows the next run to be calculated for the next start time in the day if the current time has passed the first start time
         string_times = self.clean_up_string(self._programdata.switch.start_time_value)
         string_times.sort()
         starttime = string_times[0]
@@ -830,7 +797,6 @@ class Zone(SwitchEntity, RestoreEntity):
             firststartmin = 0
 
         native_val = getattr(self.last_ran, 'native_value', None)
-
         if native_val is None:
             v_last_ran = dt_util.start_of_local_day() - timedelta(days=10)
         else:
@@ -838,73 +804,62 @@ class Zone(SwitchEntity, RestoreEntity):
                 hour=starthour, minute=startmin, second=0, microsecond=0
             )
 
+        today_start_time = dt_util.as_local(dt_util.now()).replace(
+            hour=starthour, minute=startmin, second=00, microsecond=00
+        )
+        today_begin = dt_util.as_local(dt_util.now()).replace(
+            hour=00, minute=00, second=00, microsecond=00
+        )
+        last_ran_day_begin = v_last_ran.replace(
+            hour=00, minute=00, second=00, microsecond=00
+        )
+
+        delay = 0
+        if self._programdata.rain_delay:
+            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
+                delay = int(self._programdata.rain_delay_days.state)
+
         try:  # Frq is numeric
-            if self.frequency is None:
-                frq = 1
-            else:
-                number_as_float = float(self.frequency)
-                frq = int(number_as_float)
-
-            today_start_time = dt_util.as_local(dt_util.now()).replace(
-                hour=starthour, minute=startmin, second=00, microsecond=00
-            )
-            today_begin = dt_util.as_local(dt_util.now()).replace(
-                hour=00, minute=00, second=00, microsecond=00
-            )
-            last_ran_day_begin = v_last_ran.replace(
-                hour=00, minute=00, second=00, microsecond=00
-            )
-
-            if (today_start_time - v_last_ran).total_seconds() / 86400 >= frq:
-                # it has been sometime since the zone ran
-                v_next_run = dt_util.as_local(dt_util.now()).replace(
-                    hour=starthour, minute=startmin, second=00, microsecond=00
-                )
-                if today_start_time < dt_util.as_local(dt_util.now()):
-                    v_next_run += timedelta(days=1)
-            elif (
-                today_start_time >= dt_util.as_local(dt_util.now())
-                and last_ran_day_begin == today_begin
-            ):
-                # time is in the future and it previously ran today, supports multiple start times
-                v_next_run = dt_util.as_local(dt_util.now()).replace(
-                    hour=starthour, minute=startmin, second=00, microsecond=00
-                )
-            else:  # (today_start_time - last_ran).total_seconds()/86400 < frq:
-                # frequency has not been satisfied
-                # set last ran datetime to the first runtime of the series and add the frequency
-                v_next_run = v_last_ran.replace(
-                    hour=firststarthour, minute=firststartmin, second=00, microsecond=00
-                ) + timedelta(days=frq)
-        except ValueError:
+            v_next_run = self.get_numeric_frq(today_start_time,last_ran_day_begin,today_begin, v_last_ran)
+        except ValueError: # Frq is not numeric, days of week or odd/even
             string_freq = self.clean_up_string(self.frequency)
             v_last_ran = dt_util.as_local(dt_util.now()).replace(
                 hour=starthour, minute=startmin, second=00, microsecond=00
             )
             day = v_last_ran.day
             if self.frequency == "Odd" :
-                    v_next_run = self.get_next_odd_day(v_last_ran)
+                v_next_run = self.get_next_odd_day(v_last_ran)
             elif self.frequency == "Even" :
-                    v_next_run = self.get_next_even_day(v_last_ran)
+                v_next_run = self.get_next_even_day(v_last_ran)
             else:
-                # Frq is days of week
+                #days of week
                 today = v_last_ran.isoweekday()
                 v_next_run = v_last_ran + timedelta(days=100)  # arbitary max
                 for day in string_freq:
                     if self.get_weekday(day) == today and v_last_ran > dt_util.as_local(
                         dt_util.now()
-                    ):
+                    ) and delay == 0:
                         v_next_run = v_last_ran
                     else:
                         v_next_run = min(
                             self.get_next_dayofweek_datetime(v_last_ran, day), v_next_run
                         )
 
-        if v_next_run is None:
-            _LOGGER.debug(
-                "No next run calculated for %s. Your frequency may not be set correctly",
-                self.name,
+        if (
+            today_start_time >= dt_util.as_local(dt_util.now())
+            # and last_ran_day_begin == today_begin
+        ):
+            # time is in the future, supports multiple start times
+            v_next_run = v_next_run.replace(
+                hour=starthour, minute=startmin, second=00, microsecond=00
             )
+        else:
+            v_next_run = v_next_run.replace(
+                hour=firststarthour, minute=firststartmin, second=00, microsecond=00
+            )
+
+        #error handling if the values are not set correctly
+        if v_next_run is None:
             async_dismiss(self.hass, "irrigation_frequency")
             async_create(
                 self.hass,
@@ -912,13 +867,39 @@ class Zone(SwitchEntity, RestoreEntity):
                 title="Irrigation Controller",
                 notification_id="irrigation_frequency",
             )
+        #set the next run time
         self._next_run = v_next_run
-
         await self.sensor_next_run_set()
-        if self._state not in (CONST_PENDING, CONST_ON, CONST_ECO, CONST_OFF):
-            self._status_sensor = self._state = CONST_OFF
-            await self.status_sensor_set()
-        return
+
+
+    def get_numeric_frq(self,today_start_time,last_ran_day_begin,today_begin, last_ran=None):
+        """Process a numeric frquency."""
+
+        delay = 0
+        delay_until = dt_util.as_local(dt_util.now())
+        if self._programdata.rain_delay:
+            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
+                delay = int(self._programdata.rain_delay_days.state)
+                delay_until = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
+
+        if self.frequency is None:
+            frq = 1
+        else:
+            number_as_float = float(self.frequency)
+            frq = int(number_as_float)
+        v_last_ran = last_ran
+        if (today_start_time - last_ran).total_seconds() / 86400 >= frq:
+            # it has been sometime since the zone ran
+            v_last_ran = dt_util.as_local(dt_util.now())
+
+        if (
+            today_start_time >= dt_util.as_local(dt_util.now())
+            # and last_ran_day_begin == today_begin
+            ):
+            v_next_run = today_start_time
+        else:
+            v_next_run = v_last_ran + timedelta(days=frq)
+        return max(v_next_run,delay_until)
 
     def get_weekday(self, day):
         """Determine weekday num."""
@@ -927,10 +908,6 @@ class Zone(SwitchEntity, RestoreEntity):
         except ValueError:
             # put a persistent error up
             # frquency sensor does not contain valid values
-            _LOGGER.debug(
-                "Frequency sensor, %s, value is not valid",
-                self._zonedata.frequency.current_option,
-            )
             async_dismiss(self.hass, "irrigation_frequency")
             async_create(
                 self.hass,
@@ -939,10 +916,19 @@ class Zone(SwitchEntity, RestoreEntity):
                 notification_id="irrigation_frequency",
             )
 
+
     def get_next_even_day(self, start_date=None):
         """Next even numbered day."""
+
+        delay = 0
+        if self._programdata.rain_delay:
+            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
+                delay = int(self._programdata.rain_delay_days.state)
         if start_date is None:
-            start_date = datetime.today()
+            start_date = dt_util.as_local(datetime.today())
+        if delay > 0:
+            start_date = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
+
         # today is odd and run time is in the future
         if start_date.day % 2 == 0 and start_date > dt_util.as_local(
                         dt_util.now()
@@ -951,12 +937,23 @@ class Zone(SwitchEntity, RestoreEntity):
         next_day = start_date + timedelta(days=1)
         while next_day.day % 2 == 1:
             next_day += timedelta(days=1)
+
         return next_day
 
     def get_next_odd_day(self, start_date=None):
         """Next odd numbered day."""
+        delay = 0
+        # update = None
+        if self._programdata.rain_delay:
+            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
+                delay = int(self._programdata.rain_delay_days.state)
+
         if start_date is None:
             start_date = datetime.today()
+
+        if delay > 0:
+            start_date = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
+
         # today is odd and run time is in the future
         if start_date.day % 2 == 1 and start_date > dt_util.as_local(
                         dt_util.now()
@@ -967,41 +964,56 @@ class Zone(SwitchEntity, RestoreEntity):
             next_day += timedelta(days=1)
         return next_day
 
-    def get_next_dayofweek_datetime(self, date_time, dayofweek):
+    def get_next_dayofweek_datetime(self, start_date, dayofweek):
         """Next date for the given day."""
-        start_time_w = date_time.isoweekday()
+
+        if start_date is None:
+            start_date = datetime.today()
+        # start_date = max(update, start_date)
+
+        start_time_w = start_date.isoweekday()
         target_w = self.get_weekday(dayofweek)
+
         if start_time_w < target_w:
             day_diff = target_w - start_time_w
         else:
             day_diff = 7 - (start_time_w - target_w)
-        return date_time + timedelta(days=day_diff)
+        return start_date + timedelta(days=day_diff)
 
     async def async_solenoid_turn_on(self):
         """Turn on the zone."""
 
-        if self.pump_on_delay < 0 and self._pump:
-            # start the pump before the zone starts
-            event_data = {
-                "action": "turn_on_pump",
-                "device_id": self.solenoid,
-                "pump": self._pump,
-                "program": self._programdata.switch.entity_id,
-                "delay": 0,
-            }
-            self.hass.bus.async_fire("irrigation_event", event_data)
-            await asyncio.sleep(abs(self.pump_on_delay))
-
-        if self.pump_on_delay >= 0 and self._pump:
+        if self._pump:
+            delay = 0
+            if self.pump_on_delay > 0:
+                delay = self.pump_on_delay
             # turn the pump on after the zone starts
+            state_object = self.hass.states.get(self._pump)
+            if state_object:
+                # Calculate duration
+                seconds_on = 0
+                if state_object.state == CONST_ON:
+                    now = dt_util.now()
+                    duration = now - state_object.last_changed
+                    # Get total seconds or format into minutes/hours
+                    seconds_on = int(duration.total_seconds())
+
             event_data = {
                 "action": "turn_on_pump",
                 "device_id": self.solenoid,
                 "pump": self._pump,
                 "program": self._programdata.switch.entity_id,
-                "delay": self.pump_on_delay,
+                "delay": delay,
             }
             self.hass.bus.async_fire("irrigation_event", event_data)
+
+        if self.pump_on_delay < 0 and self._pump:
+            delay = 0
+            if seconds_on < abs(self.pump_on_delay):
+                delay = max(0,abs(self.pump_on_delay) - seconds_on)
+
+            if delay > 0:
+                await asyncio.sleep(delay)
 
         check_state, _value = await self.check_switch_state()
         if check_state is False:
@@ -1059,13 +1071,16 @@ class Zone(SwitchEntity, RestoreEntity):
                 "wait": self.wait,
                 "repeat": self.repeat,
             }
-
             self.hass.bus.async_fire("irrigation_event", event_data)
 
     async def async_solenoid_turn_off(self):
-        """Turn on the zone."""
+        """Turn off the device."""
+        #if already off do nothing
+        check_state, _value = await self.check_switch_state()
+        if check_state is False:
+            return
+
         # is it a valve or a switch
-        await asyncio.sleep(0)
         if self.controller_type == BHYVE:
             await self.hass.services.async_call(
                 BHYVE, "stop_watering", {ATTR_ENTITY_ID: self.solenoid}
@@ -1081,10 +1096,6 @@ class Zone(SwitchEntity, RestoreEntity):
             )
 
         # raise an event
-        # state = CONST_OFF
-        # if self._status == CONST_ECO:
-        #     state = CONST_ECO
-
         event_data = {
             "action": "zone_turned_off",
             "device_id": self.solenoid,
@@ -1092,10 +1103,7 @@ class Zone(SwitchEntity, RestoreEntity):
             "state": self._state,
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
-        check_state, _value = await self.check_switch_state()
-        if check_state is False:
-            # check the switch has actually turned off
-            pass
+
 
     async def async_eco_turn_off(self):
         """Signal the zone to stop."""
@@ -1122,23 +1130,25 @@ class Zone(SwitchEntity, RestoreEntity):
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
     async def async_turn_off(self, **kwargs):
-        """Toggle the entity."""
+        """The Entities default behaviour."""
         if self._remaining_time != 0:
             self._aborted = True
-        await self.async_turn_off_zone()
+        await self.async_turn_off_zone_natural(manual=True)
 
-    async def async_turn_off_zone_natural(self, **kwargs):
-        """Turn the entity off."""
+    async def async_turn_off_zone_natural(self, manual=False):
+        """Turn the entity off as part of the irrigation processing."""
         if self.watering_type == "volume" and self._state == CONST_ON:
             self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
             self._hist_flow_rate = self.flow_sensor
 
         await self.async_solenoid_turn_off()
+        await self.check_is_off()
         self._remaining_time = 0
         await self.remaining_time_set()
-        await asyncio.sleep(0)
-        if self._zonedata in REMAINING_ZONES:
+        await asyncio.sleep(0.1)
+        if self._zonedata in REMAINING_ZONES and manual is False:
             #set the remaining time to to allow it to restart when program loops
+            #supports repeating the program
             await self.prepare_to_run(scheduled=True)
         else:
             if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
@@ -1149,42 +1159,19 @@ class Zone(SwitchEntity, RestoreEntity):
             self._stop = True
             self._zone_manual_start = False
 
+        if manual is True:
+            #remove all future instances of this zone
+            while self._zonedata in REMAINING_ZONES:
+                REMAINING_ZONES.remove(self._zonedata)
+
         if self._zonedata in RUNNING_ZONES:
             RUNNING_ZONES.remove(self._zonedata)
-
-        await self.check_is_off()
-        self.async_schedule_update_ha_state()
-
-    async def async_turn_off_zone(self, **kwargs):
-        """Turn the entity off."""
-        if self.watering_type == "volume" and self._state == CONST_ON:
-            self._extra_attrs[ATTR_HISTORICAL_FLOW] = self.flow_sensor
-            self._hist_flow_rate = self.flow_sensor
-
-        await self.async_solenoid_turn_off()
-        await self.check_is_off()
-
-        self._remaining_time = 0
-        await self.remaining_time_set()
-
-        if self._status in (CONST_PENDING, CONST_ECO, CONST_ON, CONST_PAUSED):
-            self._status_sensor = CONST_OFF
-            await self.status_sensor_set()
-        self._state = CONST_OFF
-        self._status = CONST_OFF
-        self._stop = True
-        self._zone_manual_start = False
-
-        if self._zonedata in REMAINING_ZONES:
-            REMAINING_ZONES.remove(self._zonedata)
 
         self.async_schedule_update_ha_state()
 
     async def set_scheduled(self, scheduled: bool):
         """Set the scheduled state."""
         self._scheduled = scheduled
-
-
 
     async def calc_default_run_time(self):
         """Update the run time component."""
@@ -1273,8 +1260,10 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, last=False):
+    async def async_turn_on_from_program(self, last=False, last_ran=dt_util.as_local(dt_util.now())):
         """Start the zone watering cycle."""
+        # last indicates this is the last zone to be run
+        # last_ran is the start time of the program
         self._state = self._status_sensor = self._status = CONST_ON
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
@@ -1285,8 +1274,6 @@ class Zone(SwitchEntity, RestoreEntity):
             water_adjust_value = 1
         else:
             water_adjust_value = self._water_adjust_prior
-
-        last_ran = dt_util.as_local(dt_util.now())
 
         # run the watering cycle, water/wait/repeat
         for reps in range(self.repeat, 0, -1):
@@ -1309,7 +1296,6 @@ class Zone(SwitchEntity, RestoreEntity):
                 seconds_run = await self.time(
                     water_adjust_value, seconds_run, reps, last
                 )
-            # abort
 
             if self._stop:
                 break
@@ -1410,11 +1396,15 @@ class Zone(SwitchEntity, RestoreEntity):
 
             # checkif one of the sensors (water source, rain) has changed that needs the zone to stop
             await self.handle_state_change()
+
             if self._stop:
                 return 0
 
             # Check to see if the zone has been stopped, this is abnormal
+            warning_issued = False
             for _ in range(self._latency):
+                if self._status == CONST_PAUSED:
+                    break
                 seconds_run = int((dt_util.now() - start_time).total_seconds())
                 self._remaining_time = await self.calc_run_time(
                     seconds_run,
@@ -1438,11 +1428,12 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             else:
                 if not warning_issued:
-                    _LOGGER.debug(
-                        "%s returned an unexpected state, %s for %s consecutive checks",
-                        self.name,
-                        status,
-                        self._latency,
+                    async_dismiss(self.hass, "irrigation_latency")
+                    async_create(
+                        self.hass,
+                        message=f"{self.name} returned and unexpected state, {status} for {self._latency} seconds.",
+                        title="Irrigation Controller",
+                        notification_id="irrigation_latency",
                     )
                 warning_issued = True
                 event_data = {
@@ -1454,6 +1445,9 @@ class Zone(SwitchEntity, RestoreEntity):
                     "state": status,
                 }
                 self.hass.bus.async_fire("irrigation_event", event_data)
+                if not self._continue_on_unexpected_state:
+                    # if the zone is not on, but the state is not what we expect, terminate the zone
+                    await self.async_turn_off_zone_natural()
 
         return seconds_run
 
@@ -1491,6 +1485,9 @@ class Zone(SwitchEntity, RestoreEntity):
 
             # Check to see if the zone is not on, this is abnormal
             for _ in range(self._latency):
+                if self._status == CONST_PAUSED:
+                    break
+
                 volume_delivered += self.flow_sensor / 60
                 volume_required = self.water * water_adjust_value
                 volume_remaining = volume_required - volume_delivered
@@ -1528,11 +1525,12 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             else:
                 if not warning_issued:
-                    _LOGGER.debug(
-                        "%s returned an unexpected state, %s for %s consecutive checks",
-                        self.name,
-                        status,
-                        self._latency,
+                    async_dismiss(self.hass, "irrigation_latency")
+                    async_create(
+                        self.hass,
+                        message=f"{self.name} returned and unexpected state, {status} for {self._latency} seconds.",
+                        title="Irrigation Controller",
+                        notification_id="irrigation_latency",
                     )
                 warning_issued = True
                 event_data = {
@@ -1544,6 +1542,9 @@ class Zone(SwitchEntity, RestoreEntity):
                     "state": status,
                 }
                 self.hass.bus.async_fire("irrigation_event", event_data)
+                if not self._continue_on_unexpected_state:
+                    # if the zone is not on, but the state is not what we expect, terminate the zone
+                    await self.async_turn_off_zone_natural()
 
             # If no flow for 5 cycles, shut off, possible flow sensor has failed
             if self.flow_sensor == 0:
@@ -1552,7 +1553,6 @@ class Zone(SwitchEntity, RestoreEntity):
                     if self.flow_sensor == 0:
                         self._stop = True
                         self._aborted = True
-                        _LOGGER.debug("No flow detected, %s terminated", self.name)
                         async_dismiss(self.hass, "irrigation_no_flow")
                         async_create(
                             self.hass,

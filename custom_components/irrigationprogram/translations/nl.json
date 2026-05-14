@@ -3,7 +3,8 @@
 		"device_type": {
 			"options": {
 				"generic": "Generic",
-				"rainbird": "RainBird"
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
 			}
 		},
 		"watering_type":{
@@ -230,7 +231,8 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
 				}
 			}
 		}
@@ -239,10 +241,10 @@
 		"error": {
 			"zone_defined": "Zone-omschakeling is al gedefinieerd in dit irrigatieprogramma",
 			"mandatory": "Verplicht veld niet ingevuld",
-			"zone_required": "Minimaal 1 zone moet econfigureerd zijn",
-			"invalid_days_group": "Frequentie opties moet zijn man,die,woe,don,vrij,zat,zon",
-			"invalid_option": "Frequency optie moet een nummer zijn of man,die,woe,don,vrij,zat,zon",
-			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+			"zone_required": "Minimaal 1 zone moet geconfigureerd zijn",
+			"invalid_days_group": "Frequentie opties moeten zijn man,die,woe,don,vrij,zat,zon",
+			"invalid_option": "Frequentie optie moet een nummer zijn of man,die,woe,don,vrij,zat,zon",
+			"invalid_sensor": "Frequentie optie, ingevoerde sensor is onjuist of offline"
 		},
 		"step": {
 			"user": {
@@ -273,7 +275,8 @@
 					"rain_delay_on": "Delay the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
-					"pause_on_water_source": "Pause program when water source sensor turns off"
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
 				}
 			},
 			"update_program": {
@@ -285,7 +288,7 @@
 					"freq_options": "Selecteer of voeg programma frequentie toe",
 					"device_type": "Controller soort",
 					"flow_sensor": "Flow sensor",
-					"water_source_active": "Water bron binar sensor",
+					"water_source_active": "Water bron binaire sensor",
 					"pump": "Pomp schakelaar"
 				}
 			},
@@ -311,7 +314,7 @@
 					"eco": "Schakel wachten in, en herhaal de eco optie",
 					"watering_type": "Watering type",
 					"water_adjustment": "Looptijd aanpassing sensor",
-					"rain_sensor": "Regen binari sensor",
+					"rain_sensor": "Regen binaire sensor",
 					"order": "Zone start volgorde"
 				}
 			},
@@ -319,7 +322,7 @@
 				"title": "Zone configuratie",
 				"description": "",
 				"data": {
-					"zone": "Select zone om te verwijderen"
+					"zone": "Selecteer zone om te verwijderen"
 				}
 			},
 			"update_zone": {

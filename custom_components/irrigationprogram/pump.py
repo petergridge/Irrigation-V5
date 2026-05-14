@@ -70,11 +70,6 @@ class PumpClass:
         """Return pump."""
         return self._pump
 
-    # async def async_cancel(self):
-    #     """Stop monitoring."""
-    #     self._cancel()
-    #     self._cancel = None
-
     async def async_stop(self):
         """Turn off pump."""
         state = self.hass.states.get(self._pump)

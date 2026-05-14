@@ -8,7 +8,7 @@ from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.util import slugify
+from homeassistant.util import dt as dt_util, slugify
 
 from . import IrrigationData
 from .program import IrrigationProgram
@@ -370,14 +370,17 @@ class EnableRainDelay(SwitchEntity, RestoreEntity):
         self._attr_attribution = f"Irrigation Controller: {name}"
         self._state = "off"
         self._unique_id = unique_id
+        self._last_updated = None
 
     async def async_added_to_hass(self):
         """HA has started."""
-        last_state = await self.async_get_last_state()
-        if last_state is None:
-            self._state = "off"
-        else:
-            self._state = last_state.state
+        # last_state = await self.async_get_last_state()
+        # if last_state is None:
+        #     self._state = "off"
+        # else:
+        #     self._state = last_state.state
+        self._state = "off"
+        self._last_updated = dt_util.utcnow()
         self.async_schedule_update_ha_state()
 
     @property
@@ -386,6 +389,10 @@ class EnableRainDelay(SwitchEntity, RestoreEntity):
         if self._state == "on":
             return True
         return False
+    @property
+    def last_updated(self):
+        """Return the last updated time."""
+        return self._last_updated
 
     async def async_toggle(self, **kwargs):
         """Toggle the entity."""
@@ -394,14 +401,17 @@ class EnableRainDelay(SwitchEntity, RestoreEntity):
             self._state = "off"
         else:
             self._state = "on"
+        self._last_updated = dt_util.utcnow()
         self.async_schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         self._state = "off"
+        self._last_updated = dt_util.utcnow()
         self.async_schedule_update_ha_state()
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         self._state = "on"
+        self._last_updated = dt_util.utcnow()
         self.async_schedule_update_ha_state()

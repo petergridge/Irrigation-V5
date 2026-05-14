@@ -23,8 +23,11 @@ from homeassistant.util import slugify
 from . import exclude
 from .const import (
     ATTR_CARD_YAML,
+    ATTR_CONTINUE_ON_UNEXPECTED_STATE,
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
+    ATTR_FREQUENCY,
+    ATTR_FREQUENCY_OPTIONS,
     ATTR_INTERLOCK,
     ATTR_LATENCY,
     ATTR_MIN_SEC,
@@ -101,14 +104,14 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
             cleanoptions = []
 
             # check if it is a sensor being provide
-            if not user_input.get("freq_options", None):
-                errors["freq_options"] = "mandatory"
+            if not user_input.get(ATTR_FREQUENCY_OPTIONS, None):
+                errors[ATTR_FREQUENCY_OPTIONS] = "mandatory"
             else:
-                for option in user_input.get("freq_options","1"):
+                for option in user_input.get(ATTR_FREQUENCY_OPTIONS,"1"):
                     if option.split(".")[0] == "sensor":
                         # now validate the sensor exists
                         if self.hass.states.async_available(option):
-                            errors["freq_options"] = "invalid_sensor"
+                            errors[ATTR_FREQUENCY_OPTIONS] = "invalid_sensor"
                             break
                         cleanoptions.append(option)
                         continue
@@ -129,7 +132,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         if len(optionlist) > 1:
                             for item in optionlist:
                                 if item.strip() not in OPTIONS_DAYS_OF_WEEK:
-                                    errors["freq_options"] = "invalid_days_group"
+                                    errors[ATTR_FREQUENCY_OPTIONS] = "invalid_days_group"
                                     break
                             else:
                                 cleanoptions.append(", ".join(optionlist))
@@ -138,10 +141,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                             cleanoptions.append(optionlist[0])
                             continue
 
-                        errors["freq_options"] = "invalid_option"
+                        errors[ATTR_FREQUENCY_OPTIONS] = "invalid_option"
                         break
 
-                user_input["freq_options"] = cleanoptions
+                user_input[ATTR_FREQUENCY_OPTIONS] = cleanoptions
 
             if not errors:
                 # Input is valid, set data.
@@ -172,18 +175,18 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     description={"suggested_value": default_input.get(CONF_NAME)},
                 ): str,
                 vol.Optional(
-                    "freq",
-                    description={"suggested_value": default_input.get("freq", True)},
+                    ATTR_FREQUENCY,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY, True)},
                 ): cv.boolean,
                 vol.Optional(
                     "repeat",
                     description={"suggested_value": default_input.get("repeat", False)},
                 ): cv.boolean,
                 vol.Required(
-                    "freq_options",
+                    ATTR_FREQUENCY_OPTIONS,
                     description={
                         "suggested_value": default_input.get(
-                            "freq_options", OPTIONS_DAYS
+                            ATTR_FREQUENCY_OPTIONS, OPTIONS_DAYS
                         )
                     },
                 ): sel.SelectSelector(
@@ -193,7 +196,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         + OPTIONS_DAYS_GROUPED,
                         "multiple": True,
                         "custom_value": True,
-                        "translation_key": "freq_options",
+                        "translation_key": ATTR_FREQUENCY_OPTIONS,
                     }
                 ),
                 vol.Optional(
@@ -291,8 +294,8 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
                 ),
                 vol.Optional(
-                    "freq",
-                    description={"suggested_value": default_input.get("freq", False)},
+                    ATTR_FREQUENCY,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY, False)},
                 ): cv.boolean,
                 vol.Optional(
                     "eco",
@@ -485,8 +488,8 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     {"domain": ["switch", "valve"], "exclude_entities": zone_exclude}
                 ),
                 vol.Optional(
-                    "freq",
-                    description={"suggested_value": default_input.get("freq", False)},
+                    ATTR_FREQUENCY,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY, False)},
                 ): cv.boolean,
                 vol.Optional(
                     "eco",
@@ -567,6 +570,9 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 self._data[ATTR_PAUSE_WATER_SOURCE] = user_input[
                     ATTR_PAUSE_WATER_SOURCE
+                ]
+                self._data[ATTR_CONTINUE_ON_UNEXPECTED_STATE] = user_input[
+                    ATTR_CONTINUE_ON_UNEXPECTED_STATE
                 ]
                 self._data[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 return await self.async_step_menu()
@@ -678,6 +684,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     },
                 ): cv.boolean,
                 vol.Optional(
+                    ATTR_CONTINUE_ON_UNEXPECTED_STATE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
                     ATTR_RAIN_DELAY,
                     description={
                         "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
@@ -774,11 +786,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     sortedzones.pop(zonenumber)
 
         for zone in sortedzones:
-            if zone["freq"] is False:
+            all_zone_freq = True
+            if zone[ATTR_FREQUENCY] is False:
                 # ensure program freq is enabled
-                newdata.update({"freq": True})
+                newdata.update({ATTR_FREQUENCY: True})
+                all_zone_freq = False
+
             if newdata.get("repeat", False) is True:
                 zone.update({"eco":False})
+
+        # if all zones have freq enabled, program do not enable program freq
+        if all_zone_freq is True and newdata.get(ATTR_FREQUENCY, False) is True:
+            newdata.update({ATTR_FREQUENCY: False})
+            await self.get_er("select", slugify(f"{self._uid}_frequency"))
 
         newdata.update({ATTR_ZONES: sortedzones})
         localtimezone = ZoneInfo(self.hass.config.time_zone)
@@ -817,6 +837,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_PUMP_DELAY] = user_input[ATTR_PUMP_DELAY]
                 newdata[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
                 newdata[ATTR_PAUSE_WATER_SOURCE] = user_input[ATTR_PAUSE_WATER_SOURCE]
+                newdata[ATTR_CONTINUE_ON_UNEXPECTED_STATE] = user_input.get(
+                    ATTR_CONTINUE_ON_UNEXPECTED_STATE, False
+                )
                 newdata[ATTR_RAIN_DELAY] = user_input[ATTR_RAIN_DELAY]
                 # Return the form of the next step.
                 self._data = newdata
@@ -939,6 +962,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     },
                 ): cv.boolean,
                 vol.Optional(
+                    ATTR_CONTINUE_ON_UNEXPECTED_STATE,
+                    description={
+                        "suggested_value": default_input.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
                     ATTR_RAIN_DELAY,
                     description={
                         "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
@@ -970,14 +999,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             cleanoptions = []
 
             # check if it is a sensor being provide
-            if not user_input.get("freq_options", None):
-                errors["freq_options"] = "mandatory"
+            if not user_input.get(ATTR_FREQUENCY_OPTIONS, None):
+                errors[ATTR_FREQUENCY_OPTIONS] = "mandatory"
             else:
-                for option in user_input.get("freq_options"):
+                for option in user_input.get(ATTR_FREQUENCY_OPTIONS):
                     if option.split(".")[0] == "sensor":
                         # now validate the sensor exists
                         if self.hass.states.async_available(option):
-                            errors["freq_options"] = "invalid_sensor"
+                            errors[ATTR_FREQUENCY_OPTIONS] = "invalid_sensor"
                             break
                         cleanoptions.append(option)
                         continue
@@ -999,7 +1028,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         if len(optionlist) > 1:
                             for item in optionlist:
                                 if item.strip() not in OPTIONS_DAYS_OF_WEEK:
-                                    errors["freq_options"] = "invalid_days_group"
+                                    errors[ATTR_FREQUENCY_OPTIONS] = "invalid_days_group"
                                     break
                             else:
                                 cleanoptions.append(", ".join(optionlist))
@@ -1008,16 +1037,21 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                             cleanoptions.append(optionlist[0])
                             continue
 
-                        errors["freq_options"] = "invalid_option"
+                        errors[ATTR_FREQUENCY_OPTIONS] = "invalid_option"
                         break
 
-                newdata["freq_options"] = cleanoptions
+                newdata[ATTR_FREQUENCY_OPTIONS] = cleanoptions
 
             if not errors:
                 self._updated = True
-                if user_input["freq"] is False:
-                    await self.get_er("select", slugify(f"{self._uid}_frequency"))
+
                 zones = newdata.get('zones',{})
+
+                if user_input[ATTR_FREQUENCY] is False:
+                    await self.get_er("select", slugify(f"{self._uid}_frequency"))
+                    for zone in zones:
+                        zone[ATTR_FREQUENCY] = True
+
                 #set watering type for the zones
                 if newdata.get(ATTR_FLOW_SENSOR):
                     for zone in zones:
@@ -1046,16 +1080,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Optional(
-                    "freq",
-                    description={"suggested_value": default_input.get("freq", True)},
+                    ATTR_FREQUENCY,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY, False)},
                 ): cv.boolean,
                 vol.Optional(
                     "repeat",
                     description={"suggested_value": default_input.get("repeat", False)},
                 ): cv.boolean,
                 vol.Required(
-                    "freq_options",
-                    description={"suggested_value": default_input.get("freq_options")},
+                    ATTR_FREQUENCY_OPTIONS,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY_OPTIONS)},
                 ): sel.SelectSelector(
                     {
                         "options": OPTIONS_DAYS
@@ -1063,7 +1097,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         + OPTIONS_DAYS_GROUPED,
                         "multiple": True,
                         "custom_value": True,
-                        "translation_key": "freq_options",
+                        "translation_key": ATTR_FREQUENCY_OPTIONS,
                     }
                 ),
                 vol.Optional(
@@ -1268,7 +1302,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     await self.get_er(
                         "number", slugify(f"{self._uid}_{friendlyname}_repeat")
                     )
-                if user_input["freq"] is False:
+                if user_input[ATTR_FREQUENCY] is False:
                     await self.get_er(
                         "select", slugify(f"{self._uid}_{friendlyname}_frequency")
                     )
@@ -1294,8 +1328,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     {"domain": ["switch", "valve"], "exclude_entities": zone_exclude}
                 ),
                 vol.Optional(
-                    "freq",
-                    description={"suggested_value": default_input.get("freq", False)},
+                    ATTR_FREQUENCY,
+                    description={"suggested_value": default_input.get(ATTR_FREQUENCY, False)},
                 ): cv.boolean,
                 vol.Optional(
                     "eco",
@@ -1403,7 +1437,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     {"domain": ["switch", "valve"], "exclude_entities": self._exclude}
                 ),
                 vol.Optional(
-                    "freq", default=default_input.get("freq", False)
+                    ATTR_FREQUENCY, default=default_input.get(ATTR_FREQUENCY, False)
                 ): cv.boolean,
                 vol.Optional(
                     "eco",

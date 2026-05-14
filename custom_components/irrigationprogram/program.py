@@ -74,14 +74,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._stop = False
 
         self._program_remaining = 0
-        # self._program_default_run_time = 0
-
 
         self._unsub_point_in_time = None
         self._unsub_start = None
         self._unsub_monitor = None
         self._unsub_pause = None
         self._unsub_pause_water = None
+        self._start_time = dt_util.as_local(dt_util.now())
 
         self._pumps = []
         self._run_zones = []  # list of zones to run
@@ -361,6 +360,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         )
 
         time = datetime.now(self._localtimezone).strftime(TIME_STR_FORMAT)
+        self._start_time = dt_util.as_local(dt_util.now())
         string_times = self.start_time_value
         if string_times:
             string_times = (
@@ -536,7 +536,18 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
     async def set_up_entity_monitoring(self):
         """Set up to monitor these entities to change the next run data."""
 
-        def monitor_append(object, name=None, table=None):
+        async def monitor_append(object, name=None, table=None):
+
+            # wait for the entity_id to be available before trying to monitor it,
+            # otherwise the monitoring will stop working if the entity is renamed or
+            # unavailable at startup
+            timeout = 5
+            starttime = datetime.now()
+            # if the entity is not available after the timeout,
+            # it will be skipped and a notification will be created to alert the user
+            while self.hass.states.get(object) is None and datetime.now() - starttime < timedelta(seconds=timeout):
+                await asyncio.sleep(0.1)
+
             if object not in table:
                 try:
                     table.append(object)
@@ -551,49 +562,43 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         monitor = []
 
-        monitor_append(self._program.start_time.entity_id, "start_time", monitor)
+        await monitor_append(self._program.start_time.entity_id, "start_time", monitor)
         if self._program.sunrise_offset:
-            monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset", monitor)
-            monitor_append("sensor.sun_next_rising", None)
+            await monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset", monitor)
+            await monitor_append("sensor.sun_next_rising", None, monitor)
         if self._program.sunset_offset:
-            monitor_append(self._program.sunset_offset.entity_id, "sunset_offset", monitor)
-            monitor_append("sensor.sun_next_setting", None)
-        monitor_append(self._program.enabled.entity_id, "enabled", monitor)
+            await monitor_append(self._program.sunset_offset.entity_id, "sunset_offset", monitor)
+            await monitor_append("sensor.sun_next_setting", None, monitor)
+        await monitor_append(self._program.enabled.entity_id, "enabled", monitor)
         if self._program.rain_delay:
-            monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor)
-            monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days", monitor)
+            await monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor)
+            await monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days", monitor)
         if self._program.frequency:
-            monitor_append(self._program.frequency.entity_id, "frequency", monitor)
+            await monitor_append(self._program.frequency.entity_id, "frequency", monitor)
         if self._program.inter_zone_delay:
-            monitor_append(self._program.inter_zone_delay.entity_id, "inter_zone_delay", monitor)
+            await monitor_append(self._program.inter_zone_delay.entity_id, "inter_zone_delay", monitor)
         if self._program.repeats:
-            monitor_append(self._program.repeats.entity_id, "repeats", monitor)
+            await monitor_append(self._program.repeats.entity_id, "repeats", monitor)
         if self._program.water_source:
-            monitor_append(self._program.water_source, "water_source", monitor)
+            await monitor_append(self._program.water_source, "water_source", monitor)
 
         for zone in self._zones:
-            monitor_append(zone.switch.entity_id, "zone", monitor)
-            # wait for the entity_id to be available before trying to monitor it,
-            # otherwise the monitoring will stop working if the entity is renamed or
-            # unavailable at startup
-            while zone.enabled.entity_id is None:
-                await asyncio.sleep(1)
-            monitor_append(zone.enabled.entity_id, "enabled", monitor)
+            await monitor_append(zone.switch.entity_id, "zone", monitor)
+            await monitor_append(zone.enabled.entity_id, "enabled", monitor)
             if zone.frequency:
-                monitor_append(zone.frequency.entity_id, "frequency", monitor)
+                await monitor_append(zone.frequency.entity_id, "frequency", monitor)
             if zone.rain_sensor:
-                monitor_append(zone.rain_sensor, "rain_sensor", monitor)
+                await monitor_append(zone.rain_sensor, "rain_sensor", monitor)
             if zone.ignore_sensors:
-                # possible problem
-                monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors", monitor)
+                await monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors", monitor)
             if zone.adjustment:
-                monitor_append(zone.adjustment, "adjustment", monitor)
+                await monitor_append(zone.adjustment, "adjustment", monitor)
             if zone.water:
-                monitor_append(zone.water.entity_id, "water", monitor)
+                await monitor_append(zone.water.entity_id, "water", monitor)
             if zone.repeat:
-                monitor_append(zone.repeat.entity_id, "repeat", monitor)
+                await monitor_append(zone.repeat.entity_id, "repeat", monitor)
             if zone.wait:
-                monitor_append(zone.wait.entity_id, "wait", monitor)
+                await monitor_append(zone.wait.entity_id, "wait", monitor)
 
         self._unsub_monitor = async_track_state_change_event(
             self._hass, tuple(monitor), self.update_next_run
@@ -602,13 +607,13 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         monitor2 = []
 
         if self._program.water_source and self._program.water_source_pause:
-            monitor_append(self._program.water_source, "water_source", monitor2)
+            await monitor_append(self._program.water_source, "water_source", monitor2)
         self._unsub_pause_water = async_track_state_change_event(
             self._hass, tuple(monitor2), self.pause_program_water_source
         )
 
         monitor3 = []
-        monitor_append(self._program.pause.entity_id, "pause", monitor3)
+        await monitor_append(self._program.pause.entity_id, "pause", monitor3)
         self._unsub_pause = async_track_state_change_event(
             self._hass, tuple(monitor3), self.pause_program
         )
@@ -938,7 +943,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if self._state is False:
                 # break out if program terminated
                 break
-
             if (
                 self.inter_zone_delay <= 0
                 and running_zone.remaining_time.numeric_value
@@ -978,7 +982,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         """Turn on the irrigation zone."""
         await zone.switch.set_scheduled(self._scheduled)
         # run in the event loop to support independant executions
-        self.hass.async_create_task(zone.switch.async_turn_on_from_program(last))
+
+        #need to pass the program start time to support running across midnight
+        #this will be the last_ran time for the zone
+
+        self.hass.async_create_task(zone.switch.async_turn_on_from_program(last,self._start_time))
         await asyncio.sleep(0)
 
     async def async_turn_on(self, **kwargs):
