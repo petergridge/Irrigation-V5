@@ -754,6 +754,7 @@ class Zone(SwitchEntity, RestoreEntity):
         """Determine when a zone will next attempt to run."""
         #1. ensure that the state/status is understood
         # something has changed recalculate the run time
+        # and change the zone status if required before calculating the next run time
         if self._status in (CONST_ECO, CONST_ON, CONST_PENDING):
             # zone is running no need to recalc next run until it has completed
             return
@@ -767,8 +768,29 @@ class Zone(SwitchEntity, RestoreEntity):
                 )
             return
 
+        if self._status == CONST_PENDING:
+            await self.prepare_to_run(scheduled=True)
+
+        # check the sensor states
+        status = await self.handle_state_change()
+        if status not in (CONST_OFF):
+            # real issue reset the zone
+            self._status = CONST_RAINING if status == CONST_RAINING_STOP else status
+            self._status_sensor = self._status
+            await self.status_sensor_set()
+            self._remaining_time = 0
+            await self.remaining_time_set()
+            return
+
+        # it must be off
+        self._status_sensor = self._state = self._status = CONST_OFF
+        await self.status_sensor_set()
+        self.async_schedule_update_ha_state()
+
+
+
         #2. now the state/status is clarified, calculate the next start
-        # treat th start time as string and clean it up to allow multiple start times in a day,
+        # treat the start time as string and clean it up to allow multiple start times in a day,
         # this allows the next run to be calculated for the next start time in the day if the current time has passed the first start time
         string_times = self.clean_up_string(self._programdata.switch.start_time_value)
         string_times.sort()
@@ -871,6 +893,10 @@ class Zone(SwitchEntity, RestoreEntity):
         self._next_run = v_next_run
         await self.sensor_next_run_set()
 
+        if self._state not in (CONST_PENDING, CONST_ON, CONST_ECO, CONST_OFF):
+            self._status_sensor = self._state = CONST_OFF
+            await self.status_sensor_set()
+
 
     def get_numeric_frq(self,today_start_time,last_ran_day_begin,today_begin, last_ran=None):
         """Process a numeric frquency."""
@@ -900,6 +926,8 @@ class Zone(SwitchEntity, RestoreEntity):
         else:
             v_next_run = v_last_ran + timedelta(days=frq)
         return max(v_next_run,delay_until)
+
+
 
     def get_weekday(self, day):
         """Determine weekday num."""
