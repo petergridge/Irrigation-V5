@@ -1446,7 +1446,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 # check the switch, rain and water source
                 await asyncio.sleep(1)
                 status = await self.get_status()
-                if status not in (CONST_ON, CONST_RAINING):
+                if status not in (CONST_ON, CONST_RAINING,CONST_PROGRAM_DISABLED):
                     continue
                 check_state, value = await self.check_switch_state()
                 if not check_state:
@@ -1459,7 +1459,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     async_dismiss(self.hass, "irrigation_latency")
                     async_create(
                         self.hass,
-                        message=f"{self.name} returned and unexpected state, {status} for {self._latency} seconds.",
+                        message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
                         title="Irrigation Controller",
                         notification_id="irrigation_latency",
                     )
@@ -1543,7 +1543,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 # check the switch, rain and water source
                 await asyncio.sleep(1)
                 status = await self.get_status()
-                if status not in (CONST_ON, CONST_RAINING):
+                if status not in (CONST_ON, CONST_RAINING,CONST_PROGRAM_DISABLED):
                     continue
                 check_state, value = await self.check_switch_state()
                 if not check_state:
@@ -1556,7 +1556,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     async_dismiss(self.hass, "irrigation_latency")
                     async_create(
                         self.hass,
-                        message=f"{self.name} returned and unexpected state, {status} for {self._latency} seconds.",
+                        message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
                         title="Irrigation Controller",
                         notification_id="irrigation_latency",
                     )

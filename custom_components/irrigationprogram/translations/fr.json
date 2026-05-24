@@ -35,16 +35,16 @@
 		},
 		"interlock": {
 			"options": {
-				"strict": "Strict - Arrêt des autres programmes au démarrage. Ce programme s'arrete au démarrage d'un autre programme",
-				"loose": "Perte - Arrêt des autres programmes au démarrage. Ce programme continue sauf si un programme 'strict' demarre",
+				"strict": "Strict - Arrêt des autres programmes au démarrage. Ce programme s'arrête au démarrage d'un autre programme",
+				"loose": "Perte - Arrêt des autres programmes au démarrage. Ce programme continue sauf si un programme 'strict' démarre",
 				"off": "Arrêt - Arrêt des programmes stricts seulement. Ce programme continue sauf si un programme 'strict' démarre"
 			}
 		}
 	},
 	"entity": {
 		"sensor": {
-			"zonestatus": {
-				"name":"Statut Zone",
+			"zone_status": {
+				"name":"Etat de la Zone",
 				"state": {
 					"off": "Arrêt",
 					"on": "Marche",
@@ -57,8 +57,8 @@
 					"raining": "Pluie",
 					"adjusted_off": "Aucun ajustement",
 					"no_water_source": "Source d'eau non détectée",
-					"zone_disabled": "Désactivé",
-					"paused": "Program en pause"
+					"zone_disabled": "Désactivée",
+					"paused": "Programme en pause"
 				}
 			},
 			"zone_next_run":{
@@ -209,9 +209,9 @@
 					"user": "Mettre à jour le programme",
 					"add_zone": "Ajouter une zone",
 					"update_zone": "Mettre à jour la zone",
-					"delete_zone": "Supprimer zone",
+					"delete_zone": "Supprimer la zone",
 					"finalise": "Appliquer",
-					"advanced": "Options Avancées"
+					"advanced": "Options avancées"
 				}
 			},
 			"advanced": {

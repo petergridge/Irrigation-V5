@@ -433,6 +433,17 @@ class IrrigationCardEditor extends HTMLElement {
         select.add(newOption);
       }
     }
+    // if nothing selected, select the first program
+    if (this._config.program.length == 0) {
+      select.selectedIndex = 1;
+      //update the config with the first program
+      const event = new Event("config-changed", {
+        bubbles: true,
+        composed: true,
+      });
+      event.detail = { config: { ...this._config, program: select.value } };
+      this.dispatchEvent(event);
+    }
   }
 
   doBuildEntityOptions(program, entities) {
@@ -461,6 +472,20 @@ class IrrigationCardEditor extends HTMLElement {
       }
       select.add(newOption);
     }
+    //if nothing selected, select all zone and update the config
+    if (select.value == "") {
+      for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+      }
+      //update the config with the selected zones
+      const event = new Event("config-changed", {
+        bubbles: true,
+        composed: true,
+      });
+      event.detail = { config: { ...this._config, entities: Array.from(select.selectedOptions).map(option => option.value) } };
+      this.dispatchEvent(event);
+    }
+
   }
 
   doUpdateConfig() {

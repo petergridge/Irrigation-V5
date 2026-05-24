@@ -99,7 +99,7 @@
 					"controller_disabled": "mdi:fuse-alert",
 					"unavailable": "mdi:fuse-alert",
 					"raining": "mdi:weather-pouring",
-					"adjusted_off": "mdi:weather-pouring",
+					"adjusted_off": "mdi:gauge-empty",
 					"no_water_source": "mdi:water-alert-outline",
 					"zone_disabled": "mdi:alert-outline"
 				}
