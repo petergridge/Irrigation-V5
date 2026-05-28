@@ -3,7 +3,8 @@
     "device_type": {
       "options": {
         "generic": "Generické",
-        "rainbird": "RainBird"
+        "rainbird": "RainBird",
+				"bhyve": "B-Hyve"
       }
     },
     "watering_type": {
@@ -37,6 +38,12 @@
         "strict": "Prísne - vypnúť ostatné programy pri štarte",
         "loose": "Voľné - vypnúť všetky ostatné programy pri štarte, bežať ďalej pokiaľ nezačne 'prísny' program",
         "off": "Vypnuté - vypnúť iba 'prísne' programy, bežať ďalej pokiaľ nezačne 'prísny' program"
+      }
+    },
+    "input_mode": {
+      "options": {
+        "slider": "Posuvník",
+        "box": "Box"
       }
     }
   },
@@ -154,6 +161,7 @@
         "data": {
           "name": "Názov",
           "freq": "Povoliť globálnu frekvenciu programu",
+          "repeat": "Počet opakování",
           "freq_options": "Vyber alebo pridaj možnosti frekvencie",
           "device_type": "Typ riadiacej jednotky",
           "flow_sensor": "Senzor prietoku",
@@ -229,7 +237,9 @@
           "rain_delay_on": "Povoliť manuálne oneskorenie po daždi",
           "latency": "Čas čakania pre pomalé zariadenia",
           "start_latency": "Čas čakania pri štarte",
-          "pause_on_water_source": "Pozastaviť pri strate zdroja vody"
+          "pause_on_water_source": "Pozastaviť pri strate zdroja vody",
+          "continue_on_unexpected_state": "Zóna pokračuje, keď je stav neočakávaný, inak pokračuje na ďalšiu zónu",
+          "input_mode": "Vstupný režim pre číselné entity"
         }
       }
     }
@@ -272,7 +282,9 @@
           "rain_delay_on": "Povoliť manuálne oneskorenie po daždi",
           "latency": "Čas čakania pre pomalé zariadenia",
           "start_latency": "Čas čakania pri štarte",
-          "pause_on_water_source": "Pozastaviť pri strate zdroja vody"
+          "pause_on_water_source": "Pozastaviť pri strate zdroja vody",
+          "continue_on_unexpected_state": "Zóna pokračuje, keď je stav neočakávaný, inak pokračuje na ďalšiu zónu",
+          "input_mode": "Vstupný režim pre číselné entity"
         }
       },
       "update_program": {
@@ -280,6 +292,7 @@
         "description": "Upraviť program",
         "data": {
           "freq": "Povoliť globálnu frekvenciu programu",
+          "repeat": "Počet opakování",
           "freq_options": "Vyber alebo pridaj možnosti frekvencie",
           "device_type": "Typ riadiacej jednotky",
           "flow_sensor": "Senzor prietoku",

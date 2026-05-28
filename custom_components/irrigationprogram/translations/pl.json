@@ -39,6 +39,12 @@
 				"loose": "Łagodny - wyłącz wszystkie inne programy podczas uruchamiania, kontynuuj działanie, chyba że zostanie uruchomiony program „Rygorystyczny”",
 				"off": "Wyłącz – wyłącz tylko programy „Rygorystyczny”, kontynuuj działanie, dopóki nie zostanie uruchomiony program „Rygorystyczny”"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Suwak",
+				"box": "Pole"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
 					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
-					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy"
+					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy",
+					"input_mode": "Tryb wprowadzania dla encji numerycznych"
 				}
 			}
 		}
@@ -276,8 +283,9 @@
 					"latency": "Czas oczekiwania dla wolno odpowiadających urządzeń",
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
 					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
-					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy"
-					}
+					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy",
+					"input_mode": "Tryb wprowadzania dla encji numerycznych"
+				}
 			},
 			"update_program": {
 				"title": "Ustawienia programu",

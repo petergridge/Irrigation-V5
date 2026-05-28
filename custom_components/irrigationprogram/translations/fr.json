@@ -39,6 +39,12 @@
 				"loose": "Perte - Arrêt des autres programmes au démarrage. Ce programme continue sauf si un programme 'strict' démarre",
 				"off": "Arrêt - Arrêt des programmes stricts seulement. Ce programme continue sauf si un programme 'strict' démarre"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Curseur",
+				"box": "Boîte de saisie"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
 					"pause_on_water_source": "Suspendre le programme quand le capteur de la source d'eau est désactivé",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Mode d'entrée pour les entités numériques"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Délai pour les équipements peu réactifs",
 					"start_latency": "Délai pour les équipements démarrant lentement",
 					"pause_on_water_source": "Suspendre le programme quand le capteur de la source d'eau est désactivé",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Mode d'entrée pour les entités numériques"
 				}
 			},
 			"update_program": {

@@ -28,6 +28,7 @@ from .const import (
     ATTR_FLOW_SENSOR,
     ATTR_FREQUENCY,
     ATTR_FREQUENCY_OPTIONS,
+    ATTR_INPUT_MODE,
     ATTR_INTERLOCK,
     ATTR_LATENCY,
     ATTR_MIN_SEC,
@@ -695,6 +696,20 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
                     },
                 ): cv.boolean,
+
+                vol.Optional(
+                    ATTR_INPUT_MODE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_INPUT_MODE, "slider"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["box", "slider"],
+                        "translation_key": ATTR_INPUT_MODE,
+                    }
+                ),
             }
         )
 
@@ -826,6 +841,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 newdata[ATTR_START_TYPE] = user_input.get(ATTR_START_TYPE, "selector")
                 newdata[ATTR_RAIN_BEHAVIOUR] = user_input.get(
                     ATTR_RAIN_BEHAVIOUR, "stop"
+                )
+                newdata[ATTR_INPUT_MODE] = user_input.get(
+                    ATTR_INPUT_MODE, "slider"
                 )
                 newdata[ATTR_MIN_SEC] = user_input[ATTR_MIN_SEC]
                 newdata[ATTR_WATER_MAX] = user_input[ATTR_WATER_MAX]
@@ -973,6 +991,20 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         "suggested_value": default_input.get(ATTR_RAIN_DELAY, False)
                     },
                 ): cv.boolean,
+
+                vol.Optional(
+                    ATTR_INPUT_MODE,
+                    description={
+                        "suggested_value": default_input.get(
+                            ATTR_INPUT_MODE, "slider"
+                        )
+                    },
+                ): sel.SelectSelector(
+                    {
+                        "options": ["box", "slider"],
+                        "translation_key": ATTR_INPUT_MODE,
+                    }
+                ),
             }
         )
         return self.async_show_form(

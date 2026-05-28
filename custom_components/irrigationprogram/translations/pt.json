@@ -39,6 +39,12 @@
 				"loose": "Livre - desliga todos os outros programas ao iniciar, continua a ser executado a menos que um programa 'rigoroso' seja iniciado",
 				"off": "Desligado - desativa apenas os programas 'rigorosos', continua a ser executado a menos que um programa 'rigoroso' seja iniciado"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Slider",
+				"box": "Box"
+			}
 		}
 	},
 	"entity": {
@@ -170,7 +176,7 @@
 					"zone": "Comando da zona",
 					"freq": "Trocar o intervalo de rega da zona pelo intervalo de rega do programa",
 					"eco": "Ativar o modo Ecológico espera e repetição",
-					"watering_type": "Tipo de rega",
+					"watering_type": "Watering type",
 					"water_adjustment": "Sensor de ajuste do tempo de rega",
 					"rain_sensor": "Sensor binário de chuva",
 					"order": "Ordem de execução da zona"
@@ -225,14 +231,15 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
-					"pump_delay": "Aplicar um tempo de antecedência ou de atraso para o arranque da bomba",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
 					"zone_delay_max": "Atraso máximo de transição de zona",
 					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
-					"continue_on_unexpected_state": "A zona continua quando o estado é inesperado, caso contrário prosseguir para a próxima zona"
+					"continue_on_unexpected_state": "A zona continua quando o estado é inesperado, caso contrário prosseguir para a próxima zona",
+					"input_mode": "Modo de entrada para entidades numéricas"
 				}
 			}
 		}
@@ -269,14 +276,15 @@
 					"water_max": "Tempo/volume máximo de rega",
 					"water_step": "Passo de Tempo/volume",
 					"parallel": "Execução de zonas em paralelo",
-					"pump_delay": "Aplicar um tempo de antecedência ou de atraso para o arranque da bomba",
+					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Permitir a criação de cartão de entidades em yaml",
 					"zone_delay_max": "Atraso máximo de transição de zona",
 					"rain_delay_on": "Adiar o próximo arranque quando for detetada chuva",
 					"latency": "Tempo de espera para dispositivos de resposta lenta (alta latência)",
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "A zona continua quando o estado for inesperado, caso contrário continua para a próxima zona",
+					"input_mode": "Modo de entrada para entidades numéricas"
 				}
 			},
 			"update_program": {

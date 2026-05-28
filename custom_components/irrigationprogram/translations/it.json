@@ -39,6 +39,12 @@
 				"loose": "Loose - ferma tutti gli altri programmi all'avvio, mantieni in esecuzione a meno che un programma 'strict' venga avviato",
 				"off": "Off - ferma solo i programmi 'strict', mantieni in esecuzione a meno che un programma 'strict' venga avviato"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Slider",
+				"box": "Box"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Tempo di attesa per dispositivi a risposta lenta (alta latenza)",
 					"start_latency": "Tempo di attesa per i dispositivi che si caricano lentamente all'avvio",
 					"pause_on_water_source": "Metti in pausa il programma quando il sensore della sorgente d'acqua cambia in off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Mode di ingresso per le entità numeriche"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Tempo di attesa per dispositivi a risposta lenta (alta latenza)",
 					"start_latency": "Tempo di attesa per i dispositivi che si caricano lentamente all'avvio",
 					"pause_on_water_source": "Metti in pausa il programma quando il sensore della sorgente d'acqua cambia in off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Mode di ingresso per le entità numeriche"
 				}
 			},
 			"update_program": {

@@ -39,6 +39,12 @@
 				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
 				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Schieberegler",
+				"box": "Eingabefeld"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Modo de entrada para entidades numéricas"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Modo de entrada para entidades numéricas"
 				}
 			},
 			"update_program": {

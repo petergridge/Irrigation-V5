@@ -33,6 +33,12 @@
 				"continue": "Allow program to complete"
 			}
 		},
+		"input_mode": {
+			"options": {
+				"slider": "Slider",
+				"box": "Box"
+			}
+		},
 		"interlock": {
 			"options": {
 				"strict": "Strict - turn off other programs when starting",
@@ -232,7 +238,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Input mode for number entities"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Input mode for number entities"
 				}
 			},
 			"update_program": {

@@ -39,6 +39,7 @@ from .const import (
     ATTR_FREQUENCY,
     ATTR_FREQUENCY_OPTIONS,
     ATTR_GROUPS,
+    ATTR_INPUT_MODE,
     ATTR_INTERLOCK,
     ATTR_LATENCY,
     ATTR_MIN_SEC,
@@ -167,6 +168,7 @@ class IrrigationProgram:
     start_latency: int = 60
     water_source_pause: bool = False
     continue_on_unexpected_state: bool = False
+    input_mode: str = "slider"  # slider|box
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -244,7 +246,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             pump_delay=config.get(ATTR_PUMP_DELAY, 1),
             card_yaml=config.get(ATTR_CARD_YAML, False),
             water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
-            continue_on_unexpected_state=config.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False)
+            continue_on_unexpected_state=config.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False),
+            input_mode=config.get(ATTR_INPUT_MODE, "slider")
         )
         # Report if any of the dependant objects haven't loaded,
         # this could be due to a slow registering device or an incorrect entity id,

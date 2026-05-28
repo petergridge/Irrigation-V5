@@ -39,6 +39,12 @@
 				"loose": "Loose - alle anderen Programme beim Starten ausschalten, weiterlaufen lassen, es sei denn, ein 'strict' Programm wird gestartet",
 				"off": "Off - nur 'strict' Programme ausschalten, weiterlaufen lassen, es sei denn, ein 'strict' Programm wird gestartet"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Schieberegler",
+				"box": "Eingabefeld"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Eingabemodus für Zahlenentitäten"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Wartezeit für langsam reagierende (hohe Latenz) Geräte",
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
-					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone"
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Eingabemodus für Zahlenentitäten"
 				}
 			},
 			"update_program": {

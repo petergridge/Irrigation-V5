@@ -34,6 +34,7 @@ async def async_setup_entry(
             10,
             0,
             1,
+            p.input_mode
         )
         sensors.append(sensor)
         config_entry.runtime_data.program.rain_delay_days = sensor
@@ -47,6 +48,7 @@ async def async_setup_entry(
             10,
             1,
             1,
+            p.input_mode
         )
         sensors.append(sensor)
         config_entry.runtime_data.program.repeats = sensor
@@ -61,6 +63,7 @@ async def async_setup_entry(
             p.zone_delay_max,
             CONST_DELAY_OFFSET,
             1,
+            p.input_mode
         )
         sensors.append(sensor)
         config_entry.runtime_data.program.inter_zone_delay = sensor
@@ -74,6 +77,7 @@ async def async_setup_entry(
             CONST_SUN_OFFSET,
             -CONST_SUN_OFFSET,
             30,
+            p.input_mode
         )
         sensors.append(sensor)
         config_entry.runtime_data.program.sunrise_offset = sensor
@@ -87,6 +91,7 @@ async def async_setup_entry(
             CONST_SUN_OFFSET,
             -CONST_SUN_OFFSET,
             30,
+            p.input_mode
         )
         sensors.append(sensor)
         config_entry.runtime_data.program.sunset_offset = sensor
@@ -101,16 +106,17 @@ async def async_setup_entry(
             p.water_max,
             p.water_step,
             p.min_sec,
+            p.input_mode
         )
 
         sensors.append(sensor)
         config_entry.runtime_data.zone_data[i].water = sensor
         if zone.eco:
-            sensor = Wait(unique_id, p.name, zone.name, p.min_sec)
+            sensor = Wait(unique_id, p.name, zone.name, p.min_sec, p.input_mode)
             sensors.append(sensor)
             config_entry.runtime_data.zone_data[i].wait = sensor
 
-            sensor = Repeat(unique_id, p.name, zone.name)
+            sensor = Repeat(unique_id, p.name, zone.name, p.input_mode)
             sensors.append(sensor)
             config_entry.runtime_data.zone_data[i].repeat = sensor
 
@@ -120,11 +126,10 @@ async def async_setup_entry(
 class InputNumberProgram(RestoreNumber):
     _attr_has_entity_name = True
     _attr_editable = True
-    _attr_mode = NumberMode.SLIDER
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
     def __init__(
-        self, unique_id, pname, translation_key, unit_of_measure, max, min, step
+        self, unique_id, pname, translation_key, unit_of_measure, max, min, step, input_mode
     ):
         self._attr_unique_id = slugify(f"{unique_id}_{translation_key}")
         self._attr_attribution = f"Irrigation Controller: {pname}"
@@ -134,6 +139,7 @@ class InputNumberProgram(RestoreNumber):
         self._attr_native_min_value = min
         self._attr_native_max_value = max
         self._attr_native_step = step
+        self._attr_mode = NumberMode.SLIDER if input_mode == "slider" else NumberMode.BOX
 
     async def async_added_to_hass(self):
         last_state = await self.async_get_last_number_data()
@@ -155,8 +161,6 @@ class InputNumberProgram(RestoreNumber):
 class Water(RestoreNumber):
     _attr_has_entity_name = True
     _attr_editable = True
-    _attr_mode = NumberMode.SLIDER
-
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
     def __init__(
@@ -168,6 +172,7 @@ class Water(RestoreNumber):
         water_max=1,
         step=30,
         min_sec="minutes",
+        input_mode="slider"
     ):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_water")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
@@ -185,6 +190,7 @@ class Water(RestoreNumber):
                 self._attr_native_unit_of_measurement = "min"
             self._attr_device_class = NumberDeviceClass.DURATION
             self._attr_translation_key = "water"
+            self._attr_mode = NumberMode.SLIDER if input_mode == "slider" else NumberMode.BOX
 
     async def async_added_to_hass(self):
         last_state = await self.async_get_last_number_data()
@@ -205,16 +211,16 @@ class Water(RestoreNumber):
 class Wait(RestoreNumber):
     _attr_has_entity_name = True
     _attr_editable = True
-    _attr_mode = NumberMode.SLIDER
     _attr_native_min_value = 1
     _attr_native_step = 1
     _attr_translation_key = "wait"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, min_sec="minutes"):
+    def __init__(self, unique_id, pname, zone_name, min_sec="minutes", input_mode="slider"):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_wait")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_device_class = NumberDeviceClass.DURATION
+        self._attr_mode = NumberMode.SLIDER if input_mode == "slider" else NumberMode.BOX
         if min_sec == "seconds":
             self._attr_native_max_value = 120
             self._attr_native_unit_of_measurement = "s"
@@ -241,17 +247,17 @@ class Wait(RestoreNumber):
 class Repeat(RestoreNumber):
     _attr_has_entity_name = True
     _attr_editable = True
-    _attr_mode = NumberMode.SLIDER
     _attr_native_min_value = 1
     _attr_native_max_value = 10
     _attr_native_step = 1
     _attr_translation_key = "repeat"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name):
+    def __init__(self, unique_id, pname, zone_name, input_mode="slider"):
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_repeat")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_native_unit_of_measurement = "reps"
+        self._attr_mode = NumberMode.SLIDER if input_mode == "slider" else NumberMode.BOX
 
     async def async_added_to_hass(self):
         last_state = await self.async_get_last_number_data()

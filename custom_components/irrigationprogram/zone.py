@@ -920,12 +920,13 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if (
             today_start_time >= dt_util.as_local(dt_util.now())
-            # and last_ran_day_begin == today_begin
+            and last_ran_day_begin == today_begin
             ):
             v_next_run = today_start_time
         else:
             v_next_run = v_last_ran + timedelta(days=frq)
-        return max(v_next_run,delay_until)
+
+        return max(v_next_run, delay_until)
 
 
 

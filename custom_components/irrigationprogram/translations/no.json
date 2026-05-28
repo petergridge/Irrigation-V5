@@ -39,6 +39,12 @@
 				"loose": "Slapt -  slå av andre programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter",
 				"off": "Av - slå av bare andre 'strenge' programmer ved start, fortsett å kjøre med mindre et 'strengt' program starter"
 			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Skyveknapp",
+				"box": "Boks"
+			}
 		}
 	},
 	"entity": {
@@ -232,7 +238,8 @@
 					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
 					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av",
-					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone"
+					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone",
+					"input_mode": "Inngangsmodus for numeriske enheter"
 				}
 			}
 		}
@@ -276,7 +283,8 @@
 					"latency": "Ventetid for tregt reagerende (høy latens) enheter",
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
 					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av",
-					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone"
+					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone",
+					"input_mode": "Inngangsmodus for numeriske enheter"
 				}
 			},
 			"update_program": {

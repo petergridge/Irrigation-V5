@@ -61,6 +61,7 @@ ATTR_MIN_SEC = "min_sec"
 ATTR_PAUSE_WATER_SOURCE = "pause_on_water_source"
 ATTR_DEFAULT_RUN_TIME = "default_run_time"
 ATTR_CONTINUE_ON_UNEXPECTED_STATE = "continue_on_unexpected_state"
+ATTR_INPUT_MODE = "input_mode"
 
 ATTR_ZONE_DELAY_MAX = "zone_delay_max"
 ATTR_WATER_MAX = "water_max"
