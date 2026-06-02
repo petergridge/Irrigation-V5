@@ -787,8 +787,6 @@ class Zone(SwitchEntity, RestoreEntity):
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
 
-
-
         #2. now the state/status is clarified, calculate the next start
         # treat the start time as string and clean it up to allow multiple start times in a day,
         # this allows the next run to be calculated for the next start time in the day if the current time has passed the first start time
@@ -825,14 +823,16 @@ class Zone(SwitchEntity, RestoreEntity):
             v_last_ran = native_val.replace(
                 hour=starthour, minute=startmin, second=0, microsecond=0
             )
-
-        today_start_time = dt_util.as_local(dt_util.now()).replace(
+        #first start time today based on the start time config, this is used to determine if the next run should be today or
+        first_start_time = dt_util.as_local(dt_util.now()).replace(
             hour=starthour, minute=startmin, second=00, microsecond=00
         )
-        today_begin = dt_util.as_local(dt_util.now()).replace(
+        #midnight
+        today_midnight = dt_util.as_local(dt_util.now()).replace(
             hour=00, minute=00, second=00, microsecond=00
         )
-        last_ran_day_begin = v_last_ran.replace(
+        #midnight of the last ran day
+        last_ran_midnight = v_last_ran.replace(
             hour=00, minute=00, second=00, microsecond=00
         )
 
@@ -842,7 +842,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 delay = int(self._programdata.rain_delay_days.state)
 
         try:  # Frq is numeric
-            v_next_run = self.get_numeric_frq(today_start_time,last_ran_day_begin,today_begin, v_last_ran)
+            v_next_run = self.get_numeric_frq(first_start_time,last_ran_midnight,today_midnight, v_last_ran)
         except ValueError: # Frq is not numeric, days of week or odd/even
             string_freq = self.clean_up_string(self.frequency)
             v_last_ran = dt_util.as_local(dt_util.now()).replace(
@@ -868,8 +868,8 @@ class Zone(SwitchEntity, RestoreEntity):
                         )
 
         if (
-            today_start_time >= dt_util.as_local(dt_util.now())
-            # and last_ran_day_begin == today_begin
+            first_start_time >= dt_util.as_local(dt_util.now())
+            # and last_ran_midnight == today_midnight
         ):
             # time is in the future, supports multiple start times
             v_next_run = v_next_run.replace(
@@ -898,7 +898,7 @@ class Zone(SwitchEntity, RestoreEntity):
             await self.status_sensor_set()
 
 
-    def get_numeric_frq(self,today_start_time,last_ran_day_begin,today_begin, last_ran=None):
+    def get_numeric_frq(self,first_start_time,last_ran_midnight,today_midnight, last_ran=None):
         """Process a numeric frquency."""
 
         delay = 0
@@ -911,23 +911,24 @@ class Zone(SwitchEntity, RestoreEntity):
         if self.frequency is None:
             frq = 1
         else:
-            number_as_float = float(self.frequency)
-            frq = int(number_as_float)
-        v_last_ran = last_ran
-        if (today_start_time - last_ran).total_seconds() / 86400 >= frq:
-            # it has been sometime since the zone ran
-            v_last_ran = dt_util.as_local(dt_util.now())
+            frq = int(float(self.frequency))
 
+        # time is in the future, supports multiple start times on a day
         if (
-            today_start_time >= dt_util.as_local(dt_util.now())
-            and last_ran_day_begin == today_begin
+            first_start_time >= dt_util.as_local(dt_util.now())
+            and last_ran_midnight == today_midnight
             ):
-            v_next_run = today_start_time
+            v_next_run = first_start_time
+        #it has been more than the frequency
+        elif (dt_util.as_local(dt_util.now()) - last_ran).total_seconds() / 86400 >= frq:
+            #if it has been more than the frequency
+            v_next_run = first_start_time
+            if v_next_run < dt_util.as_local(dt_util.now()):
+                v_next_run += timedelta(days=1)
         else:
-            v_next_run = v_last_ran + timedelta(days=frq)
+            v_next_run = last_ran + timedelta(days=frq)
 
         return max(v_next_run, delay_until)
-
 
 
     def get_weekday(self, day):
