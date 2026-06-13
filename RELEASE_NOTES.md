@@ -60,8 +60,8 @@ Each call created a `ServiceCall` object, emitted a `call_service` event on the 
 **Fix:** sensors keep their internal value exact every second (program timing reads `numeric_value` to drive zone transitions — this is never throttled). Writes to the HA state machine are gated by `CONST_SENSOR_WRITE_INTERVAL = 5` seconds. Boundary values (first write and the final `0`) always go through so the entity settles on a correct final value after a run.
 
 ```python
-CONST_SENSOR_WRITE_INTERVAL = 5          # normal mode: write every 5 s
-CONST_SENSOR_WRITE_INTERVAL_LOW_POWER = 99999  # low power: start + end only
+CONST_SENSOR_WRITE_INTERVAL = 5              # normal mode: write every 5 s
+CONST_SENSOR_WRITE_INTERVAL_LOW_POWER = 86400  # low power: start + end only (24h > any cycle)
 ```
 
 A 30-minute, 2-zone cycle drops from ~3 600 to ~24 recorder writes.
