@@ -873,7 +873,14 @@ class Zone(SwitchEntity, RestoreEntity):
 
 
     def get_numeric_frq(self,first_start_time,last_ran_midnight,today_midnight, last_ran=None):
-        """Process a numeric frquency."""
+        """Process a numeric frequency.
+
+        If freq_start_date is configured on the program, use deterministic
+        epoch-based scheduling: run on days where
+            (today - start_date).days % freq == 0
+        This ensures multiple programs with different start_dates stay
+        permanently offset without relying on last_ran drift.
+        """
 
         delay = 0
         delay_until = dt_util.as_local(dt_util.now())
@@ -887,6 +894,28 @@ class Zone(SwitchEntity, RestoreEntity):
         else:
             frq = int(float(self.frequency))
 
+        # --- Deterministic epoch-based scheduling ---
+        start_date_str = getattr(self._programdata, 'freq_start_date', None) or ""
+        if start_date_str and frq > 1:
+            try:
+                epoch = datetime.fromisoformat(start_date_str)
+                epoch = dt_util.as_local(epoch.replace(hour=0, minute=0, second=0, microsecond=0))
+                today = dt_util.start_of_local_day()
+                days_since_epoch = (today - epoch).days
+                days_until_next = (frq - (days_since_epoch % frq)) % frq
+                v_next_run = first_start_time + timedelta(days=days_until_next)
+                # If next_run is in the past (already ran today), advance one cycle
+                if v_next_run < dt_util.as_local(dt_util.now()) and days_until_next == 0:
+                    # Today is a run day and time hasn't passed yet — keep it
+                    if first_start_time >= dt_util.as_local(dt_util.now()):
+                        v_next_run = first_start_time
+                    else:
+                        v_next_run = first_start_time + timedelta(days=frq)
+                return max(v_next_run, delay_until)
+            except (ValueError, TypeError):
+                pass  # Fall through to legacy last_ran-based logic
+
+        # --- Legacy last_ran-based scheduling ---
         # time is in the future, supports multiple start times on a day
         if (
             first_start_time >= dt_util.as_local(dt_util.now())

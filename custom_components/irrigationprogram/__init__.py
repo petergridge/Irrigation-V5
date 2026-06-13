@@ -39,6 +39,7 @@ from .const import (
     ATTR_FLOW_SENSOR,
     ATTR_FREQUENCY,
     ATTR_FREQUENCY_OPTIONS,
+    ATTR_FREQ_START_DATE,
     ATTR_GROUPS,
     ATTR_INPUT_MODE,
     ATTR_INTERLOCK,
@@ -150,6 +151,7 @@ class IrrigationProgram:
     frequency: Any|SelectEntity  # generated
     freq_options: list
     freq: bool
+    freq_start_date: str  # ISO date string for cycle reference (e.g. "2026-06-13")
     repeat: bool
     repeats: Any|NumberEntity
     rain_behaviour: str  # stop|continue
@@ -230,6 +232,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             frequency=None,
             freq_options=config.get(ATTR_FREQUENCY_OPTIONS,[]),
             freq=config.get(ATTR_FREQUENCY,False),
+            freq_start_date=config.get(ATTR_FREQ_START_DATE, ""),
             repeat=config.get(ATTR_REPEAT,False),
             repeats=None,
             rain_behaviour=config.get(ATTR_RAIN_BEHAVIOUR, "stop"),

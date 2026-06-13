@@ -29,6 +29,7 @@ from .const import (
     ATTR_FLOW_SENSOR,
     ATTR_FREQUENCY,
     ATTR_FREQUENCY_OPTIONS,
+    ATTR_FREQ_START_DATE,
     ATTR_INPUT_MODE,
     ATTR_INTERLOCK,
     ATTR_LATENCY,
@@ -201,6 +202,10 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                         "translation_key": ATTR_FREQUENCY_OPTIONS,
                     }
                 ),
+                vol.Optional(
+                    ATTR_FREQ_START_DATE,
+                    description={"suggested_value": default_input.get(ATTR_FREQ_START_DATE, "")},
+                ): str,
                 vol.Optional(
                     ATTR_DEVICE_TYPE,
                     default=default_input.get(ATTR_DEVICE_TYPE, "generic"),
