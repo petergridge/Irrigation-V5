@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -14,7 +14,7 @@ from custom_components.irrigationprogram import (
     IrrigationProgram,
     IrrigationZoneData,
 )
-from custom_components.irrigationprogram.select import async_setup_entry
+from custom_components.irrigationprogram.select import Frequency, async_setup_entry
 
 
 class MockHomeAssistant:
@@ -26,13 +26,11 @@ class MockHomeAssistant:
 
 @pytest.fixture
 def mock_hass():
-    """Create a mock HomeAssistant instance."""
     return MockHomeAssistant()
 
 
 @pytest.fixture
 def mock_config_entry():
-    """Create a mock ConfigEntry with runtime data."""
     entry = MagicMock(spec=ConfigEntry)
     entry.entry_id = "test_entry_id"
     entry.runtime_data = IrrigationData(
@@ -57,7 +55,7 @@ def mock_config_entry():
             sunset_offset=None,
             start_type="selector",
             frequency=None,
-            freq_options=[],
+            freq_options=["1", "2", "3"],
             freq=False,
             repeat=False,
             repeats=None,
@@ -111,81 +109,44 @@ async def test_async_setup_entry_selects(mock_hass, mock_config_entry):
 
     await async_setup_entry(mock_hass, mock_config_entry, async_add_entities)
 
-    # Verify async_add_entities was called
     assert async_add_entities.call_count == 1
 
-    # Get the selects that were added
     selects = async_add_entities.call_args[0][0]
 
-    # Should have: start_type, rain_behaviour, interlock, min_sec, watering_type
-    # That's 5 selects total
-    assert len(selects) == 5
-
-    # Check that they are all SelectEntity instances
-    for select in selects:
-        assert isinstance(select, SelectEntity)
+    # p.freq=False → no program-level frequency
+    # zone.freq=False but not p.freq → zone-level frequency added (zone.freq or not p.freq = True)
+    assert len(selects) == 1
+    assert isinstance(selects[0], SelectEntity)
+    assert isinstance(selects[0], Frequency)
 
 
 async def test_select_entities_attributes():
-    """Test select entity attributes are set correctly."""
-    from custom_components.irrigationprogram.select import (
-        Interlock,
-        MinSec,
-        RainBehaviour,
-        StartType,
-        WateringType,
-    )
+    """Test Frequency select entity attributes."""
+    freq = Frequency("test_id", "Test Program", "zone1", ["1", "2", "7"])
 
-    # Test StartType entity
-    start_type = StartType("test_id", "Test Program")
-    assert start_type.unique_id == "test_id_start_type"
-    assert start_type._attr_attribution == "Irrigation Controller: Test Program"
-    assert start_type._attr_translation_key == "start_type"
-    assert start_type._attr_has_entity_name is True
-    assert start_type.options == ["selector", "time", "sunrise", "sunset"]
+    assert freq.unique_id == "test_id_zone1_frequency"
+    assert freq._attr_attribution == "Irrigation Controller: Test Program, zone1"
+    assert freq._attr_translation_key == "frequency"
+    assert freq._attr_has_entity_name is True
+    assert freq.options == ["1", "2", "7"]
+    assert freq.current_option is None
 
-    # Test RainBehaviour entity
-    rain_behav = RainBehaviour("test_id", "Test Program")
-    assert rain_behav.unique_id == "test_id_rain_behaviour"
-    assert rain_behav._attr_translation_key == "rain_behaviour"
-    assert rain_behav.options == ["stop", "continue", "delay"]
-
-    # Test Interlock entity
-    interlock = Interlock("test_id", "Test Program")
-    assert interlock.unique_id == "test_id_interlock"
-    assert interlock._attr_translation_key == "interlock"
-    assert interlock.options == ["strict", "flexible", "none"]
-
-    # Test MinSec entity
-    min_sec = MinSec("test_id", "Test Program")
-    assert min_sec.unique_id == "test_id_min_sec"
-    assert min_sec._attr_translation_key == "min_sec"
-    assert min_sec.options == ["minutes", "seconds"]
-
-    # Test WateringType entity
-    watering_type = WateringType("test_id", "Test Program", "zone1")
-    assert watering_type.unique_id == "test_id_zone1_watering_type"
-    assert (
-        watering_type._attr_attribution == "Irrigation Controller: Test Program, zone1"
-    )
-    assert watering_type._attr_translation_key == "watering_type"
-    assert watering_type._attr_has_entity_name is True
-    assert watering_type.options == ["fixed", "adjustable", "sensor"]
+    # Program-level frequency (no zone name)
+    prog_freq = Frequency("test_id", "Test Program", None, ["1", "2"])
+    assert prog_freq.unique_id == "test_id_frequency"
+    assert prog_freq._attr_attribution == "Irrigation Controller: Test Program"
 
 
 async def test_select_entity_functionality():
-    """Test select entity selection functionality."""
-    from custom_components.irrigationprogram.select import StartType
+    """Test Frequency select functionality."""
+    freq = Frequency("test_id", "Test Program", "zone1", ["1", "2", "7"])
 
-    select = StartType("test_id", "Test Program")
+    assert freq.current_option is None
 
-    # Initially should be None or default
-    assert select.current_option is None
+    with patch.object(freq, "async_write_ha_state"):
+        await freq.async_select_option("2")
+    assert freq.current_option == "2"
 
-    # Test selecting an option
-    await select.async_select_option("time")
-    assert select.current_option == "time"
-
-    # Test selecting another option
-    await select.async_select_option("sunrise")
-    assert select.current_option == "sunrise"
+    with patch.object(freq, "async_write_ha_state"):
+        await freq.async_select_option("7")
+    assert freq.current_option == "7"

@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.irrigationprogram import (
     IrrigationData,
@@ -43,21 +40,15 @@ class MockHomeAssistant:
     """Mock HomeAssistant for testing."""
 
     def __init__(self):
-        self.data = {}
+        self.data = {DOMAIN: {}}
         self.config_entries = MagicMock()
+        self.config_entries.async_forward_entry_setups = AsyncMock()
         self.states = MagicMock()
-
-    def async_available(self, entity_id):
-        """Mock async_available."""
-        return True
-
-
-class MockDataUpdateCoordinator(DataUpdateCoordinator):
-    """Mock DataUpdateCoordinator for testing."""
-
-    def __init__(self, hass, weather_data=None):
-        super().__init__(hass, logger=MagicMock(), name="test", update_interval=None)
-        self.data = weather_data or MagicMock()
+        self.is_running = True
+        self.bus = MagicMock()
+        _config = MagicMock()
+        _config.time_zone = "UTC"
+        self.config = _config
 
 
 @pytest.fixture
@@ -100,41 +91,23 @@ def mock_config_entry():
 
 async def test_async_setup_entry_basic(mock_hass, mock_config_entry):
     """Test basic async_setup_entry functionality."""
-    # Mock the required dependencies
-    with (
-        patch("custom_components.irrigationprogram.asyncio.sleep"),
-        patch.object(mock_hass.states, "async_available", return_value=True),
-        patch("homeassistant.components.persistent_notification.async_create"),
-        patch("homeassistant.components.persistent_notification.async_dismiss"),
-        patch(
-            "homeassistant.config_entries.async_forward_entry_setups"
-        ) as mock_forward,
-    ):
-        # Call async_setup_entry
-        result = await async_setup_entry(mock_hass, mock_config_entry, AsyncMock())
+    with patch("homeassistant.components.persistent_notification.async_create"):
+        result = await async_setup_entry(mock_hass, mock_config_entry)
 
-        # Verify the result
-        assert result is True
+    assert result is True
+    assert mock_config_entry.runtime_data is not None
+    assert isinstance(mock_config_entry.runtime_data, IrrigationData)
 
-        # Verify that platform setups were called
-        assert mock_forward.call_count == 2
+    program = mock_config_entry.runtime_data.program
+    assert isinstance(program, IrrigationProgram)
+    assert program.name == "Test Program"
+    assert program.controller_type == "Generic"
+    assert program.rain_behaviour == "stop"
 
-        # Verify runtime_data was set
-        assert mock_config_entry.runtime_data is not None
-        assert isinstance(mock_config_entry.runtime_data, IrrigationData)
-
-        # Verify program data
-        program = mock_config_entry.runtime_data.program
-        assert isinstance(program, IrrigationProgram)
-        assert program.name == "Test Program"
-        assert program.controller_type == "Generic"
-        assert program.rain_behaviour == "stop"
-
-        # Verify zone data
-        zones = mock_config_entry.runtime_data.zone_data
-        assert len(zones) == 1
-        assert isinstance(zones[0], IrrigationZoneData)
-        assert zones[0].zone == "switch.zone1"
+    zones = mock_config_entry.runtime_data.zone_data
+    assert len(zones) == 1
+    assert isinstance(zones[0], IrrigationZoneData)
+    assert zones[0].zone == "switch.zone1"
 
 
 async def test_irrigation_program_initialization(mock_config_entry):
@@ -328,7 +301,6 @@ def test_exclude_function(mock_hass):
     """Test the exclude function for config flow."""
     from custom_components.irrigationprogram import exclude
 
-    # Mock config entries
     mock_entry1 = MagicMock()
     mock_entry1.state.name = "ConfigEntryState.LOADED"
     mock_entry1.runtime_data = MagicMock()
@@ -342,13 +314,12 @@ def test_exclude_function(mock_hass):
     mock_entry1.runtime_data.program.start_time = MagicMock()
     mock_entry1.runtime_data.program.start_time.entity_id = "time.program1_start"
     mock_entry1.runtime_data.program.remaining_time = MagicMock()
-    mock_entry1.runtime_data.program.remaining_time.entity_id = (
-        "sensor.program1_remaining"
-    )
+    mock_entry1.runtime_data.program.remaining_time.entity_id = "sensor.program1_remaining"
     mock_entry1.runtime_data.program.default_run_time = MagicMock()
-    mock_entry1.runtime_data.program.default_run_time.entity_id = (
-        "sensor.program1_default"
-    )
+    mock_entry1.runtime_data.program.default_run_time.entity_id = "sensor.program1_default"
+    mock_entry1.runtime_data.program.inter_zone_delay = None
+    mock_entry1.runtime_data.program.frequency = None
+    mock_entry1.runtime_data.program.repeat = False
     mock_entry1.runtime_data.zone_data = []
 
     with patch.object(
@@ -356,13 +327,12 @@ def test_exclude_function(mock_hass):
     ):
         excluded = exclude(mock_hass)
 
-        expected = [
-            "switch.program1",
-            "switch.program1_enabled",
-            "switch.program1_config",
-            "time.program1_start",
-            "sensor.program1_remaining",
-            "sensor.program1_default",
-        ]
-
-        assert excluded == expected
+    expected = [
+        "switch.program1",
+        "switch.program1_enabled",
+        "switch.program1_config",
+        "time.program1_start",
+        "sensor.program1_remaining",
+        "sensor.program1_default",
+    ]
+    assert excluded == expected

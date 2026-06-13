@@ -6,23 +6,11 @@ import pytest
 pytest_plugins = ["pytest_asyncio"]
 
 
-# Test configuration
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    import asyncio
-
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest.fixture(autouse=True)
 def mock_globals():
     """Mock global variables used by the component."""
     from unittest.mock import patch
 
-    # Mock the globals module
     with (
         patch("custom_components.irrigationprogram.globals.ZONES", {}),
         patch("custom_components.irrigationprogram.globals.PROGRAMS", {}),
@@ -42,6 +30,8 @@ def mock_home_assistant():
     hass.config_entries = MagicMock()
     hass.states = MagicMock()
     hass.async_available = MagicMock(return_value=True)
+    hass.config = MagicMock()
+    hass.config.time_zone = "UTC"
     return hass
 
 
