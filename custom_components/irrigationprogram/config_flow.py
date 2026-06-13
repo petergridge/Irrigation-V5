@@ -24,6 +24,7 @@ from . import exclude
 from .const import (
     ATTR_CARD_YAML,
     ATTR_CONTINUE_ON_UNEXPECTED_STATE,
+    ATTR_LOW_POWER,
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
     ATTR_FREQUENCY,
@@ -569,6 +570,7 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                 self._data[ATTR_PARALLEL] = user_input[ATTR_PARALLEL]
                 self._data[ATTR_PUMP_DELAY] = user_input[ATTR_PUMP_DELAY]
                 self._data[ATTR_CARD_YAML] = user_input[ATTR_CARD_YAML]
+                self._data[ATTR_LOW_POWER] = user_input.get(ATTR_LOW_POWER, False)
                 self._data[ATTR_PAUSE_WATER_SOURCE] = user_input[
                     ATTR_PAUSE_WATER_SOURCE
                 ]
@@ -674,6 +676,12 @@ class IrrigationFlowHandler(config_entries.ConfigFlow):
                     ATTR_CARD_YAML,
                     description={
                         "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_LOW_POWER,
+                    description={
+                        "suggested_value": default_input.get(ATTR_LOW_POWER, False)
                     },
                 ): cv.boolean,
                 vol.Optional(
@@ -969,6 +977,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ATTR_CARD_YAML,
                     description={
                         "suggested_value": default_input.get(ATTR_CARD_YAML, False)
+                    },
+                ): cv.boolean,
+                vol.Optional(
+                    ATTR_LOW_POWER,
+                    description={
+                        "suggested_value": default_input.get(ATTR_LOW_POWER, False)
                     },
                 ): cv.boolean,
                 vol.Optional(

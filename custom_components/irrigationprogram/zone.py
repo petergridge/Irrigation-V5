@@ -64,7 +64,7 @@ from .const import (
     RAINBIRD_TURN_ON,
     TIME_STR_FORMAT,
 )
-from .globals import REMAINING_ZONES, RUNNING_ZONES, ZONES
+from .globals import ZONES
 
 VALID_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -417,60 +417,31 @@ class Zone(SwitchEntity, RestoreEntity):
         """Set the scheduled state."""
         return self._scheduled
 
+    # The helpers below previously routed through the
+    # homeassistant.update_entity service with blocking=True. During a
+    # watering cycle they fire every second for every running zone: the
+    # service machinery (service call event on the bus, registry lookup,
+    # task coordination) dominated CPU usage on low-power hosts.
+    # The entity objects are held directly, so update them directly.
     async def default_run_time_set(self):
-        """Update the remaining time sensor."""
-        await self.hass.services.async_call(
-            'homeassistant',
-            'update_entity',
-            {
-                'entity_id': self._zonedata.default_run_time.entity_id
-            },
-            blocking=True,
-        )
+        """Update the default run time sensor (direct, no service call)."""
+        await self._zonedata.default_run_time.set_value(self._default_run_time)
 
     async def remaining_time_set(self):
-        """Update the remaining time sensor."""
-        await self.hass.services.async_call(
-            'homeassistant',
-            'update_entity',
-            {
-                'entity_id': self.remaining_time.entity_id
-            },
-            blocking=True,
-        )
+        """Update the remaining time sensor (direct, no service call)."""
+        await self._zonedata.remaining_time.set_value(self._remaining_time)
 
     async def status_sensor_set(self):
-        """Update the remaining time sensor."""
-        await self.hass.services.async_call(
-            'homeassistant',
-            'update_entity',
-            {
-                'entity_id': self.status.entity_id
-            },
-            blocking=True,
-        )
+        """Update the status sensor (direct, no service call)."""
+        await self._zonedata.status.set_value(self._status_sensor)
 
     async def sensor_next_run_set(self):
-        """Update the remaining time sensor."""
-        await self.hass.services.async_call(
-            'homeassistant',
-            'update_entity',
-            {
-                'entity_id': self.next_run.entity_id
-            },
-            blocking=True,
-        )
+        """Update the next run sensor (direct, no service call)."""
+        await self._zonedata.next_run.async_update_ha_state(force_refresh=True)
 
     async def sensor_last_ran_set(self):
-        """Update the remaining time sensor."""
-        await self.hass.services.async_call(
-            'homeassistant',
-            'update_entity',
-            {
-                'entity_id': self.last_ran.entity_id
-            },
-            blocking=True,
-        )
+        """Update the last ran sensor (direct, no service call)."""
+        await self._zonedata.last_ran.async_update_ha_state(force_refresh=True)
 
     async def prepare_to_run(self, scheduled=True):
         """Initialise the remaining time when the program is started."""
@@ -552,7 +523,9 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             # try to turn the switch on again
             # this is an attempt to handle zigbee/bluetooth devices that sleep
-            await asyncio.sleep(0.1)
+            # 0.5s: at 0.1s this re-sent the turn_on command up to 10x per
+            # second, flooding the radio network and the event loop
+            await asyncio.sleep(0.5)
             check_state, _value = await self.check_switch_state()
             if check_state is not True:
                 # if not the expected state loop again
@@ -589,7 +562,8 @@ class Zone(SwitchEntity, RestoreEntity):
                 break
             # try to turn the switch on again
             # this is an attempt to handle zigbee devices that sleep
-            await asyncio.sleep(0.1)
+            # 0.5s: see check_is_on
+            await asyncio.sleep(0.5)
             check_state, _value = await self.check_switch_state()
             if check_state is not False:
                 # if not the expected state loop again
@@ -1176,7 +1150,10 @@ class Zone(SwitchEntity, RestoreEntity):
         self._remaining_time = 0
         await self.remaining_time_set()
         await asyncio.sleep(0.1)
-        if self._zonedata in REMAINING_ZONES and manual is False:
+        if (
+            self._zonedata in self._programdata.switch.remaining_zones
+            and manual is False
+        ):
             #set the remaining time to to allow it to restart when program loops
             #supports repeating the program
             await self.prepare_to_run(scheduled=True)
@@ -1191,11 +1168,13 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if manual is True:
             #remove all future instances of this zone
-            while self._zonedata in REMAINING_ZONES:
-                REMAINING_ZONES.remove(self._zonedata)
+            remaining = self._programdata.switch.remaining_zones
+            while self._zonedata in remaining:
+                remaining.remove(self._zonedata)
 
-        if self._zonedata in RUNNING_ZONES:
-            RUNNING_ZONES.remove(self._zonedata)
+        running = self._programdata.switch.running_zones
+        if self._zonedata in running:
+            running.remove(self._zonedata)
 
         self.async_schedule_update_ha_state()
 
@@ -1290,10 +1269,14 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, last=False, last_ran=dt_util.as_local(dt_util.now())):
+    async def async_turn_on_from_program(self, last=False, last_ran=None):
         """Start the zone watering cycle."""
         # last indicates this is the last zone to be run
         # last_ran is the start time of the program
+        # NOTE: the default was previously evaluated once at import time,
+        # freezing last_ran at HA startup for any call without the argument
+        if last_ran is None:
+            last_ran = dt_util.as_local(dt_util.now())
         self._state = self._status_sensor = self._status = CONST_ON
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()

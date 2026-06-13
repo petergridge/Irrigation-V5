@@ -28,6 +28,8 @@ from .const import (
     CONST_PENDING,
     CONST_PROGRAM_DISABLED,
     CONST_RAINING,
+    CONST_SENSOR_WRITE_INTERVAL,
+    CONST_SENSOR_WRITE_INTERVAL_LOW_POWER,
     CONST_UNAVAILABLE,
     CONST_ZONE_DISABLED,
 )
@@ -47,8 +49,18 @@ async def async_setup_entry(
     unique_id = config_entry.entry_id
     pname = config_entry.runtime_data.program.name
 
+    # In low power mode the live countdown entities only write their state
+    # at start and finish (see set_value); internal timing is unaffected.
+    low_power = bool(getattr(data.program, "low_power", False))
+    write_interval = (
+        CONST_SENSOR_WRITE_INTERVAL_LOW_POWER
+        if low_power
+        else CONST_SENSOR_WRITE_INTERVAL
+    )
+
     sensors = []
     sensor = RemainingTime(hass, pname, unique_id)
+    sensor._write_interval = write_interval
     sensors.append(sensor)
     config_entry.runtime_data.program.remaining_time = sensor
 
@@ -73,6 +85,7 @@ async def async_setup_entry(
         config_entry.runtime_data.zone_data[i].last_ran = sensor
 
         sensor = ZoneRemainingTime(hass, pname, zname, unique_id)
+        sensor._write_interval = write_interval
         sensors.append(sensor)
         config_entry.runtime_data.zone_data[i].remaining_time = sensor
 
@@ -105,10 +118,9 @@ class ZoneStatus(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.status_sensor_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.status_sensor_value)
 
     async def set_value(self, status=CONST_OFF):
         """Set the runtime state value."""
@@ -244,6 +256,8 @@ class ZoneRemainingTime(SensorEntity):
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
         self._state: time = time(hour=0, minute=0, second=0)
+        self._last_written = None
+        self._write_interval = CONST_SENSOR_WRITE_INTERVAL
         self._uuid = slugify(f"{unique_id}_{zone}_remaining_time")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
@@ -254,10 +268,9 @@ class ZoneRemainingTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -268,7 +281,22 @@ class ZoneRemainingTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=hour, minute=minute, second=second)
+        # always keep the internal value accurate: program logic reads
+        # numeric_value every second to time zone transitions, so the
+        # throttle below must never affect self._state.
         self._state = rem
+        # Throttle writes to the state machine. A 1 Hz countdown otherwise
+        # emits a state_changed event every second per running zone, which
+        # the recorder persists to disk - the dominant cost on SD-backed
+        # low power hosts. Boundary values (first write, and zero) always
+        # go through so the entity settles on a correct final value.
+        if (
+            self._last_written is not None
+            and value != 0
+            and abs(self._last_written - value) < self._write_interval
+        ):
+            return
+        self._last_written = value
         self.async_schedule_update_ha_state()
 
     @property
@@ -308,10 +336,9 @@ class ZoneDefaultRunTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -353,6 +380,8 @@ class RemainingTime(SensorEntity):
     def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
         """Init."""
         self._state: time = time(hour=0, minute=0, second=0)
+        self._last_written = None
+        self._write_interval = CONST_SENSOR_WRITE_INTERVAL
         self._uuid = slugify(f"{unique_id}_remaining_time")
         self._attr_attribution = f"Irrigation Controller: {pname}"
         self._pname = pname
@@ -361,10 +390,9 @@ class RemainingTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""
@@ -375,7 +403,16 @@ class RemainingTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
+        # always keep the internal value accurate (see ZoneRemainingTime)
         self._state = rem
+        # throttle state machine writes (see ZoneRemainingTime.set_value)
+        if (
+            self._last_written is not None
+            and value != 0
+            and abs(self._last_written - value) < self._write_interval
+        ):
+            return
+        self._last_written = value
         self.async_schedule_update_ha_state()
 
     @property
@@ -414,10 +451,9 @@ class DefaultRunTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""

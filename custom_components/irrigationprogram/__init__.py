@@ -33,6 +33,7 @@ from homeassistant.helpers import config_validation as cv
 from . import utils
 from .const import (
     ATTR_CARD_YAML,
+    ATTR_LOW_POWER,
     ATTR_CONTINUE_ON_UNEXPECTED_STATE,
     ATTR_DEVICE_TYPE,
     ATTR_FLOW_SENSOR,
@@ -164,6 +165,7 @@ class IrrigationProgram:
     parallel: int
     pump_delay: int
     card_yaml: bool
+    low_power: bool = False
     latency: int=5
     start_latency: int = 60
     water_source_pause: bool = False
@@ -245,6 +247,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             parallel=config.get(ATTR_PARALLEL, 1),
             pump_delay=config.get(ATTR_PUMP_DELAY, 1),
             card_yaml=config.get(ATTR_CARD_YAML, False),
+            low_power=config.get(ATTR_LOW_POWER, False),
             water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
             continue_on_unexpected_state=config.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False),
             input_mode=config.get(ATTR_INPUT_MODE, "slider")
