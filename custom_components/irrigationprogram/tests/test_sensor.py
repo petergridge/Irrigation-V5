@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -47,17 +47,18 @@ class MockHomeAssistant:
 
     def __init__(self):
         self.data = {}
+        _config = MagicMock()
+        _config.time_zone = "UTC"
+        self.config = _config
 
 
 @pytest.fixture
 def mock_hass():
-    """Create a mock HomeAssistant instance."""
     return MockHomeAssistant()
 
 
 @pytest.fixture
 def mock_config_entry():
-    """Create a mock ConfigEntry with runtime data."""
     entry = MagicMock(spec=ConfigEntry)
     entry.entry_id = "test_entry_id"
     entry.runtime_data = IrrigationData(
@@ -136,16 +137,12 @@ async def test_async_setup_entry_sensors(mock_hass, mock_config_entry):
 
     await async_setup_entry(mock_hass, mock_config_entry, async_add_entities)
 
-    # Verify async_add_entities was called
     assert async_add_entities.call_count == 1
 
-    # Get the sensors that were added
     sensors = async_add_entities.call_args[0][0]
 
-    # Should have: RemainingTime, DefaultRunTime, ZoneStatus, ZoneNextRun, ZoneLastRan, ZoneRemainingTime, ZoneDefaultRunTime
+    # RemainingTime, DefaultRunTime, ZoneStatus, ZoneNextRun, ZoneLastRan, ZoneRemainingTime, ZoneDefaultRunTime
     assert len(sensors) == 7
-
-    # Check types
     assert isinstance(sensors[0], RemainingTime)
     assert isinstance(sensors[1], DefaultRunTime)
     assert isinstance(sensors[2], ZoneStatus)
@@ -156,7 +153,6 @@ async def test_async_setup_entry_sensors(mock_hass, mock_config_entry):
 
 
 def test_remaining_time_sensor():
-    """Test RemainingTime sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = RemainingTime(mock_hass, "Test Program", "test_id")
 
@@ -164,11 +160,10 @@ def test_remaining_time_sensor():
     assert sensor._attr_attribution == "Irrigation Controller: Test Program"
     assert sensor._attr_translation_key == "remaining_time"
     assert sensor._attr_has_entity_name is True
-    assert sensor.device_class == SensorDeviceClass.DURATION
+    assert sensor.device_class == SensorDeviceClass.DATE
 
 
 def test_default_run_time_sensor():
-    """Test DefaultRunTime sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = DefaultRunTime(mock_hass, "Test Program", "test_id")
 
@@ -176,11 +171,10 @@ def test_default_run_time_sensor():
     assert sensor._attr_attribution == "Irrigation Controller: Test Program"
     assert sensor._attr_translation_key == "default_run_time"
     assert sensor._attr_has_entity_name is True
-    assert sensor.device_class == SensorDeviceClass.DURATION
+    assert sensor.device_class == SensorDeviceClass.DATE
 
 
 def test_zone_status_sensor():
-    """Test ZoneStatus sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = ZoneStatus(mock_hass, "Test Program", "zone1", "test_id")
 
@@ -190,7 +184,6 @@ def test_zone_status_sensor():
     assert sensor._attr_has_entity_name is True
     assert sensor.device_class == SensorDeviceClass.ENUM
 
-    # Check options
     expected_options = [
         CONST_ADJUSTED_OFF,
         CONST_CLOSED,
@@ -212,69 +205,64 @@ def test_zone_status_sensor():
 
 
 def test_zone_next_run_sensor():
-    """Test ZoneNextRun sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = ZoneNextRun(mock_hass, "Test Program", "zone1", "test_id")
 
     assert sensor.unique_id == "test_id_zone1_next_run"
     assert sensor._attr_attribution == "Irrigation Controller: Test Program, zone1"
-    assert sensor._attr_translation_key == "next_run"
+    assert sensor._attr_translation_key == "zone_next_run"
     assert sensor._attr_has_entity_name is True
     assert sensor.device_class == SensorDeviceClass.TIMESTAMP
 
 
 def test_zone_last_ran_sensor():
-    """Test ZoneLastRan sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = ZoneLastRan(mock_hass, "Test Program", "zone1", "test_id")
 
     assert sensor.unique_id == "test_id_zone1_last_ran"
     assert sensor._attr_attribution == "Irrigation Controller: Test Program, zone1"
-    assert sensor._attr_translation_key == "last_ran"
+    assert sensor._attr_translation_key == "zone_last_ran"
     assert sensor._attr_has_entity_name is True
     assert sensor.device_class == SensorDeviceClass.TIMESTAMP
 
 
 def test_zone_remaining_time_sensor():
-    """Test ZoneRemainingTime sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = ZoneRemainingTime(mock_hass, "Test Program", "zone1", "test_id")
 
     assert sensor.unique_id == "test_id_zone1_remaining_time"
     assert sensor._attr_attribution == "Irrigation Controller: Test Program, zone1"
-    assert sensor._attr_translation_key == "remaining_time_zone"
+    assert sensor._attr_translation_key == "remaining_time"
     assert sensor._attr_has_entity_name is True
-    assert sensor.device_class == SensorDeviceClass.DURATION
+    assert sensor.device_class == SensorDeviceClass.DATE
 
 
 def test_zone_default_run_time_sensor():
-    """Test ZoneDefaultRunTime sensor entity."""
     mock_hass = MockHomeAssistant()
     sensor = ZoneDefaultRunTime(mock_hass, "Test Program", "zone1", "test_id")
 
     assert sensor.unique_id == "test_id_zone1_default_run_time"
     assert sensor._attr_attribution == "Irrigation Controller: Test Program, zone1"
-    assert sensor._attr_translation_key == "default_run_time_zone"
+    assert sensor._attr_translation_key == "default_run_time"
     assert sensor._attr_has_entity_name is True
-    assert sensor.device_class == SensorDeviceClass.DURATION
+    assert sensor.device_class == SensorDeviceClass.DATE
 
 
 async def test_zone_status_sensor_update():
-    """Test ZoneStatus sensor update functionality."""
-    from custom_components.irrigationprogram.globals import ZONES
+    import custom_components.irrigationprogram.sensor as sensor_mod
 
     mock_hass = MockHomeAssistant()
-    sensor = ZoneStatus(mock_hass, "Test Program", "zone1", "test_id")
+    zone_sensor = ZoneStatus(mock_hass, "Test Program", "zone1", "test_id")
 
-    # Mock zone data
     mock_zone = MagicMock()
     mock_zone.status_sensor_value = "on"
-    ZONES["Test Program.zone1"] = mock_zone
 
-    await sensor.async_update()
-    assert sensor.native_value == "on"
+    with patch.dict(sensor_mod.ZONES, {"Test Program.zone1": mock_zone}):
+        with patch.object(zone_sensor, "async_schedule_update_ha_state"):
+            await zone_sensor.async_update()
+        assert zone_sensor.native_value == "on"
 
-    # Test with different status
-    mock_zone.status_sensor_value = "off"
-    await sensor.async_update()
-    assert sensor.native_value == "off"
+        mock_zone.status_sensor_value = "off"
+        with patch.object(zone_sensor, "async_schedule_update_ha_state"):
+            await zone_sensor.async_update()
+        assert zone_sensor.native_value == "off"

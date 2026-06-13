@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -14,7 +14,7 @@ from custom_components.irrigationprogram import (
     IrrigationProgram,
     IrrigationZoneData,
 )
-from custom_components.irrigationprogram.time import async_setup_entry
+from custom_components.irrigationprogram.time import async_setup_entry, starttime
 
 
 class MockHomeAssistant:
@@ -26,13 +26,11 @@ class MockHomeAssistant:
 
 @pytest.fixture
 def mock_hass():
-    """Create a mock HomeAssistant instance."""
     return MockHomeAssistant()
 
 
 @pytest.fixture
 def mock_config_entry():
-    """Create a mock ConfigEntry with runtime data."""
     entry = MagicMock(spec=ConfigEntry)
     entry.entry_id = "test_entry_id"
     entry.runtime_data = IrrigationData(
@@ -55,7 +53,7 @@ def mock_config_entry():
             multitime=None,
             sunrise_offset=None,
             sunset_offset=None,
-            start_type="time",  # Set to time to enable start_time entity
+            start_type="time",
             frequency=None,
             freq_options=[],
             freq=False,
@@ -111,48 +109,39 @@ async def test_async_setup_entry_times(mock_hass, mock_config_entry):
 
     await async_setup_entry(mock_hass, mock_config_entry, async_add_entities)
 
-    # Verify async_add_entities was called
     assert async_add_entities.call_count == 1
 
-    # Get the times that were added
     times = async_add_entities.call_args[0][0]
 
-    # Should have: start_time (when start_type is "time")
     assert len(times) == 1
-
-    # Check that it's a TimeEntity instance
     assert isinstance(times[0], TimeEntity)
 
 
 async def test_time_entity_attributes():
-    """Test time entity attributes are set correctly."""
-    from custom_components.irrigationprogram.time import StartTime
+    """Test starttime entity attributes."""
+    start_time = starttime("test_id", "Test Program")
 
-    # Test StartTime entity
-    start_time = StartTime("test_id", "Test Program")
     assert start_time.unique_id == "test_id_start_time"
     assert start_time._attr_attribution == "Irrigation Controller: Test Program"
     assert start_time._attr_translation_key == "start_time"
     assert start_time._attr_has_entity_name is True
+    assert start_time.native_value is None
 
 
 async def test_time_entity_functionality():
-    """Test time entity functionality."""
+    """Test starttime entity functionality."""
     from datetime import time
 
-    from custom_components.irrigationprogram.time import StartTime
+    start_time = starttime("test_id", "Test Program")
 
-    start_time = StartTime("test_id", "Test Program")
-
-    # Initially should be None
     assert start_time.native_value is None
 
-    # Test setting a time
-    test_time = time(6, 30)  # 6:30 AM
-    await start_time.async_set_value(test_time)
+    test_time = time(6, 30)
+    with patch.object(start_time, "async_write_ha_state"):
+        await start_time.async_set_value(test_time)
     assert start_time.native_value == test_time
 
-    # Test setting another time
-    test_time2 = time(18, 45)  # 6:45 PM
-    await start_time.async_set_value(test_time2)
+    test_time2 = time(18, 45)
+    with patch.object(start_time, "async_write_ha_state"):
+        await start_time.async_set_value(test_time2)
     assert start_time.native_value == test_time2

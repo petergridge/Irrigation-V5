@@ -68,8 +68,18 @@ ATTR_WATER_MAX = "water_max"
 ATTR_WATER_STEP = "water_step"
 ATTR_PARALLEL = "parallel"
 ATTR_CARD_YAML = "card_yaml"
+ATTR_LOW_POWER = "low_power_mode"
 
 CONST_LATENCY = 3
+# Min seconds between recorded countdown sensor updates (frugality on SD/RPi)
+CONST_SENSOR_WRITE_INTERVAL = 5
+# In low power mode the live countdown is not written to the state machine
+# at all between start and finish: a value large enough to suppress every
+# intermediate 1 Hz update (boundary writes at start / zero still happen).
+CONST_SENSOR_WRITE_INTERVAL_LOW_POWER = 86400
+# Seconds used to coalesce bursts of monitored entity changes
+CONST_NEXT_RUN_DEBOUNCE = 2
+CONST_NEXT_RUN_DEBOUNCE_LOW_POWER = 10
 CONST_ZERO_FLOW_DELAY = 5
 CONST_OFF_DELAY = 5
 CONST_SUN_OFFSET = 240
