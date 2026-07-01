@@ -264,6 +264,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug(msg)
 
         zone_data = []
+        msg_parts = []
         for zone in config.get(ATTR_ZONES,[]):
             z = IrrigationZoneData(
                 zone=zone.get(ATTR_ZONE),
@@ -289,33 +290,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 adjustment=zone.get(ATTR_WATER_ADJUST),
                 flow_rate=None,
             )
-            msg = None
-            nl = "\n"
             state = hass.states.get(z.zone)
             if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                msg += f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options."
+                msg_parts.append(f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options.")
             zone_data.append(z)
             # check if dependant objects are ready
             if z.adjustment:
                 state = hass.states.get(z.adjustment)
                 if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                    if msg is not None:
-                        msg = f"{nl}"
-                    msg += f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration{nl}"
+                    msg_parts.append(f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration")
             if z.rain_sensor:
                 state = hass.states.get(z.rain_sensor)
                 if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                    if msg is not None:
-                        msg = f"{nl}"
-                    msg += f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
-            if msg:
-                async_create(
-                    hass,
-                    message=msg,
-                    title="Irrigation Controller",
-                    notification_id="irrigation_device_error",
-                )
-                continue
+                    msg_parts.append(f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration")
+
+        if msg_parts:
+            async_create(
+                hass,
+                message="\n".join(msg_parts),
+                title="Irrigation Controller",
+                notification_id="irrigation_device_error",
+            )
 
         entry.runtime_data = IrrigationData(program, zone_data)
 

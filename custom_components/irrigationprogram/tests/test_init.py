@@ -43,9 +43,12 @@ class MockHomeAssistant:
     """Mock HomeAssistant for testing."""
 
     def __init__(self):
-        self.data = {}
+        self.data = {DOMAIN: {}}
         self.config_entries = MagicMock()
+        self.config_entries.async_forward_entry_setups = AsyncMock()
         self.states = MagicMock()
+        self.bus = MagicMock()
+        self.is_running = True
 
     def async_available(self, entity_id):
         """Mock async_available."""
@@ -135,6 +138,91 @@ async def test_async_setup_entry_basic(mock_hass, mock_config_entry):
         assert len(zones) == 1
         assert isinstance(zones[0], IrrigationZoneData)
         assert zones[0].zone == "switch.zone1"
+
+
+@pytest.mark.asyncio
+async def test_deferred_partial_setup_survives_missing_zone_entities(
+    mock_hass, mock_config_entry
+):
+    """Partial setup must complete when zone entities are genuinely missing.
+
+    The missing-entity notification path is the whole point of partial setup;
+    it must raise the notification and still bind the program, not crash.
+    Every missing zone must be reported in a single aggregated notification -
+    a shared notification_id means a per-zone notification would leave only the
+    last zone visible.
+    """
+    zone2 = dict(mock_config_entry.options[ATTR_ZONES][0])
+    zone2[ATTR_ZONE] = "switch.zone2"
+    mock_config_entry.options = {
+        **mock_config_entry.options,
+        ATTR_ZONES: [mock_config_entry.options[ATTR_ZONES][0], zone2],
+    }
+    mock_hass.is_running = False
+    mock_hass.states.get.return_value = None  # nothing has loaded yet
+    captured = {}
+    mock_hass.bus.async_listen_once = MagicMock(
+        side_effect=lambda event, cb: captured.__setitem__("cb", cb)
+    )
+
+    assert await async_setup_entry(mock_hass, mock_config_entry) is True
+
+    with (
+        patch(
+            "custom_components.irrigationprogram.asyncio.wait_for",
+            side_effect=asyncio.TimeoutError,
+        ),
+        patch("custom_components.irrigationprogram.async_create") as notify,
+    ):
+        await captured["cb"](MagicMock())  # must not raise
+
+    assert mock_config_entry.runtime_data is not None
+    mock_hass.config_entries.async_forward_entry_setups.assert_awaited()
+    notify.assert_called_once()
+    message = notify.call_args.kwargs["message"]
+    assert "switch.zone1" in message
+    assert "switch.zone2" in message
+
+
+@pytest.mark.asyncio
+async def test_deferred_partial_setup_survives_missing_zone_sensors(
+    mock_hass, mock_config_entry
+):
+    """Partial setup must warn (not crash) when only zone sensors are missing."""
+    zone = dict(mock_config_entry.options[ATTR_ZONES][0])
+    zone[ATTR_RAIN_SENSOR] = "sensor.rain1"
+    zone[ATTR_WATER_ADJUST] = "sensor.adjust1"
+    mock_config_entry.options = {
+        **mock_config_entry.options,
+        ATTR_ZONES: [zone],
+    }
+    mock_hass.is_running = False
+    zone_state = MagicMock()
+    zone_state.state = "off"
+    mock_hass.states.get.side_effect = (
+        lambda entity_id: zone_state if entity_id == "switch.zone1" else None
+    )
+    captured = {}
+    mock_hass.bus.async_listen_once = MagicMock(
+        side_effect=lambda event, cb: captured.__setitem__("cb", cb)
+    )
+
+    assert await async_setup_entry(mock_hass, mock_config_entry) is True
+
+    with (
+        patch(
+            "custom_components.irrigationprogram.asyncio.wait_for",
+            side_effect=asyncio.TimeoutError,
+        ),
+        patch("custom_components.irrigationprogram.async_create") as notify,
+    ):
+        await captured["cb"](MagicMock())  # must not raise
+
+    assert mock_config_entry.runtime_data is not None
+    notify.assert_called_once()
+    message = notify.call_args.kwargs["message"]
+    assert "sensor.adjust1" in message
+    assert "sensor.rain1" in message
 
 
 async def test_irrigation_program_initialization(mock_config_entry):
