@@ -12,7 +12,15 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 
-from .const import CONST_OFF_DELAY, CONST_ON, CONST_OPEN, CONST_SWITCH
+from .const import (
+    CONST_CLOSED,
+    CONST_OFF,
+    CONST_OFF_DELAY,
+    CONST_ON,
+    CONST_OPEN,
+    CONST_SWITCH,
+    CONST_VALVE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +31,9 @@ class PumpClass:
     def __init__(self, hass: HomeAssistant, pump, zones, program=None) -> None:  # noqa: D107
         self.hass = hass
         self._pump = pump
+        # a valve-domain entity uses open/close services; anything else
+        # (switch, input_boolean, …) uses turn_on/turn_off
+        self._valve = str(pump).split(".")[0] == CONST_VALVE
         self._zones = zones
         self._off_delay = CONST_OFF_DELAY
         self._program = program
@@ -73,23 +84,27 @@ class PumpClass:
     async def async_stop(self):
         """Turn off pump."""
         state = self.hass.states.get(self._pump)
-        if state and state.state == "on":
+        if self._valve:
+            # close unless already confirmed closed (tolerates unknown/lagging state)
+            if state and state.state != CONST_CLOSED:
+                await self.hass.services.async_call(
+                    CONST_VALVE, SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self._pump}
+                )
+        elif state and state.state != CONST_OFF:
             await self.hass.services.async_call(
                 CONST_SWITCH, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: self._pump}
-            )
-        if state == "open":
-            await self.hass.services.async_call(
-                "valve", SERVICE_CLOSE_VALVE, {ATTR_ENTITY_ID: self._pump}
             )
 
     async def async_start(self):
         """Turn on the pump."""
         state = self.hass.states.get(self._pump)
-        if state and state.state == "off":
+        if self._valve:
+            # open unless already confirmed open (tolerates unknown/lagging state)
+            if state and state.state != CONST_OPEN:
+                await self.hass.services.async_call(
+                    CONST_VALVE, SERVICE_OPEN_VALVE, {ATTR_ENTITY_ID: self._pump}
+                )
+        elif state and state.state != CONST_ON:
             await self.hass.services.async_call(
                 CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self._pump}
-            )
-        if state == "closed":
-            await self.hass.services.async_call(
-                "valve", SERVICE_OPEN_VALVE, {ATTR_ENTITY_ID: self._pump}
             )
