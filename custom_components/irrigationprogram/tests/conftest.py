@@ -27,8 +27,6 @@ def mock_globals():
         patch("custom_components.irrigationprogram.globals.ZONES", {}),
         patch("custom_components.irrigationprogram.globals.PROGRAMS", {}),
         patch("custom_components.irrigationprogram.globals.QUEUEDPROGRAMS", []),
-        patch("custom_components.irrigationprogram.globals.REMAINING_ZONES", []),
-        patch("custom_components.irrigationprogram.globals.RUNNING_ZONES", []),
         patch("custom_components.irrigationprogram.globals.RUNNINGPROGRAM", False),
     ):
         yield
