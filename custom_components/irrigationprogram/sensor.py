@@ -105,10 +105,9 @@ class ZoneStatus(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.status_sensor_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.status_sensor_value)
 
     async def set_value(self, status=CONST_OFF):
         """Set the runtime state value."""
@@ -254,10 +253,9 @@ class ZoneRemainingTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -308,10 +306,9 @@ class ZoneDefaultRunTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -361,10 +358,9 @@ class RemainingTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""
@@ -414,10 +410,9 @@ class DefaultRunTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""
