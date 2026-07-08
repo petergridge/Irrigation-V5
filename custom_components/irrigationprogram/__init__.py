@@ -140,6 +140,7 @@ class IrrigationProgram:
     unique_id: str
     config: Any|SwitchEntity
     start_time: Any|TimeEntity  # generated
+    delay_time: Any|SensorEntity  # generated
     remaining_time: Any|SensorEntity  # generated
     default_run_time: Any|SensorEntity
     multitime: Any|TextEntity  # generated
@@ -219,6 +220,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             unique_id=entry.entry_id,
             config=None,
             start_time=None,
+            delay_time=None,
             remaining_time=None,
             default_run_time=None,
             multitime=None,
@@ -290,6 +292,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 adjustment=zone.get(ATTR_WATER_ADJUST),
                 flow_rate=None,
             )
+            msg = ""
+            nl = "\n"
             state = hass.states.get(z.zone)
             if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
                 msg_parts.append(f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options.")
@@ -366,6 +370,7 @@ def exclude(hass: HomeAssistant):
                     p.start_time.entity_id,
                     p.remaining_time.entity_id,
                     p.default_run_time.entity_id,
+                    p.delay_time.entity_id,
                 ]
             )
             if p.inter_zone_delay:

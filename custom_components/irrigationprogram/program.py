@@ -79,6 +79,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_start = None
         self._unsub_monitor = None
         self._unsub_pause = None
+        self._unsub_delay = None
         self._unsub_pause_water = None
         self._start_time = dt_util.as_local(dt_util.now())
 
@@ -339,6 +340,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._unsub_pause_water:
             self._unsub_pause_water()
             self._unsub_pause_water = None
+        if self._unsub_delay:
+            self._unsub_delay()
+            self._unsub_delay = None
+
 
     def get_next_interval(self):
         """Next time an update should occur."""
@@ -618,6 +623,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._hass, tuple(monitor3), self.pause_program
         )
 
+        if self._program.rain_delay:
+            monitor4 = []
+            await monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor4)
+            self._unsub_delay = async_track_state_change_event(
+                self._hass, tuple(monitor4), self.delay_program
+            )
+
+
     async def define_program_attributes(self):
         """Build attributes in run order."""
 
@@ -774,6 +787,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         return value
 
     @property
+    def delay_time_value(self) -> int:
+        """Delay time entity value."""
+        value = None
+        if self._program.delay_time is not None:
+            value = self._program.delay_time.state
+        return value
+
+    @property
     def degree_of_parallel(self):
         """Start time entity value."""
         return int(self._program.parallel)
@@ -906,6 +927,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         if self._state is False:
             await self._program.pause.async_turn_off()
+
+    async def delay_program(
+        self,
+        event: Event[EventStateChangedData],
+    ):
+        """Delay status changes."""
+        self.hass.async_create_task(
+            self._program.delay_time.set_value()
+        )
+
 
     async def zone_pending(self, zone) -> bool:
         """Determine if a another instance of the zone is pending."""

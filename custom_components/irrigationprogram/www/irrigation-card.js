@@ -473,18 +473,18 @@ class IrrigationCardEditor extends HTMLElement {
       select.add(newOption);
     }
     //if nothing selected, select all zone and update the config
-    if (select.value == "") {
-      for (let i = 0; i < select.options.length; i++) {
-        select.options[i].selected = true;
-      }
-      //update the config with the selected zones
-      const event = new Event("config-changed", {
-        bubbles: true,
-        composed: true,
-      });
-      event.detail = { config: { ...this._config, entities: Array.from(select.selectedOptions).map(option => option.value) } };
-      this.dispatchEvent(event);
-    }
+    // if (select.value == "") {
+    //   for (let i = 0; i < select.options.length; i++) {
+    //     select.options[i].selected = true;
+    //   }
+    //   //update the config with the selected zones
+    //   const event = new Event("config-changed", {
+    //     bubbles: true,
+    //     composed: true,
+    //   });
+    //   event.detail = { config: { ...this._config, entities: Array.from(select.selectedOptions).map(option => option.value) } };
+    //   this.dispatchEvent(event);
+    // }
 
   }
 

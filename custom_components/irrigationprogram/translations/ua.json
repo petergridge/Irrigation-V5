@@ -76,6 +76,9 @@
 			"remaining_time": {
 				"name": "Залишок часу"
 			},
+			"delay_time":{
+				"name":"Час задержки"
+			},
 			"default_run_time": {
 				"name": "Тривалість"
 			}

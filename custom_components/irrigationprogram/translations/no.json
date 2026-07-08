@@ -76,6 +76,9 @@
 			"remaining_time":{
 				"name":"Gjenstående tid"
 			},
+			"delay_time":{
+				"name":"Forsinkelsestid"
+			},
 			"default_run_time":{
 				"name":"Varighet"
 			}

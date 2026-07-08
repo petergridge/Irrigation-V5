@@ -374,12 +374,12 @@ class EnableRainDelay(SwitchEntity, RestoreEntity):
 
     async def async_added_to_hass(self):
         """HA has started."""
-        # last_state = await self.async_get_last_state()
-        # if last_state is None:
-        #     self._state = "off"
-        # else:
-        #     self._state = last_state.state
-        self._state = "off"
+        last_state = await self.async_get_last_state()
+        if last_state is None:
+            self._state = "off"
+        else:
+            self._state = last_state.state
+        #self._state = "off"
         self._last_updated = dt_util.utcnow()
         self.async_schedule_update_ha_state()
 

@@ -76,6 +76,9 @@
 			"remaining_time":{
 				"name":"Restzeit"
 			},
+			"delay_time":{
+				"name":"Verzögerungszeit"
+			},
 			"default_run_time":{
 				"name":"Dauer"
 			}
