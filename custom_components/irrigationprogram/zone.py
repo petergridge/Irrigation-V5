@@ -64,7 +64,7 @@ from .const import (
     RAINBIRD_TURN_ON,
     TIME_STR_FORMAT,
 )
-from .globals import REMAINING_ZONES, RUNNING_ZONES, ZONES
+from .globals import ZONES
 
 VALID_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -1177,7 +1177,10 @@ class Zone(SwitchEntity, RestoreEntity):
         self._remaining_time = 0
         await self.remaining_time_set()
         await asyncio.sleep(0.1)
-        if self._zonedata in REMAINING_ZONES and manual is False:
+        if (
+            self._zonedata in self._programdata.switch.remaining_zones
+            and manual is False
+        ):
             #set the remaining time to to allow it to restart when program loops
             #supports repeating the program
             await self.prepare_to_run(scheduled=True)
@@ -1192,11 +1195,13 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if manual is True:
             #remove all future instances of this zone
-            while self._zonedata in REMAINING_ZONES:
-                REMAINING_ZONES.remove(self._zonedata)
+            remaining = self._programdata.switch.remaining_zones
+            while self._zonedata in remaining:
+                remaining.remove(self._zonedata)
 
-        if self._zonedata in RUNNING_ZONES:
-            RUNNING_ZONES.remove(self._zonedata)
+        running = self._programdata.switch.running_zones
+        if self._zonedata in running:
+            running.remove(self._zonedata)
 
         self.async_schedule_update_ha_state()
 
