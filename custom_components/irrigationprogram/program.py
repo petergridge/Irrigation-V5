@@ -431,14 +431,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     if sunrise:
                         adjusted_sunrise = dt_util.as_local(sunrise + d)
 
-                    # 5. Extract the time component without seconds/micros
-                    target_time = adjusted_sunrise.replace(
-                        second=0, microsecond=0
-                    ).time()
+                        # 5. Extract the time component without seconds/micros
+                        target_time = adjusted_sunrise.replace(
+                            second=0, microsecond=0
+                        ).time()
 
-                    self.hass.async_create_task(
-                        self._program.start_time.async_set_value(target_time)
-                    )
+                        self.hass.async_create_task(
+                            self._program.start_time.async_set_value(target_time)
+                        )
                 except ValueError:
                     # Handle case where offset state isn't a valid number
                     pass
