@@ -1296,10 +1296,13 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, last=False, last_ran=dt_util.as_local(dt_util.now())):
+    async def async_turn_on_from_program(self, last=False, last_ran=None):
         """Start the zone watering cycle."""
         # last indicates this is the last zone to be run
-        # last_ran is the start time of the program
+        # last_ran is the start time of the program; default to the current
+        # local time when the caller does not supply one
+        if last_ran is None:
+            last_ran = dt_util.as_local(dt_util.now())
         self._state = self._status_sensor = self._status = CONST_ON
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
