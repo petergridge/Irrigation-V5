@@ -76,6 +76,9 @@
 			"remaining_time":{
 				"name":"Resterende tijd"
 			},
+			"delay_time":{
+				"name":"Vertragingstijd"
+			},
 			"default_run_time":{
 				"name":"Duur"
 			}
@@ -103,7 +106,7 @@
 				"name":"Zonsondergang offset"
 			},
 			"rain_delay_days":{
-				"name":"Rain delay"
+				"name":"Regen vertraging"
 			}
 		},
 		"time":{
@@ -121,7 +124,7 @@
 				"name":"Negeer sensoren"
 			},
 			"enable_rain_delay":{
-				"name":"Enable rain delay"
+				"name":"Schakel regen vertraging in"
 			},
 			"enable_program":{
 				"name":"Programma aan"
@@ -151,7 +154,7 @@
 			"mandatory": "Verplichte velden zijn niet ingevuld",
 			"zone_required": "Minimaal 1 zone moet zijn ingesteld",
 			"invalid_days_group": "Frequentieopties in de lijst moeten zijn Man,Din,Woe,Don,Vrij,Zat,Zon",
-			"invalid_option": "Frequentie opties moeten een nummer zijn, of Man,Din,Woe,Don,Vrij,Zat,Zon",
+			"invalid_option": "Frequentie opties moeten een nummer zijn, or Man,Din,Woe,Don,Vrij,Zat,Zon",
 			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
 		},
 		"step": {

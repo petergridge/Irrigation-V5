@@ -76,6 +76,9 @@
 			"remaining_time":{
 				"name":"Tempo rimanente"
 			},
+			"delay_time":{
+				"name":"Tempo di ritardo"
+			},
 			"default_run_time":{
 				"name":"Durata"
 			}

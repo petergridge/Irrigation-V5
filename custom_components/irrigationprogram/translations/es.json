@@ -76,6 +76,9 @@
 			"remaining_time":{
 				"name":"Tiempo restante"
 			},
+			"delay_time":{
+				"name":"Tiempo de retraso"
+			},
 			"default_run_time":{
 				"name":"Duración"
 			}
@@ -103,7 +106,7 @@
 				"name":"Ajuste de atardecer"
 			},
 			"rain_delay_days":{
-				"name":"Rain delay"
+				"name":"Retraso por lluvia"
 			}
 		},
 		"time":{
@@ -121,7 +124,7 @@
 				"name":"Ignorar sensores"
 			},
 			"enable_rain_delay":{
-				"name":"Enable rain delay"
+				"name":"Habilitar retraso por lluvia"
 			},
 			"enable_program":{
 				"name":"Habilitar programa"

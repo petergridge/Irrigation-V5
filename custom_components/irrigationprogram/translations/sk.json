@@ -76,6 +76,9 @@
       "remaining_time": {
         "name": "Zostávajúci čas"
       },
+			"delay_time":{
+				"name":"Čas oneskorenia"
+			},
       "default_run_time": {
         "name": "Dĺžka trvania"
       }

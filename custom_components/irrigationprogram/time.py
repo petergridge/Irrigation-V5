@@ -34,8 +34,11 @@ async def async_setup_entry(
     entities = []
     if p.start_type != 'multistart':
         sensor = starttime(unique_id,p.name)
-        entities.append (sensor)
         config_entry.runtime_data.program.start_time = sensor
+        entities.append (sensor)
+    # sensor = delaytime(unique_id,p.name)
+    # config_entry.runtime_data.program.delay_time = sensor
+    # entities.append (sensor)
     async_add_entities(entities)
 
 def parse_initial_datetime(initial) -> py_datetime.datetime:
@@ -47,13 +50,14 @@ def parse_initial_datetime(initial) -> py_datetime.datetime:
 
 
 class starttime(TimeEntity,RestoreEntity):
-
+    """Define the start time sensor."""
     _attr_has_entity_name = True
     _attr_translation_key ='start_time'
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
 
     def __init__(self, unique_id,pname):
+        """Init."""
         self._attr_unique_id   = slugify(f'{unique_id}_start_time')
         self._native_value     = None
         self._current_datetime = None
@@ -85,8 +89,58 @@ class starttime(TimeEntity,RestoreEntity):
 
     @property
     def native_value(self):
+        """Get the time value."""
         return self._current_datetime
 
     async def async_set_value(self, value):
+        """Set the time value."""
         self._current_datetime = value
         self.async_write_ha_state()
+
+# class delaytime(TimeEntity,RestoreEntity):
+#     """Define the delay time sensor."""
+#     _attr_has_entity_name = True
+#     _attr_translation_key ='delay_time'
+#     _unrecorded_attributes = frozenset({MATCH_ALL})
+
+
+#     def __init__(self, unique_id,pname):
+#         """Init."""
+#         self._attr_unique_id   = slugify(f'{unique_id}_delay_time')
+#         self._native_value     = None
+#         self._current_datetime = None
+#         self._attr_attribution = f'Irrigation Controller: {pname}'
+
+#     async def async_added_to_hass(self):
+#         """HA has started."""
+#         last_state = await self.async_get_last_state()
+#         datetime = dt_util.as_local(dt_util.utc_from_timestamp(py_datetime.datetime.now().timestamp()))
+#         date = datetime.date()
+#         time = datetime.time()
+#         self._current_datetime = py_datetime.datetime.combine(
+#                     date, time, dt_util.get_default_time_zone()
+#                 ).time().replace(second=00,microsecond=00)
+#         if last_state:
+#             if last_state.state != 'unknown':
+#                 last_time = py_datetime.datetime.strptime(last_state.state,"%H:%M:%S")
+#                 current_datetime = parse_initial_datetime(last_time.time().replace(second=00,microsecond=00))
+
+#             # If the user passed in an initial value with a timezone, convert it to right tz
+#             if current_datetime.tzinfo is not None:
+#                 self._current_datetime = current_datetime.astimezone(
+#                     dt_util.get_default_time_zone().replace(second=00, microsecond=00)
+#                 ).time()
+#             else:
+#                 self._current_datetime = current_datetime.replace(
+#                     tzinfo=dt_util.get_default_time_zone(),second=00, microsecond=00
+#                 ).time()
+
+#     @property
+#     def native_value(self):
+#         """Get the time value."""
+#         return self._current_datetime
+
+#     async def async_set_value(self, value):
+#         """Set the time value."""
+#         self._current_datetime = value
+#         self.async_write_ha_state()
