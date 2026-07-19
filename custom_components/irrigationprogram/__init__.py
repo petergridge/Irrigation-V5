@@ -439,12 +439,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_queue_program(hass: HomeAssistant, program):
     """Queue programs."""
-
-    # await asyncio.sleep(0)
+    # remove from the queue if it is already there and add to the end of the queue
+    QUEUEDPROGRAMS[:] = [p for p in QUEUEDPROGRAMS if p.name != program.name]
     QUEUEDPROGRAMS.append(program)
     if QUEUEDPROGRAMS[0] != program:
+        await asyncio.sleep(1)
         await program.pause_switch.async_turn_on()
-
+    # _LOGGER.error("Queued programs %s", [p.name for p in QUEUEDPROGRAMS])
 
 async def async_setup(hass: HomeAssistant, config):
     """Irrigation object."""

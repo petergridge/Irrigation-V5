@@ -927,6 +927,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         event: Event[EventStateChangedData],
     ):
         """Program paused status changes."""
+
         if self._program.pause.is_on:
             self._paused = True
 
@@ -1087,12 +1088,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._finished = False
         self.async_schedule_update_ha_state()
 
-        # stop all running programs except the calling program
-        if self._program.interlock:
-            await queue_program(self._hass, self)
-            if self._pumps:
-                await asyncio.sleep(1)
-
         # calculate the remaining time for the program
         # Monitor and start the zone with lead/lag time
         for zone in self._run_zones:
@@ -1101,6 +1096,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._running_zones.clear()
         await self.run_monitor_zones()
+
+        # Queue program when the interlock is enabled and there are other programs in the queue
+        if self._program.interlock :
+            await queue_program(self._hass, self)
+            if self._pumps:
+                await asyncio.sleep(1)
 
         while self._program_remaining > 0:
             await self.run_monitor_zones()
@@ -1115,7 +1116,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs):
         """Stop the switch/program."""
-
         self._stop = True
         if self._pumps:
             event_data = {
