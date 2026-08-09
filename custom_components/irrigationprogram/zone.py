@@ -490,9 +490,13 @@ class Zone(SwitchEntity, RestoreEntity):
             CONST_DISABLED,
             CONST_UNAVAILABLE,
             CONST_ADJUSTED_OFF,
-            CONST_NO_WATER_SOURCE,
+            #CONST_NO_WATER_SOURCE,
             CONST_RAINING,
         ]:
+            return False
+
+        # if pause when well empty allow to run
+        if self.status.state == CONST_NO_WATER_SOURCE and not self._programdata.water_source_pause:
             return False
 
         # Zone is disabled and not started from the zone (from the program)
@@ -711,7 +715,7 @@ class Zone(SwitchEntity, RestoreEntity):
         elif self._programdata.pause.is_on:
             status = CONST_PAUSED
 
-        elif self.water_source == CONST_OFF:
+        elif self.water_source == CONST_OFF and not self._programdata.water_source_pause:
             status = CONST_NO_WATER_SOURCE
         elif (
             self.rain_sensor == CONST_ON
@@ -758,6 +762,7 @@ class Zone(SwitchEntity, RestoreEntity):
         if self._status in (CONST_ECO, CONST_ON, CONST_PENDING):
             # zone is running no need to recalc next run until it has completed
             return
+
 
         if self._status == CONST_PAUSED:
             status = await self.handle_state_change()
@@ -838,16 +843,22 @@ class Zone(SwitchEntity, RestoreEntity):
 
         delay = 0
         if self._programdata.rain_delay:
+            # Delay the next run based on the rain delay days and the delay time, this is used to determine the next run
             if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
                 delay = int(self._programdata.rain_delay_days.state)
+                delay_until = dt_util.parse_datetime(self._programdata.delay_time.state) + timedelta(days=delay)
+                v_last_ran = first_start_time.replace(
+                    day=delay_until.day, month=delay_until.month, year=delay_until.year
+                )
 
         try:  # Frq is numeric
             v_next_run = self.get_numeric_frq(first_start_time,last_ran_midnight,today_midnight, v_last_ran)
         except ValueError: # Frq is not numeric, days of week or odd/even
             string_freq = self.clean_up_string(self.frequency)
-            v_last_ran = dt_util.as_local(dt_util.now()).replace(
-                hour=starthour, minute=startmin, second=00, microsecond=00
-            )
+            if delay == 0:
+                v_last_ran = dt_util.as_local(dt_util.now()).replace(
+                    hour=starthour, minute=startmin, second=00, microsecond=00
+                )
             day = v_last_ran.day
             if self.frequency == "Odd" :
                 v_next_run = self.get_next_odd_day(v_last_ran)
@@ -901,14 +912,6 @@ class Zone(SwitchEntity, RestoreEntity):
     def get_numeric_frq(self,first_start_time,last_ran_midnight,today_midnight, last_ran=None):
         """Process a numeric frquency."""
 
-        delay = 0
-        delay_until = dt_util.as_local(dt_util.now())
-        if self._programdata.rain_delay:
-            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
-                delay = int(self._programdata.rain_delay_days.state)
-                # delay_until = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
-                delay_until = dt_util.parse_datetime(self._programdata.delay_time.state) + timedelta(days=delay)
-
         if self.frequency is None:
             frq = 1
         else:
@@ -929,7 +932,7 @@ class Zone(SwitchEntity, RestoreEntity):
         else:
             v_next_run = last_ran + timedelta(days=frq)
 
-        return max(v_next_run, delay_until)
+        return v_next_run
 
 
     def get_weekday(self, day):
@@ -947,19 +950,10 @@ class Zone(SwitchEntity, RestoreEntity):
                 notification_id="irrigation_frequency",
             )
 
-
     def get_next_even_day(self, start_date=None):
         """Next even numbered day."""
-
-        delay = 0
-        if self._programdata.rain_delay:
-            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
-                delay = int(self._programdata.rain_delay_days.state)
         if start_date is None:
             start_date = dt_util.as_local(datetime.today())
-        if delay > 0:
-            start_date = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
-
         # today is odd and run time is in the future
         if start_date.day % 2 == 0 and start_date > dt_util.as_local(
                         dt_util.now()
@@ -968,23 +962,13 @@ class Zone(SwitchEntity, RestoreEntity):
         next_day = start_date + timedelta(days=1)
         while next_day.day % 2 == 1:
             next_day += timedelta(days=1)
-
         return next_day
 
     def get_next_odd_day(self, start_date=None):
         """Next odd numbered day."""
-        delay = 0
-        # update = None
-        if self._programdata.rain_delay:
-            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
-                delay = int(self._programdata.rain_delay_days.state)
 
         if start_date is None:
             start_date = datetime.today()
-
-        if delay > 0:
-            start_date = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
-
         # today is odd and run time is in the future
         if start_date.day % 2 == 1 and start_date > dt_util.as_local(
                         dt_util.now()
@@ -1135,7 +1119,6 @@ class Zone(SwitchEntity, RestoreEntity):
         }
         self.hass.bus.async_fire("irrigation_event", event_data)
 
-
     async def async_eco_turn_off(self):
         """Signal the zone to stop."""
         self._status_sensor = self._status = CONST_ECO
@@ -1212,7 +1195,12 @@ class Zone(SwitchEntity, RestoreEntity):
     async def calc_default_run_time(self):
         """Update the run time component."""
 
-        if CONST_OFF in (self.enabled.state, self.water_source):
+        if CONST_OFF in (self.enabled.state):
+            self._default_run_time = 0
+            await self.default_run_time_set()
+            return self._default_run_time
+
+        if CONST_OFF in (self.water_source) and not self._programdata.water_source_pause:
             self._default_run_time = 0
             await self.default_run_time_set()
             return self._default_run_time

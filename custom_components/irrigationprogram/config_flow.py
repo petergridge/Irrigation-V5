@@ -1187,6 +1187,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if entity_id:
             self._remove.append(entity_id)
 
+    async def async_remove_zone_objects(self, zone=None):
+        """Remove zone objects."""
+        # register zone to delete the zone from the list of zones
+        self._delete.append(zone)
+        # set up to remove entities when finalising
+        friendlyname = zone.split(".")[1]
+        await self.get_er("switch", slugify(f"{self._uid}_{friendlyname}_zone"))
+        await self.get_er("switch", slugify(f"{self._uid}_{friendlyname}_config"))
+        await self.get_er(
+            "switch", slugify(f"{self._uid}_{friendlyname}_ignore_sensors")
+        )
+        await self.get_er(
+            "switch", slugify(f"{self._uid}_{friendlyname}_enable_zone")
+        )
+        await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_status"))
+        await self.get_er(
+            "select", slugify(f"{self._uid}_{friendlyname}_frequency")
+        )
+        await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_water"))
+        await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_wait"))
+        await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_repeat"))
+        await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_next_run"))
+        await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_last_ran"))
+        await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_default_run_time"))
+        await self.get_er(
+            "sensor", slugify(f"{self._uid}_{friendlyname}_remaining_time")
+        )
+
     async def async_step_delete_zone(self, user_input=None):
         """Delete a zone."""
         errors = {}
@@ -1196,30 +1224,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 # no data provided return to the menu
                 return await self.async_step_init()
 
-            # register zone to delete the zone from the list of zones
-            self._delete.append(user_input.get(ATTR_ZONE))
-            # set up to remove entities when finalising
-            friendlyname = user_input.get(ATTR_ZONE).split(".")[1]
-            await self.get_er("switch", slugify(f"{self._uid}_{friendlyname}_zone"))
-            await self.get_er("switch", slugify(f"{self._uid}_{friendlyname}_config"))
-            await self.get_er(
-                "switch", slugify(f"{self._uid}_{friendlyname}_ignore_sensors")
-            )
-            await self.get_er(
-                "switch", slugify(f"{self._uid}_{friendlyname}_enable_zone")
-            )
-            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_status"))
-            await self.get_er(
-                "select", slugify(f"{self._uid}_{friendlyname}_frequency")
-            )
-            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_water"))
-            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_wait"))
-            await self.get_er("number", slugify(f"{self._uid}_{friendlyname}_repeat"))
-            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_next_run"))
-            await self.get_er("sensor", slugify(f"{self._uid}_{friendlyname}_last_ran"))
-            await self.get_er(
-                "sensor", slugify(f"{self._uid}_{friendlyname}_remaining_time")
-            )
+            await self.async_remove_zone_objects(zone=user_input.get(ATTR_ZONE))
+            
             return await self.async_step_init()
 
         # build list of zones
@@ -1235,6 +1241,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     optionslist.append(
                         {"label": state.name, "value": zone}
                     )
+                else:
+                    optionslist.append({"label": zone + " offline!", "value": zone})
             except AttributeError:
                 optionslist.append({"label": zone + " offline!", "value": zone})
         list_schema = vol.Schema(
@@ -1277,6 +1285,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     optionslist.append(
                         {"label": state.name, "value": zone}
                     )
+                else:
+                    optionslist.append({"label": zone + " offline!", "value": zone})
             except AttributeError:
                 optionslist.append({"label": zone + " offline!", "value": zone})
 
@@ -1306,12 +1316,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 this_zone = zone
                 zone_pos = count
                 break
+
         if user_input is not None:
             if user_input.get(ATTR_ZONE) is None:
                 errors[ATTR_ZONE] = "mandatory"
 
             if not errors:
                 self._updated = True
+
+                #check if the zone has been changed and update the exclude list
+                if user_input.get(ATTR_ZONE) != this_zone.get(ATTR_ZONE):
+                    self._exclude.remove(this_zone.get(ATTR_ZONE))
+                    await self.async_remove_zone_objects(zone=this_zone.get(ATTR_ZONE))
+
                 # Input is valid, set data.
                 zone_data = {}
                 for attr in user_input:

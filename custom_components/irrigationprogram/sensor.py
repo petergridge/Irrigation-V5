@@ -98,8 +98,8 @@ class ZoneStatus(SensorEntity):
     def __init__(  # noqa: D107
         self, hass: HomeAssistant, pname, zone, unique_id
     ) -> None:
-        self._state = "off"
-        self._uuid = slugify(f"{unique_id}_{zone}_status")
+        self._attr_native_value = "off"
+        self._attr_unique_id = slugify(f"{unique_id}_{zone}_status")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
         self._zname = zone
@@ -115,7 +115,7 @@ class ZoneStatus(SensorEntity):
 
     async def set_value(self, status=CONST_OFF):
         """Set the runtime state value."""
-        self._state = status
+        self._attr_native_value = status
         self.async_schedule_update_ha_state()
 
     @property
@@ -142,17 +142,8 @@ class ZoneStatus(SensorEntity):
     @property
     def friendly_name(self):
         """Return a unique_id for this entity."""
-        return self._state
+        return self._attr_native_value
 
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
 
 class ZoneNextRun(SensorEntity):
@@ -165,8 +156,8 @@ class ZoneNextRun(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
-        self._state:datetime = dt_util.as_local(dt_util.now())
-        self._uuid = slugify(f"{unique_id}_{zone}_next_run")
+        self._attr_native_value:datetime = dt_util.as_local(dt_util.now())
+        self._attr_unique_id = slugify(f"{unique_id}_{zone}_next_run")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
         self._zname = zone
@@ -178,18 +169,8 @@ class ZoneNextRun(SensorEntity):
         x = ZONES.get(zonename)
          # Get the property object from the class
         if x and type(x.next_run_value) is datetime:
-            self._state = x.next_run_value
+            self._attr_native_value = x.next_run_value
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self) -> datetime:
-        """Return the state."""
-        return self._state
 
 
 class ZoneLastRan(RestoreSensor):
@@ -202,8 +183,8 @@ class ZoneLastRan(RestoreSensor):
 
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
-        self._state = None
-        self._uuid = slugify(f"{unique_id}_{zone}_last_ran")
+        self._attr_native_value = None
+        self._attr_unique_id = slugify(f"{unique_id}_{zone}_last_ran")
         self._localtimezone = ZoneInfo(hass.config.time_zone)
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
@@ -213,7 +194,7 @@ class ZoneLastRan(RestoreSensor):
         """HA has started."""
         last_state = await self.async_get_last_sensor_data()
         if last_state:
-            self._state = last_state.native_value
+            self._attr_native_value = last_state.native_value
 
     async def async_update(self):
         """Triggered on update freq."""
@@ -222,18 +203,8 @@ class ZoneLastRan(RestoreSensor):
         x = ZONES.get(zonename)
          # Get the property object from the class
         if x and type(x.last_run_value) is datetime:
-            self._state = x.last_run_value
+            self._attr_native_value = x.last_run_value
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
 
 class ZoneRemainingTime(SensorEntity):
@@ -246,8 +217,8 @@ class ZoneRemainingTime(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
-        self._state: time = time(hour=0, minute=0, second=0)
-        self._uuid = slugify(f"{unique_id}_{zone}_remaining_time")
+        self._attr_native_value: time = time(hour=0, minute=0, second=0)
+        self._attr_unique_id = slugify(f"{unique_id}_{zone}_remaining_time")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
         self._zname = zone
@@ -270,23 +241,13 @@ class ZoneRemainingTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=hour, minute=minute, second=second)
-        self._state = rem
+        self._attr_native_value = rem
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
 
 
 class ZoneDefaultRunTime(SensorEntity):
@@ -299,8 +260,8 @@ class ZoneDefaultRunTime(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
-        self._state: time = time(hour=0, minute=0, second=0)
-        self._uuid = slugify(f"{unique_id}_{zone}_default_run_time")
+        self._attr_native_value: time = time(hour=0, minute=0, second=0)
+        self._attr_unique_id = slugify(f"{unique_id}_{zone}_default_run_time")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
         self._zname = zone
@@ -323,23 +284,13 @@ class ZoneDefaultRunTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=hour, minute=minute, second=second)
-        self._state = rem
+        self._attr_native_value = rem
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
 
 
 class RemainingTime(SensorEntity):
@@ -353,8 +304,8 @@ class RemainingTime(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
         """Init."""
-        self._state: time = time(hour=0, minute=0, second=0)
-        self._uuid = slugify(f"{unique_id}_remaining_time")
+        self._attr_native_value: time = time(hour=0, minute=0, second=0)
+        self._attr_unique_id = slugify(f"{unique_id}_remaining_time")
         self._attr_attribution = f"Irrigation Controller: {pname}"
         self._pname = pname
 
@@ -375,23 +326,13 @@ class RemainingTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
-        self._state = rem
+        self._attr_native_value = rem
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
 
 
 class DefaultRunTime(SensorEntity):
@@ -405,8 +346,8 @@ class DefaultRunTime(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
         """Init."""
-        self._state: time = time(hour=0, minute=0, second=0)
-        self._uuid = slugify(f"{unique_id}_default_run_time")
+        self._attr_native_value: time = time(hour=0, minute=0, second=0)
+        self._attr_unique_id = slugify(f"{unique_id}_default_run_time")
         self._attr_attribution = f"Irrigation Controller: {pname}"
         self._pname = pname
 
@@ -427,23 +368,13 @@ class DefaultRunTime(SensorEntity):
             rem = time(hour=23, minute=59, second=59)
         else:
             rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
-        self._state = rem
+        self._attr_native_value = rem
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
 
 
 class DelayTime(RestoreSensor):
@@ -457,8 +388,8 @@ class DelayTime(RestoreSensor):
 
     def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
         """Init."""
-        self._state = None
-        self._uuid = slugify(f"{unique_id}_delay_time")
+        self._attr_native_value = None
+        self._attr_unique_id = slugify(f"{unique_id}_delay_time")
         self._localtimezone = ZoneInfo(hass.config.time_zone)
         self._attr_attribution = f"Irrigation Controller: {pname}"
         self._pname = pname
@@ -467,7 +398,7 @@ class DelayTime(RestoreSensor):
         """HA has started."""
         last_state = await self.async_get_last_sensor_data()
         if last_state:
-            self._state = last_state.native_value
+            self._attr_native_value = last_state.native_value
 
     async def async_update(self):
         """Triggered on update freq."""
@@ -475,22 +406,10 @@ class DelayTime(RestoreSensor):
         x = PROGRAMS.get(self._pname)
          # Get the property object from the class
         if x and type(x.delay_time_value) is datetime:
-            self._state = x.delay_time_value
+            self._attr_native_value = x.delay_time_value
         self.async_schedule_update_ha_state()
-
-
 
     async def set_value(self):
         """Set the runtime state value."""
-        self._state = datetime.now(UTC)
+        self._attr_native_value = datetime.now(UTC)
         self.async_schedule_update_ha_state()
-
-    @property
-    def unique_id(self):
-        """Return a unique_id for this entity."""
-        return self._uuid
-
-    @property
-    def native_value(self):
-        """Return the state."""
-        return self._state

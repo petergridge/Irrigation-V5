@@ -675,7 +675,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     await asyncio.sleep(.1)
                 zones.append(zone.switch.entity_id)
             except AttributeError:
-                _LOGGER.error(zone.switch.entity_id)
                 async_dismiss(self.hass, "irrigation_device_error2")
                 async_create(
                     self.hass,
@@ -835,6 +834,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 kwargs["scheduled"] = self._scheduled
                 await zone.switch.async_toggle(**kwargs)
             zones.append(zone)
+
         return zones
 
     async def calculate_program_remaining(
@@ -968,13 +968,20 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             await self.remaining_time_set()
             return self._running_zones
 
-        if self._paused:
-            await asyncio.sleep(1)
-            return self._running_zones
+
 
         await self.calculate_program_remaining(
             self._running_zones, self._remaining_zones, 0, False
         )
+        # check if the water source is on and pause the program if required
+        if self._program.water_source and self._program.water_source_pause:
+            if self.hass.states.get(self._program.water_source).state == CONST_OFF:
+                await self._program.pause.async_turn_on()
+
+        if self._paused:
+            await asyncio.sleep(1)
+            return self._running_zones
+
         await asyncio.sleep(1)
 
         if (

@@ -357,9 +357,11 @@ def exclude(hass: HomeAssistant):
     output = []
     try:
         for e in hass.config_entries.async_entries(DOMAIN):
-            if e.state == ConfigEntryState.NOT_LOADED:
-                # this config is disabled
-                continue
+            # if e.state == ConfigEntryState.NOT_LOADED:
+            #     # this config is disabled
+            #     continue
+
+
             i: IrrigationData = e.runtime_data
             p: IrrigationProgram = i.program
             output.extend(
@@ -371,8 +373,12 @@ def exclude(hass: HomeAssistant):
                     p.remaining_time.entity_id,
                     p.default_run_time.entity_id,
                     p.delay_time.entity_id,
+                    p.pause.entity_id,
+
                 ]
             )
+            if p.rain_delay:
+                output.append(p.rain_delay.entity_id)
             if p.inter_zone_delay:
                 output.append(p.inter_zone_delay.entity_id)
             if p.frequency:
