@@ -1,20 +1,22 @@
 class IrrigationCard extends HTMLElement {
 
   setConfig(config) {
-    if (this.lastElementChild) this.removeChild(this.lastElementChild);
+    // don't remove/replace the child element here — reuse the existing card
     const cardConfig = Object.assign({}, config);
     if (!cardConfig.card) cardConfig.card = {};
     if (!cardConfig.card.type) cardConfig.card.type = "entities";
     if (!cardConfig.entities_vars)
       cardConfig.entities_vars = { type: "entity" };
-    const element = document.createElement('hui-entities-card');
+    // create and keep a single hui-entities-card instance for this element
+    if (!this._card) this._card = document.createElement('hui-entities-card');
     this._config = JSON.parse(JSON.stringify(cardConfig));
     customElements.whenDefined("card-mod").then(() => {
-      customElements
-        .get("card-mod")
-        .applyToElement(element, "card-mod-card", this._config.card_mod.style);
+      const cm = customElements.get("card-mod");
+      if (cm && this._config.card_mod && this._config.card_mod.style) {
+        cm.applyToElement(this._card, "card-mod-card", this._config.card_mod.style);
+      }
     });
-    this.appendChild(element);
+    if (!this.contains(this._card)) this.appendChild(this._card);
   }
 
   set hass(hass) {
@@ -60,9 +62,21 @@ class IrrigationCard extends HTMLElement {
       this._card = document.createElement("hui-entities-card"); // or custom card ??
       this.appendChild(this._card);
     }
+    // always update hass reference for inner card
     this._card.hass = hass;
     this._config = config;
-    this._card.setConfig(config.card);
+    // only call setConfig on the inner card when the card config actually changed
+    try {
+      const newCardConfig = JSON.stringify(config.card || {});
+      if (this._lastCardConfig !== newCardConfig) {
+        this._card.setConfig(config.card);
+        this._lastCardConfig = newCardConfig;
+      }
+    } catch (e) {
+      // fallback: if stringify fails, just set the config
+      this._card.setConfig(config.card);
+      this._lastCardConfig = null;
+    }
 
     // Functions
 

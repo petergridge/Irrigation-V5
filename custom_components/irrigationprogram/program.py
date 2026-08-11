@@ -182,7 +182,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "- type: conditional" + chr(10)
         card += "  conditions:" + chr(10)
         card += "  - entity: " + self.entity_id + chr(10)
-        card += "    state: on" + chr(10)
+        card += "    state: 'on'" + chr(10)
         card += "  row:" + chr(10)
         card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
