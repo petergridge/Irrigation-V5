@@ -171,7 +171,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "- type: conditional" + chr(10)
         card += "  conditions:" + chr(10)
         card += "  - entity: " + self.entity_id + chr(10)
-        card += "    state: \"off\"" + chr(10)
+        card += "    state: 'off'" + chr(10)
         card += "  row:" + chr(10)
         card += "    type: buttons" + chr(10)
         card += "    entities: " + chr(10)
@@ -194,21 +194,21 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += "      show_name: true" + chr(10)
 
         condition = [
-            {"entity": self.entity_id, "state_not": "\"on\""},
-            {"entity": self._program.config.entity_id, "state_not": "\"on\""},
-            {"entity": self._program.enabled.entity_id, "state": "\"on\""},
+            {"entity": self.entity_id, "state_not": "'on'"},
+            {"entity": self._program.config.entity_id, "state_not": "'on'"},
+            {"entity": self._program.enabled.entity_id, "state": "'on'"},
         ]
         card += add_entity(self._program.start_time, condition, True)
         card += add_entity(self._program.default_run_time, condition, True)
         condition = [
-            {"entity": self.entity_id, "state_not": "\"on\""},
-            {"entity": self._program.config.entity_id, "state_not": "\"on\""},
-            {"entity": self._program.enabled.entity_id, "state_not": "\"on\""},
+            {"entity": self.entity_id, "state_not": "'on'"},
+            {"entity": self._program.config.entity_id, "state_not": "'on'"},
+            {"entity": self._program.enabled.entity_id, "state_not": "'on'"},
         ]
         card += add_entity(self._program.enabled, condition, True)
         card += add_entity(self._program.default_run_time, condition, True)
 
-        condition = [{"entity": self._program.config.entity_id, "state": "\"on\""}]
+        condition = [{"entity": self._program.config.entity_id, "state": "'on'"}]
         if self._program.sunrise_offset or self._program.sunset_offset:
             card += add_entity(self._program.start_time, condition, True)
             card += add_entity(self._program.default_run_time, condition, True)
@@ -218,10 +218,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         card += add_entity(self._program.sunrise_offset, condition)
         card += add_entity(self._program.sunset_offset, condition)
 
-        condition = [{"entity": self.entity_id, "state": "\"on\""}]
+        condition = [{"entity": self.entity_id, "state": "'on'"}]
         card += add_entity(self._program.remaining_time, condition)
 
-        condition = [{"entity": self._program.config.entity_id, "state": "\"on\""}]
+        condition = [{"entity": self._program.config.entity_id, "state": "'on'"}]
         card += add_entity(self._program.enabled, condition)
         card += add_entity(self._program.frequency, condition)
         card += add_entity(self._program.inter_zone_delay, condition)
@@ -237,7 +237,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             card += "- type: conditional" + chr(10)
             card += "  conditions:" + chr(10)
             card += "  - entity: " + zone.switch.entity_id + chr(10)
-            card += "    state: \"off\"" + chr(10)
+            card += "    state: 'off'" + chr(10)
             card += "  row:" + chr(10)
             card += "    type: buttons" + chr(10)
             card += "    entities: " + chr(10)
@@ -255,7 +255,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             card += "- type: conditional" + chr(10)
             card += "  conditions:" + chr(10)
             card += "  - entity: " + zone.switch.entity_id + chr(10)
-            card += "    state_not: \"off\"" + chr(10)
+            card += "    state_not: 'off'" + chr(10)
             card += "  row:" + chr(10)
             card += "    type: buttons" + chr(10)
             card += "    entities: " + chr(10)
@@ -293,11 +293,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     "entity": zone.status.entity_id,
                     "state_not": '["on", "eco", "pending"]',
                 },
-                {"entity": zone.config.entity_id, "state": "\"on\""},
+                {"entity": zone.config.entity_id, "state": "'on'"},
             ]
             card += add_entity(zone.last_ran, condition)
 
-            condition = [{"entity": zone.config.entity_id, "state": "\"on\""}]
+            condition = [{"entity": zone.config.entity_id, "state": "'on'"}]
             card += add_entity(zone.enabled, condition)
             card += add_entity(zone.frequency, condition)
             card += add_entity(zone.default_run_time, condition)

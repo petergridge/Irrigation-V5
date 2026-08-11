@@ -98,7 +98,7 @@ class IrrigationCard extends HTMLElement {
           entity: showconfig,
           show_name: true,
         });
-        var condition = [{ entity: config.program, state: "off" }];
+        var condition = [{ entity: config.program, state_not: "on" }];
         entities.push({
           type: "conditional",
           conditions: condition,
