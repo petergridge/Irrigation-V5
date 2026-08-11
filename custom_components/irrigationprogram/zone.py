@@ -243,10 +243,10 @@ class Zone(SwitchEntity, RestoreEntity):
     def frequency(self) -> Any:
         """Frequency entity select."""
         # manage the impact of the rain delay on frequency
-        delay = 0
-        if self._programdata.rain_delay:
-            if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
-                delay = int(self._programdata.rain_delay_days.state)
+        # delay = 0
+        # if self._programdata.rain_delay:
+        #     if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
+        #         delay = int(self._programdata.rain_delay_days.state)
 
         if self._zonedata.frequency:
             frq = self._zonedata.frequency.current_option
