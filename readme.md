@@ -309,6 +309,14 @@ or when the program has no zones to run, for example it is raining
     "program": name,
   }
 ```
+3. When HA starts and the program was running at restart
+
+```
+  event_data = {
+    "action": "Program_running_on_restarted",
+    "program": name,
+  }
+```
 
 #### Zone events
 
