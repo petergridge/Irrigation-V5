@@ -1,0 +1,356 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "汎用",
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
+			}
+		},
+		"watering_type": {
+			"options": {
+				"time": "時間",
+				"volume": "体積"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "分",
+				"seconds": "秒"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector": "時間セレクター",
+				"multistart": "複数回",
+				"sunrise": "日の出オフセット",
+				"sunset": "日の入りオフセット"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "プログラムを停止",
+				"continue": "プログラムの完了を許可"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "厳密 - 開始時に他のプログラムをオフにします",
+				"loose": "ルーズ - 開始時にすべての他のプログラムをオフにし、「厳密」プログラムが開始された場合を除き実行を継続",
+				"off": "オフ - 「厳密」プログラムのみをオフにし、「厳密」プログラムが開始された場合を除き実行を継続"
+			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "スライダー",
+				"box": "入力ボックス"
+			}
+		}
+	},
+	"services": {
+		"get_current_state": {
+			"name": "現在の状態を取得",
+			"description": "灌漑プログラムとゾーンの現在の状態をJSON互換辞書として返します。"
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name": "ゾーン状態",
+				"state": {
+					"off": "オフ",
+					"on": "オン",
+					"disabled": "無効",
+					"pending": "保留中",
+					"eco": "エコ",
+					"program_disabled": "プログラム無効",
+					"controller_disabled": "コントローラー無効",
+					"unavailable": "利用不可",
+					"raining": "降雨中",
+					"adjusted_off": "調整オフ",
+					"no_water_source": "水源が検出されません",
+					"zone_disabled": "ゾーン無効",
+					"paused": "プログラム一時停止"
+				}
+			},
+			"zone_next_run": {
+				"name": "次回実行"
+			},
+			"zone_last_ran": {
+				"name": "最終実行"
+			},
+			"remaining_time": {
+				"name": "残り時間"
+			},
+			"delay_time": {
+				"name": "遅延時間"
+			},
+			"default_run_time": {
+				"name": "実行時間"
+			}
+		},
+		"number": {
+			"water": {
+				"name": "給水時間"
+			},
+			"volume": {
+				"name": "給水量"
+			},
+			"wait": {
+				"name": "待機時間"
+			},
+			"repeat": {
+				"name": "繰り返し"
+			},
+			"inter_zone_delay": {
+				"name": "ゾーン遷移"
+			},
+			"sunrise_offset": {
+				"name": "日の出オフセット"
+			},
+			"sunset_offset": {
+				"name": "日の入りオフセット"
+			},
+			"rain_delay_days": {
+				"name": "降雨遅延"
+			}
+		},
+		"time": {
+			"start_time": {
+				"name": "開始時刻"
+			}
+		},
+		"text": {
+			"start_times": {
+				"name": "開始時刻"
+			}
+		},
+		"switch": {
+			"ignore_sensor": {
+				"name": "センサーを無視"
+			},
+			"enable_rain_delay": {
+				"name": "降雨遅延を有効化"
+			},
+			"enable_program": {
+				"name": "プログラムを有効化"
+			},
+			"enable_zone": {
+				"name": "ゾーンを有効化"
+			},
+			"config": {
+				"name": "設定"
+			},
+			"zone": {
+				"name": "{zone_name}"
+			},
+			"pause": {
+				"name": "一時停止"
+			}
+		},
+		"select": {
+			"frequency": {
+				"name": "頻度"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "選択したゾーンスイッチは既にこの灌漑プログラムで定義されています",
+			"mandatory": "必須フィールドが入力されていません",
+			"zone_required": "少なくとも1つのゾーンを定義する必要があります",
+			"invalid_days_group": "リスト内の周波数オプションは Mon,Tue,Wed,Thu,Fri,Sat,Sun である必要があります",
+			"invalid_option": "周波数オプションは数値またはMon,Tue,Wed,Thu,Fri,Sat,Sunである必要があります",
+			"invalid_sensor": "周波数オプション、入力されたセンサーが正しくないか、オフラインです"
+		},
+		"step": {
+			"user": {
+				"title": "プログラムデータ",
+				"description": "プログラムを定義します",
+				"data": {
+					"name": "名前",
+					"freq": "プログラム全体の周波数を有効化",
+					"repeat": "プログラムを繰り返し、ゾーンエコモードを置き換えます",
+					"freq_options": "周波数オプションを選択または追加",
+					"device_type": "コントローラーのタイプ",
+					"flow_sensor": "フロー センサー",
+					"water_source_active": "水源バイナリセンサー",
+					"pump": "ポンプスイッチ"
+				}
+			},
+			"add_zone": {
+				"title": "プログラムゾーン",
+				"description": "ゾーン設定",
+				"data": {
+					"zone": "ゾーンスイッチ",
+					"freq": "ゾーン周波数がプログラム周波数を置き換えます",
+					"eco": "待機と繰り返しエコ機能を有効化",
+					"watering_type": "給水タイプ",
+					"water_adjustment": "実行時調整センサー",
+					"rain_sensor": "降雨バイナリセンサー",
+					"order": "ゾーン実行順序"
+				}
+			},
+			"delete_zone": {
+				"title": "ゾーン設定",
+				"description": "",
+				"data": {
+					"zone": "削除するゾーンを選択"
+				}
+			},
+			"update_zone_data": {
+				"title": "ゾーン設定",
+				"description": "ゾーンを更新",
+				"data": {
+					"zone": "ゾーンスイッチ",
+					"freq": "ゾーン周波数がプログラム周波数を置き換えます",
+					"eco": "待機と繰り返しエコ機能を有効化",
+					"watering_type": "給水タイプ",
+					"water_adjustment": "実行時調整センサー",
+					"rain_sensor": "降雨バイナリセンサー",
+					"order": "ゾーン実行順序"
+				}
+			},
+			"update_zone": {
+				"title": "ゾーン設定",
+				"description": "",
+				"data": {
+					"zone": "更新するゾーンを選択"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "プログラムを更新",
+					"add_zone": "ゾーンを追加",
+					"update_zone": "ゾーンを更新",
+					"delete_zone": "ゾーンを削除",
+					"finalise": "適用",
+					"advanced": "詳細オプション"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "詳細オプション",
+				"data": {
+					"start_type": "開始時刻オプション",
+					"interlock": "選択された場合、プログラムはキューに入ります。選択されない場合、同時に実行されます",
+					"rain_behaviour": "降雨センサーの動作",
+					"min_sec": "給水時間単位",
+					"water_max": "最大給水時間/体積",
+					"water_step": "時間/体積ステップ",
+					"parallel": "ゾーン並列実行",
+					"pump_delay": "ポンプ開始の前置きまたは遅延時間を適用",
+					"card_yaml": "エンティティカードYAML作成を有効化",
+					"zone_delay_max": "最大ゾーン遷移遅延",
+					"rain_delay_on": "降雨検出時、次回実行を遅延",
+					"latency": "応答の遅い（高遅延）デバイスの待機時間",
+					"start_latency": "起動時にロードが遅いデバイスの待機時間",
+					"pause_on_water_source": "水源センサーがオフになったときプログラムを一時停止",
+					"continue_on_unexpected_state": "状態が予期しない場合、ゾーンが継続、そうでなければ次のゾーンに進みます",
+					"input_mode": "数値エンティティの入力モード",
+					"eco_max": "エコモードの最大待機時間"
+				}
+			}
+		}
+	},
+	"options": {
+		"error": {
+			"zone_defined": "ゾーンスイッチは既にこの灌漑プログラムで定義されています",
+			"mandatory": "必須フィールドが入力されていません",
+			"zone_required": "少なくとも1つのゾーンを定義する必要があります",
+			"invalid_days_group": "周波数オプションは Mon,Tue,Wed,Thu,Fri,Sat,Sun である必要があります",
+			"invalid_option": "周波数オプションは数値またはMon,Tue,Wed,Thu,Fri,Sat,Sunである必要があります",
+			"invalid_sensor": "周波数オプション、入力されたセンサーが正しくないか、オフラインです"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"user": "プログラムを更新",
+					"add_zone": "ゾーンを追加",
+					"update_zone": "ゾーンを更新",
+					"delete_zone": "ゾーンを削除",
+					"finalise": "適用",
+					"advanced": "詳細オプション"
+				}
+			},
+			"advanced": {
+				"title": "詳細オプション",
+				"description": "",
+				"data": {
+					"start_type": "開始時刻オプション",
+					"interlock": "選択された場合、プログラムはキューに入ります。選択されない場合、プログラムは同時に実行されます",
+					"rain_behaviour": "降雨センサーの動作",
+					"min_sec": "給水時間単位",
+					"water_max": "最大給水時間/体積",
+					"water_step": "時間/体積ステップ",
+					"parallel": "ゾーン並列実行",
+					"pump_delay": "ポンプ開始の前置きまたは遅延時間を適用",
+					"card_yaml": "エンティティカードYAML作成を有効化",
+					"zone_delay_max": "最大ゾーン遷移遅延",
+					"eco_max": "エコモードの最大待機時間",
+					"rain_delay_on": "降雨検出時、次回実行を遅延",
+					"latency": "応答の遅い（高遅延）デバイスの待機時間",
+					"start_latency": "起動時にロードが遅いデバイスの待機時間",
+					"pause_on_water_source": "水源センサーがオフになったときプログラムを一時停止",
+					"continue_on_unexpected_state": "状態が予期しない場合、ゾーンが継続、そうでなければ次のゾーンに進みます",
+					"input_mode": "数値エンティティの入力モード"
+				}
+			},
+			"update_program": {
+				"title": "プログラムデータ",
+				"description": "プログラムを更新",
+				"data": {
+					"freq": "プログラム全体の周波数を有効化",
+					"repeat": "プログラムを繰り返し、ゾーンエコモードを置き換えます",
+					"freq_options": "周波数オプションを選択または追加",
+					"device_type": "コントローラーのタイプ",
+					"flow_sensor": "フロー センサー",
+					"water_source_active": "水源バイナリセンサー",
+					"pump": "ポンプスイッチ"
+				}
+			},
+			"add_zone": {
+				"title": "ゾーン設定",
+				"description": "ゾーンを追加",
+				"data": {
+					"zone": "ゾーンスイッチ",
+					"freq": "ゾーン周波数がプログラム周波数を置き換えます",
+					"eco": "待機と繰り返しエコ機能を有効化",
+					"watering_type": "給水タイプ",
+					"water_adjustment": "実行時調整センサー",
+					"rain_sensor": "降雨バイナリセンサー",
+					"order": "ゾーン実行順序"
+				}
+			},
+			"update_zone_data": {
+				"title": "ゾーン設定",
+				"description": "ゾーンを更新",
+				"data": {
+					"zone": "ゾーンスイッチ",
+					"freq": "ゾーン周波数がプログラム周波数を置き換えます",
+					"eco": "待機と繰り返しエコ機能を有効化",
+					"watering_type": "給水タイプ",
+					"water_adjustment": "実行時調整センサー",
+					"rain_sensor": "降雨バイナリセンサー",
+					"order": "ゾーン実行順序"
+				}
+			},
+			"delete_zone": {
+				"title": "ゾーン設定",
+				"description": "",
+				"data": {
+					"zone": "削除するゾーンを選択"
+				}
+			},
+			"update_zone": {
+				"title": "ゾーン設定",
+				"description": "",
+				"data": {
+					"zone": "更新するゾーンを選択"
+				}
+			}
+		}
+	}
+}

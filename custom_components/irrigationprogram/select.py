@@ -45,7 +45,7 @@ class Frequency(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, name, freq_options):
+    def __init__(self, unique_id, pname, name, freq_options) -> None:
         if name:
             self._attr_unique_id = slugify(f"{unique_id}_{name}_frequency")
             self._attr_attribution = f"Irrigation Controller: {pname}, {name}"

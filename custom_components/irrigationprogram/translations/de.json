@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Zeit",
 				"volume": "Volumen"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Zeit Auswahl",
-				"multistart":"Mehrere Zeiten",
-				"sunrise":"Sonnenaufgang mit offset",
-				"sunset":"Sonnenuntergang mit offset"
+				"selector": "Zeit Auswahl",
+				"multistart": "Mehrere Zeiten",
+				"sunrise": "Sonnenaufgang mit offset",
+				"sunset": "Sonnenuntergang mit offset"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Aktuellen Status abrufen",
+			"description": "Gibt den aktuellen Status der Bewässerungsprogramme und Zonen als JSON-kompatibles Dictionary zurück."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Zonenstatus",
+				"name": "Zonenstatus",
 				"state": {
 					"off": "Aus",
 					"on": "An",
@@ -67,84 +73,84 @@
 					"paused": "Programm pausiert"
 				}
 			},
-			"zone_next_run":{
-				"name":"Nächster Start"
+			"zone_next_run": {
+				"name": "Nächster Start"
 			},
-			"zone_last_ran":{
-				"name":"Letzte Ausführung"
+			"zone_last_ran": {
+				"name": "Letzte Ausführung"
 			},
-			"remaining_time":{
-				"name":"Restzeit"
+			"remaining_time": {
+				"name": "Restzeit"
 			},
-			"delay_time":{
-				"name":"Verzögerungszeit"
+			"delay_time": {
+				"name": "Verzögerungszeit"
 			},
-			"default_run_time":{
-				"name":"Dauer"
+			"default_run_time": {
+				"name": "Dauer"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Bewässerungsdauer"
+		"number": {
+			"water": {
+				"name": "Bewässerungsdauer"
 			},
-			"volume":{
-				"name":"Bewässerungsmenge"
+			"volume": {
+				"name": "Bewässerungsmenge"
 			},
-			"wait":{
-				"name":"Wartezeit"
+			"wait": {
+				"name": "Wartezeit"
 			},
-			"repeat":{
-				"name":"Wiederholungen"
+			"repeat": {
+				"name": "Wiederholungen"
 			},
-			"inter_zone_delay":{
-				"name":"Wartedauer zwischen Zonen"
+			"inter_zone_delay": {
+				"name": "Wartedauer zwischen Zonen"
 			},
-			"sunrise_offset":{
-				"name":"Sonnenaufgang offset"
+			"sunrise_offset": {
+				"name": "Sonnenaufgang offset"
 			},
-			"sunset_offset":{
-				"name":"Sonnenuntergang offset"
+			"sunset_offset": {
+				"name": "Sonnenuntergang offset"
 			},
-			"rain_delay_days":{
-				"name":"Regenverzögerung"
+			"rain_delay_days": {
+				"name": "Regenverzögerung"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Startzeit"
+		"time": {
+			"start_time": {
+				"name": "Startzeit"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Startzeiten"
+		"text": {
+			"start_times": {
+				"name": "Startzeiten"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Sensoren ignorieren"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Sensoren ignorieren"
 			},
-			"enable_rain_delay":{
-				"name":"Regenverzögerung aktivieren"
+			"enable_rain_delay": {
+				"name": "Regenverzögerung aktivieren"
 			},
-			"enable_program":{
-				"name":"Programm aktivieren"
+			"enable_program": {
+				"name": "Programm aktivieren"
 			},
-			"enable_zone":{
-				"name":"Zone aktivieren"
+			"enable_zone": {
+				"name": "Zone aktivieren"
 			},
-			"config":{
+			"config": {
 				"name": "Einstellungen"
 			},
-			"zone":{
+			"zone": {
 				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Pause"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Häufigkeit"
+		"select": {
+			"frequency": {
+				"name": "Häufigkeit"
 			}
 		}
 	},
@@ -227,7 +233,7 @@
 				"description": "",
 				"title": "Erweiterte Optionen",
 				"data": {
-					"start_type":"Start Zeit Optionen",
+					"start_type": "Start Zeit Optionen",
 					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
 					"rain_behaviour": "Regensensorverhalten",
 					"min_sec": "Bewässerungszeit Einheit",
@@ -242,12 +248,13 @@
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Eingabemodus für Zahlenentitäten"
+					"input_mode": "Eingabemodus für Zahlenentitäten",
+					"eco_max": "Maximale Wartezeit für den ECO-Modus"
 				}
 			}
 		}
 	},
-    "options": {
+	"options": {
 		"error": {
 			"zone_defined": "Ausgewählter Zonenschalter wird in diesem Programm bereits genutzt",
 			"mandatory": "Pflichtfeld nicht ausgefüllt",
@@ -272,7 +279,7 @@
 				"title": "Erweiterte Optionen",
 				"description": "",
 				"data": {
-					"start_type":"Startzeit Optionen",
+					"start_type": "Startzeit Optionen",
 					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
 					"rain_behaviour": "Regen Sensor Verhalten",
 					"min_sec": "Bewässerungszeit Einheit",
@@ -287,7 +294,8 @@
 					"start_latency": "Wartezeit für Geräte, die beim Start langsam laden",
 					"pause_on_water_source": "Programm pausieren, wenn der Wasserquellensensor ausschaltet",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Eingabemodus für Zahlenentitäten"
+					"input_mode": "Eingabemodus für Zahlenentitäten",
+					"eco_max": "Maximale Wartezeit für den ECO-Modus"
 				}
 			},
 			"update_program": {
@@ -301,7 +309,7 @@
 					"flow_sensor": "Durchflusssensor",
 					"water_source_active": "Wasserquellensensor (Binär)",
 					"pump": "Pumpenschalter"
-                }
+				}
 			},
 			"add_zone": {
 				"title": "Programmzonen",

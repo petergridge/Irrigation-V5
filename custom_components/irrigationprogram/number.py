@@ -112,7 +112,7 @@ async def async_setup_entry(
         sensors.append(sensor)
         config_entry.runtime_data.zone_data[i].water = sensor
         if zone.eco:
-            sensor = Wait(unique_id, p.name, zone.name, p.min_sec, p.input_mode)
+            sensor = Wait(unique_id, p.name, zone.name, p.min_sec, p.eco_max, p.input_mode)
             sensors.append(sensor)
             config_entry.runtime_data.zone_data[i].wait = sensor
 
@@ -130,7 +130,7 @@ class InputNumberProgram(RestoreNumber):
 
     def __init__(
         self, unique_id, pname, translation_key, unit_of_measure, max, min, step, input_mode
-    ):
+    ) -> None:
         self._attr_unique_id = slugify(f"{unique_id}_{translation_key}")
         self._attr_attribution = f"Irrigation Controller: {pname}"
 
@@ -173,7 +173,7 @@ class Water(RestoreNumber):
         step=30,
         min_sec="minutes",
         input_mode="slider"
-    ):
+    ) -> None:
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_water")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_native_max_value = water_max
@@ -216,17 +216,18 @@ class Wait(RestoreNumber):
     _attr_translation_key = "wait"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, min_sec="minutes", input_mode="slider"):
+    def __init__(self, unique_id, pname, zone_name, min_sec="minutes", eco_max=10, input_mode="slider") -> None:
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_wait")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_device_class = NumberDeviceClass.DURATION
+
         self._attr_mode = NumberMode.SLIDER if input_mode == "slider" else NumberMode.BOX
         if min_sec == "seconds":
-            self._attr_native_max_value = 120
+            self._attr_native_max_value = max(eco_max,120)
             self._attr_native_unit_of_measurement = "s"
         else:
             self._attr_native_unit_of_measurement = "min"
-            self._attr_native_max_value = 10
+            self._attr_native_max_value = max(eco_max,10)
 
     async def async_added_to_hass(self):
         last_state = await self.async_get_last_number_data()
@@ -253,7 +254,7 @@ class Repeat(RestoreNumber):
     _attr_translation_key = "repeat"
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, unique_id, pname, zone_name, input_mode="slider"):
+    def __init__(self, unique_id, pname, zone_name, input_mode="slider") -> None:
         self._attr_unique_id = slugify(f"{unique_id}_{zone_name}_repeat")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone_name}"
         self._attr_native_unit_of_measurement = "reps"

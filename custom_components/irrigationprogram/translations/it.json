@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Tempo",
 				"volume": "Volume"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Selettore dell'orario",
-				"multistart":"Orari multipli",
-				"sunrise":"Alba con offset",
-				"sunset":"Tramonto con offset"
+				"selector": "Selettore dell'orario",
+				"multistart": "Orari multipli",
+				"sunrise": "Alba con offset",
+				"sunset": "Tramonto con offset"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Ottieni stato attuale",
+			"description": "Restituisce lo stato attuale dei programmi e delle zone di irrigazione come dizionario compatibile con JSON."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Stato zona",
+				"name": "Stato zona",
 				"state": {
 					"off": "Spenta",
 					"on": "Accesa",
@@ -67,84 +73,84 @@
 					"paused": "Programma in pausa"
 				}
 			},
-			"zone_next_run":{
-				"name":"Prossima irrigazione"
+			"zone_next_run": {
+				"name": "Prossima irrigazione"
 			},
-			"zone_last_ran":{
-				"name":"Ultima irrigazione"
+			"zone_last_ran": {
+				"name": "Ultima irrigazione"
 			},
-			"remaining_time":{
-				"name":"Tempo rimanente"
+			"remaining_time": {
+				"name": "Tempo rimanente"
 			},
-			"delay_time":{
-				"name":"Tempo di ritardo"
+			"delay_time": {
+				"name": "Tempo di ritardo"
 			},
-			"default_run_time":{
-				"name":"Durata"
+			"default_run_time": {
+				"name": "Durata"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Tempo di irrigazione"
+		"number": {
+			"water": {
+				"name": "Tempo di irrigazione"
 			},
-			"volume":{
-				"name":"Volume di irrigazione"
+			"volume": {
+				"name": "Volume di irrigazione"
 			},
-			"wait":{
-				"name":"Tempo di attesa"
+			"wait": {
+				"name": "Tempo di attesa"
 			},
-			"repeat":{
-				"name":"Ripetizione"
+			"repeat": {
+				"name": "Ripetizione"
 			},
-			"inter_zone_delay":{
-				"name":"Ritardo tra zone"
+			"inter_zone_delay": {
+				"name": "Ritardo tra zone"
 			},
-			"sunrise_offset":{
-				"name":"Scostamento dall'alba"
+			"sunrise_offset": {
+				"name": "Scostamento dall'alba"
 			},
-			"sunset_offset":{
-				"name":"Scostamento dal tramonto"
+			"sunset_offset": {
+				"name": "Scostamento dal tramonto"
 			},
-			"rain_delay_days":{
-				"name":"Ritardo per pioggia"
+			"rain_delay_days": {
+				"name": "Ritardo per pioggia"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Orario di inizio"
+		"time": {
+			"start_time": {
+				"name": "Orario di inizio"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Orari di inizio"
+		"text": {
+			"start_times": {
+				"name": "Orari di inizio"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Ignora i sensori"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Ignora i sensori"
 			},
-			"enable_rain_delay":{
-				"name":"Abilita ritardo per pioggia"
+			"enable_rain_delay": {
+				"name": "Abilita ritardo per pioggia"
 			},
-			"enable_program":{
-				"name":"Abilita il programma"
+			"enable_program": {
+				"name": "Abilita il programma"
 			},
-			"enable_zone":{
-				"name":"Abilita la zona"
+			"enable_zone": {
+				"name": "Abilita la zona"
 			},
-			"config":{
-				"name":"Impostazioni"
+			"config": {
+				"name": "Impostazioni"
 			},
-			"zone":{
-				"name":"{zone_name}"
+			"zone": {
+				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Pausa"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Frequenza"
+		"select": {
+			"frequency": {
+				"name": "Frequenza"
 			}
 		}
 	},
@@ -242,12 +248,13 @@
 					"start_latency": "Tempo di attesa per i dispositivi che si caricano lentamente all'avvio",
 					"pause_on_water_source": "Metti in pausa il programma quando il sensore della sorgente d'acqua cambia in off",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Mode di ingresso per le entità numeriche"
+					"input_mode": "Mode di ingresso per le entità numeriche",
+					"eco_max": "Tempo massimo di attesa per la modalità ECO"
 				}
 			}
 		}
 	},
- 	"options": {
+	"options": {
 		"error": {
 			"zone_defined": "L'interruttore zona è già stato definito in questo programma di irrigazione",
 			"mandatory": "Il campo richiesto non è stato riempito",
@@ -287,7 +294,8 @@
 					"start_latency": "Tempo di attesa per i dispositivi che si caricano lentamente all'avvio",
 					"pause_on_water_source": "Metti in pausa il programma quando il sensore della sorgente d'acqua cambia in off",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Mode di ingresso per le entità numeriche"
+					"input_mode": "Mode di ingresso per le entità numeriche",
+					"eco_max": "Tempo massimo di attesa per la modalità ECO"
 				}
 			},
 			"update_program": {

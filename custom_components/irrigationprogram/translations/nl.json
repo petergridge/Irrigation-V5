@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Tijd",
 				"volume": "Volume"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Tijd selecteren",
-				"multistart":"Meerdere tijden",
-				"sunrise":"Zonsopgang met een offset",
-				"sunset":"Zonsondergang met een offset"
+				"selector": "Tijd selecteren",
+				"multistart": "Meerdere tijden",
+				"sunrise": "Zonsopgang met een offset",
+				"sunset": "Zonsondergang met een offset"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Huidige status ophalen",
+			"description": "Geeft de huidige status van irrigatieprogramma's en zones terug als JSON-compatibel woordenboek."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Zone status",
+				"name": "Zone status",
 				"state": {
 					"off": "Uit",
 					"on": "Aan",
@@ -67,84 +73,84 @@
 					"paused": "Programma pauze"
 				}
 			},
-			"zone_next_run":{
-				"name":"Volgende start"
+			"zone_next_run": {
+				"name": "Volgende start"
 			},
-			"zone_last_ran":{
-				"name":"Laatste start"
+			"zone_last_ran": {
+				"name": "Laatste start"
 			},
-			"remaining_time":{
-				"name":"Resterende tijd"
+			"remaining_time": {
+				"name": "Resterende tijd"
 			},
-			"delay_time":{
-				"name":"Vertragingstijd"
+			"delay_time": {
+				"name": "Vertragingstijd"
 			},
-			"default_run_time":{
-				"name":"Duur"
+			"default_run_time": {
+				"name": "Duur"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Bewatering tijd"
+		"number": {
+			"water": {
+				"name": "Bewatering tijd"
 			},
-			"volume":{
-				"name":"Water volume"
+			"volume": {
+				"name": "Water volume"
 			},
-			"wait":{
-				"name":"Wacht tijd"
+			"wait": {
+				"name": "Wacht tijd"
 			},
-			"repeat":{
-				"name":"Herhalingen"
+			"repeat": {
+				"name": "Herhalingen"
 			},
-			"inter_zone_delay":{
-				"name":"Zone overgang"
+			"inter_zone_delay": {
+				"name": "Zone overgang"
 			},
-			"sunrise_offset":{
-				"name":"Zonsopgang offset"
+			"sunrise_offset": {
+				"name": "Zonsopgang offset"
 			},
-			"sunset_offset":{
-				"name":"Zonsondergang offset"
+			"sunset_offset": {
+				"name": "Zonsondergang offset"
 			},
-			"rain_delay_days":{
-				"name":"Regen vertraging"
+			"rain_delay_days": {
+				"name": "Regen vertraging"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Start tijd"
+		"time": {
+			"start_time": {
+				"name": "Start tijd"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Start tijden"
+		"text": {
+			"start_times": {
+				"name": "Start tijden"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Negeer sensoren"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Negeer sensoren"
 			},
-			"enable_rain_delay":{
-				"name":"Schakel regen vertraging in"
+			"enable_rain_delay": {
+				"name": "Schakel regen vertraging in"
 			},
-			"enable_program":{
-				"name":"Programma aan"
+			"enable_program": {
+				"name": "Programma aan"
 			},
-			"enable_zone":{
-				"name":"Zone aan"
+			"enable_zone": {
+				"name": "Zone aan"
 			},
-			"config":{
+			"config": {
 				"name": "Instellingen"
 			},
-			"zone":{
+			"zone": {
 				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Pause"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Frequentie"
+		"select": {
+			"frequency": {
+				"name": "Frequentie"
 			}
 		}
 	},
@@ -227,7 +233,7 @@
 				"description": "",
 				"title": "Gevanceerde opties",
 				"data": {
-					"start_type":"Start tijd opties",
+					"start_type": "Start tijd opties",
 					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
 					"rain_behaviour": "Regen sensor gedrag",
 					"min_sec": "Watering time unit",
@@ -242,12 +248,13 @@
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Input mode for numeric entities"
+					"input_mode": "Input mode for numeric entities",
+					"eco_max": "Maximale wachttijd voor ECO-modus"
 				}
 			}
 		}
 	},
- 	"options": {
+	"options": {
 		"error": {
 			"zone_defined": "Zone-omschakeling is al gedefinieerd in dit irrigatieprogramma",
 			"mandatory": "Verplicht veld niet ingevuld",
@@ -272,7 +279,7 @@
 				"title": "Geavanceerde opties",
 				"description": "",
 				"data": {
-					"start_type":"Start tijd opties",
+					"start_type": "Start tijd opties",
 					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
 					"rain_behaviour": "Regen sensor gedrag",
 					"min_sec": "Watering time unit",
@@ -287,7 +294,8 @@
 					"start_latency": "Wait time for devices that load slowly on startup",
 					"pause_on_water_source": "Pause program when water source sensor turns off",
 					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
-					"input_mode": "Input mode for numeric entities"
+					"input_mode": "Input mode for numeric entities",
+					"eco_max": "Maximale wachttijd voor ECO-modus"
 				}
 			},
 			"update_program": {

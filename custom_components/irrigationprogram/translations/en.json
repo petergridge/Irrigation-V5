@@ -47,6 +47,12 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Get current state",
+			"description": "Returns the current irrigation program and zone state as a JSON-compatible dictionary."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
@@ -237,6 +243,7 @@
 					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
+					"eco_max": "Maximum wait time for ECO mode",
 					"rain_delay_on": "Enable manual delay of the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",
@@ -282,6 +289,7 @@
 					"pump_delay": "Apply lead or lag time for pump starting",
 					"card_yaml": "Enable creation of entities card yaml",
 					"zone_delay_max": "Maximum zone transition delay",
+					"eco_max": "Maximum wait time for ECO mode",
 					"rain_delay_on": "Enable manual delay of the next run when rain detected",
 					"latency": "Wait time for slow responding (high latency) devices",
 					"start_latency": "Wait time for devices that load slowly on startup",

@@ -64,6 +64,7 @@ ATTR_CONTINUE_ON_UNEXPECTED_STATE = "continue_on_unexpected_state"
 ATTR_INPUT_MODE = "input_mode"
 
 ATTR_ZONE_DELAY_MAX = "zone_delay_max"
+ATTR_ECO_MAX = "eco_max"
 ATTR_WATER_MAX = "water_max"
 ATTR_WATER_STEP = "water_step"
 ATTR_PARALLEL = "parallel"

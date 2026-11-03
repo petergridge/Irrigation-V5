@@ -1,6 +1,7 @@
 """Platform for recording current irrigation zone status."""
 
 from datetime import UTC, datetime, time
+import json
 import logging
 from zoneinfo import ZoneInfo
 
@@ -31,7 +32,7 @@ from .const import (
     CONST_UNAVAILABLE,
     CONST_ZONE_DISABLED,
 )
-from .globals import PROGRAMS, ZONES
+from .globals import PROGRAMS, ZONES, update_current_state
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +61,12 @@ async def async_setup_entry(
     sensors.append(sensor)
     config_entry.runtime_data.program.delay_time = sensor
 
+    # #if ProgramCurrentStateSensor already created for the custom component, don't create another one
+    # if not hasattr(config_entry.runtime_data.program, "state_sensor"):
+    # sensor = ProgramCurrentStateSensor(hass, pname, unique_id)
+    # sensors.append(sensor)
+    # config_entry.runtime_data.program.state_sensor = sensor
+
     zones = data.zone_data
     for i, zone in enumerate(zones):
         zname = zone.name
@@ -87,6 +94,26 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
+# class ProgramCurrentStateSensor(SensorEntity):
+#     """Expose the live program state as JSON."""
+
+#     _attr_has_entity_name = True
+#     _attr_should_poll = False
+#     _attr_translation_key = "program_state"
+
+#     def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
+#         """Init."""
+#         self._attr_native_value = "{}"
+#         self._attr_unique_id = slugify(f"{unique_id}_current_state")
+#         self._attr_attribution = "Irrigation Controller"
+#         self._pname = pname
+
+#     async def async_update(self):
+#         """Refresh the current state JSON."""
+#         self._attr_native_value = json.dumps(update_current_state())
+#         self.async_schedule_update_ha_state()
+
+
 class ZoneStatus(SensorEntity):
     """Rain factor class defn."""
 
@@ -106,8 +133,8 @@ class ZoneStatus(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
-        zonename = self._pname+'.'+self._zname
+        # get the value from the program/zone
+        zonename = self._pname + "." + self._zname
         x = ZONES.get(zonename)
         if x is None:
             return
@@ -145,7 +172,6 @@ class ZoneStatus(SensorEntity):
         return self._attr_native_value
 
 
-
 class ZoneNextRun(SensorEntity):
     """Next zone run date time class defn."""
 
@@ -156,7 +182,7 @@ class ZoneNextRun(SensorEntity):
 
     def __init__(self, hass: HomeAssistant, pname, zone, unique_id) -> None:
         """Init."""
-        self._attr_native_value:datetime = dt_util.as_local(dt_util.now())
+        self._attr_native_value: datetime = dt_util.as_local(dt_util.now())
         self._attr_unique_id = slugify(f"{unique_id}_{zone}_next_run")
         self._attr_attribution = f"Irrigation Controller: {pname}, {zone}"
         self._pname = pname
@@ -164,10 +190,10 @@ class ZoneNextRun(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
-        zonename = self._pname+'.'+self._zname
+        # get the value from the program/zone
+        zonename = self._pname + "." + self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
+        # Get the property object from the class
         if x and type(x.next_run_value) is datetime:
             self._attr_native_value = x.next_run_value
         self.async_schedule_update_ha_state()
@@ -198,10 +224,10 @@ class ZoneLastRan(RestoreSensor):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
-        zonename = self._pname+'.'+self._zname
+        # get the value from the program/zone
+        zonename = self._pname + "." + self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
+        # Get the property object from the class
         if x and type(x.last_run_value) is datetime:
             self._attr_native_value = x.last_run_value
         self.async_schedule_update_ha_state()
@@ -225,8 +251,8 @@ class ZoneRemainingTime(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
-        zonename = self._pname+'.'+self._zname
+        # get the value from the program/zone
+        zonename = self._pname + "." + self._zname
         x = ZONES.get(zonename)
         if x is None:
             return
@@ -247,7 +273,11 @@ class ZoneRemainingTime(SensorEntity):
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
+        return (
+            self._attr_native_value.hour * 3600
+            + self._attr_native_value.minute * 60
+            + self._attr_native_value.second
+        )
 
 
 class ZoneDefaultRunTime(SensorEntity):
@@ -268,8 +298,8 @@ class ZoneDefaultRunTime(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
-        zonename = self._pname+'.'+self._zname
+        # get the value from the program/zone
+        zonename = self._pname + "." + self._zname
         x = ZONES.get(zonename)
         if x is None:
             return
@@ -290,7 +320,11 @@ class ZoneDefaultRunTime(SensorEntity):
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
+        return (
+            self._attr_native_value.hour * 3600
+            + self._attr_native_value.minute * 60
+            + self._attr_native_value.second
+        )
 
 
 class RemainingTime(SensorEntity):
@@ -311,7 +345,7 @@ class RemainingTime(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
+        # get the value from the program/zone
         x = PROGRAMS.get(self._pname)
         if x is None:
             return
@@ -325,14 +359,18 @@ class RemainingTime(SensorEntity):
         if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
-            rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
+            rem = time(hour=max(0, hour), minute=max(0, minute), second=max(0, second))
         self._attr_native_value = rem
         self.async_schedule_update_ha_state()
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
+        return (
+            self._attr_native_value.hour * 3600
+            + self._attr_native_value.minute * 60
+            + self._attr_native_value.second
+        )
 
 
 class DefaultRunTime(SensorEntity):
@@ -353,7 +391,7 @@ class DefaultRunTime(SensorEntity):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
+        # get the value from the program/zone
         x = PROGRAMS.get(self._pname)
         if x is None:
             return
@@ -367,14 +405,18 @@ class DefaultRunTime(SensorEntity):
         if value / 60 / 60 / 24 >= 1:
             rem = time(hour=23, minute=59, second=59)
         else:
-            rem = time(hour=max(0,hour), minute=max(0,minute), second=max(0,second))
+            rem = time(hour=max(0, hour), minute=max(0, minute), second=max(0, second))
         self._attr_native_value = rem
         self.async_schedule_update_ha_state()
 
     @property
     def numeric_value(self):
         """Return the state."""
-        return self._attr_native_value.hour * 3600 + self._attr_native_value.minute * 60 + self._attr_native_value.second
+        return (
+            self._attr_native_value.hour * 3600
+            + self._attr_native_value.minute * 60
+            + self._attr_native_value.second
+        )
 
 
 class DelayTime(RestoreSensor):
@@ -402,9 +444,9 @@ class DelayTime(RestoreSensor):
 
     async def async_update(self):
         """Triggered on update freq."""
-        #get the value from the program/zone
+        # get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
+        # Get the property object from the class
         if x and type(x.delay_time_value) is datetime:
             self._attr_native_value = x.delay_time_value
         self.async_schedule_update_ha_state()

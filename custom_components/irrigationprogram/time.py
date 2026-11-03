@@ -56,7 +56,7 @@ class starttime(TimeEntity,RestoreEntity):
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
 
-    def __init__(self, unique_id,pname):
+    def __init__(self, unique_id,pname) -> None:
         """Init."""
         self._attr_unique_id   = slugify(f'{unique_id}_start_time')
         self._native_value     = None

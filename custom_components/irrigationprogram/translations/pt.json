@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Tempo",
 				"volume": "Volume"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Seletor de Horário",
-				"multistart":"Diversos Horários",
-				"sunrise":"Nascer do sol com ajuste",
-				"sunset":"Pôr do sol com ajuste"
+				"selector": "Seletor de Horário",
+				"multistart": "Diversos Horários",
+				"sunrise": "Nascer do sol com ajuste",
+				"sunset": "Pôr do sol com ajuste"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Obter estado atual",
+			"description": "Retorna o estado atual dos programas e zonas de irrigação como um dicionário compatível com JSON."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Estado da zona",
+				"name": "Estado da zona",
 				"state": {
 					"off": "Desligado",
 					"on": "Ligado",
@@ -67,84 +73,84 @@
 					"paused": "Programa em espera"
 				}
 			},
-			"zone_next_run":{
-				"name":"Próximo arranque"
+			"zone_next_run": {
+				"name": "Próximo arranque"
 			},
-			"zone_last_ran":{
-				"name":"Último arranque"
+			"zone_last_ran": {
+				"name": "Último arranque"
 			},
-			"remaining_time":{
-				"name":"Tempo restante"
+			"remaining_time": {
+				"name": "Tempo restante"
 			},
-			"delay_time":{
-				"name":"Tempo de atraso"
+			"delay_time": {
+				"name": "Tempo de atraso"
 			},
-			"default_run_time":{
-				"name":"Duração"
+			"default_run_time": {
+				"name": "Duração"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Tempo de rega"
+		"number": {
+			"water": {
+				"name": "Tempo de rega"
 			},
-			"volume":{
-				"name":"Volume de rega"
+			"volume": {
+				"name": "Volume de rega"
 			},
-			"wait":{
-				"name":"Tempo de espera"
+			"wait": {
+				"name": "Tempo de espera"
 			},
-			"repeat":{
-				"name":"Repetições"
+			"repeat": {
+				"name": "Repetições"
 			},
-			"inter_zone_delay":{
-				"name":"Transição de zona"
+			"inter_zone_delay": {
+				"name": "Transição de zona"
 			},
-			"sunrise_offset":{
-				"name":"Ajustes do Nascer do Sol"
+			"sunrise_offset": {
+				"name": "Ajustes do Nascer do Sol"
 			},
-			"sunset_offset":{
-				"name":"Ajustes do Pôr do Sol"
+			"sunset_offset": {
+				"name": "Ajustes do Pôr do Sol"
 			},
-			"rain_delay_days":{
-				"name":"Atraso por estar a chuver"
+			"rain_delay_days": {
+				"name": "Atraso por estar a chuver"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Hora de início"
+		"time": {
+			"start_time": {
+				"name": "Hora de início"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Horários de início"
+		"text": {
+			"start_times": {
+				"name": "Horários de início"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Ignorar o sensor"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Ignorar o sensor"
 			},
-			"enable_rain_delay":{
-				"name":"Ativar atraso por estar a chuver"
+			"enable_rain_delay": {
+				"name": "Ativar atraso por estar a chuver"
 			},
-			"enable_program":{
-				"name":"Ativar o programa"
+			"enable_program": {
+				"name": "Ativar o programa"
 			},
-			"enable_zone":{
-				"name":"Ativar a zona"
+			"enable_zone": {
+				"name": "Ativar a zona"
 			},
-			"config":{
+			"config": {
 				"name": "Definições"
 			},
-			"zone":{
+			"zone": {
 				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Pausa"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Intervalo de rega"
+		"select": {
+			"frequency": {
+				"name": "Intervalo de rega"
 			}
 		}
 	},
@@ -227,7 +233,7 @@
 				"description": "",
 				"title": "Opções Avançadas",
 				"data": {
-					"start_type":"Opções de hora de início",
+					"start_type": "Opções de hora de início",
 					"interlock": "Selecionado, os programas ficarão em fila. Não selecionado, será executado simultaneamente",
 					"rain_behaviour": "Comportamento do sensor de chuva",
 					"min_sec": "Unidades da temporização de rega",
@@ -242,12 +248,13 @@
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
 					"continue_on_unexpected_state": "A zona continua quando o estado é inesperado, caso contrário prosseguir para a próxima zona",
-					"input_mode": "Modo de entrada para entidades numéricas"
+					"input_mode": "Modo de entrada para entidades numéricas",
+					"eco_max": "Tempo máximo de espera para o modo ECO"
 				}
 			}
 		}
 	},
- 	"options": {
+	"options": {
 		"error": {
 			"zone_defined": "O comando da zona selecionado já está definido neste programa de rega",
 			"mandatory": "Campo obrigatório não preenchido",
@@ -272,7 +279,7 @@
 				"title": "Opções Avançadas",
 				"description": "",
 				"data": {
-					"start_type":"Opções de hora de início",
+					"start_type": "Opções de hora de início",
 					"interlock": "Selecionado, os programas ficarão em fila. Não selecionado, será executado simultaneamente",
 					"rain_behaviour": "Comportamento do sensor de chuva",
 					"min_sec": "Unidades da temporização de rega",
@@ -287,7 +294,8 @@
 					"start_latency": "Tempo de espera para dispositivos que carregam lentamente no arranque",
 					"pause_on_water_source": "Pausar o programa quando o sensor da fonte de água se desligar",
 					"continue_on_unexpected_state": "A zona continua quando o estado for inesperado, caso contrário continua para a próxima zona",
-					"input_mode": "Modo de entrada para entidades numéricas"
+					"input_mode": "Modo de entrada para entidades numéricas",
+					"eco_max": "Tempo máximo de espera para o modo ECO"
 				}
 			},
 			"update_program": {

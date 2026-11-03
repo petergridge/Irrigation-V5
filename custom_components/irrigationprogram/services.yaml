@@ -1,0 +1,4 @@
+get_current_state:
+  name: Get current state
+  description: Returns the current irrigation program and zone state as a JSON-compatible dictionary.
+  fields: {}

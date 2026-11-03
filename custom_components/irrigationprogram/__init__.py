@@ -1,7 +1,5 @@
 """__init__."""
 
-from __future__ import annotations
-
 import asyncio
 import contextlib
 from dataclasses import dataclass
@@ -19,7 +17,9 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.text import TextEntity
 from homeassistant.components.time import TimeEntity
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry
+
+# , ConfigEntryState
 from homeassistant.const import (
     ATTR_NAME,
     EVENT_HOMEASSISTANT_STARTED,
@@ -27,7 +27,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
     Platform,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers import config_validation as cv
 
 from . import utils
@@ -35,6 +35,7 @@ from .const import (
     ATTR_CARD_YAML,
     ATTR_CONTINUE_ON_UNEXPECTED_STATE,
     ATTR_DEVICE_TYPE,
+    ATTR_ECO_MAX,
     ATTR_FLOW_SENSOR,
     ATTR_FREQUENCY,
     ATTR_FREQUENCY_OPTIONS,
@@ -64,7 +65,7 @@ from .const import (
     CONST_ECO,
     DOMAIN,
 )
-from .globals import QUEUEDPROGRAMS
+from .globals import QUEUEDPROGRAMS, update_current_state
 
 CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 PLATFORMS: list[str] = [
@@ -102,70 +103,73 @@ class IrrigationZoneData:
     """Zone data class."""
 
     zone: str  # switch.example, valve.example
-    switch: Any|SwitchEntity  # generated object
+    switch: Any | SwitchEntity  # generated object
     type: str  # switch|valve
     name: str
-    config: Any|SwitchEntity  # generated object
+    config: Any | SwitchEntity  # generated object
     eco: bool
     watering_type: str
-    water: Any|NumberEntity  # generated object
-    wait: Any|NumberEntity  # generated object
-    repeat: Any|NumberEntity  # generated object
-    frequency: Any|SelectEntity  # generated object
+    water: Any | NumberEntity  # generated object
+    wait: Any | NumberEntity  # generated object
+    repeat: Any | NumberEntity  # generated object
+    frequency: Any | SelectEntity  # generated object
     freq: bool
-    ignore_sensors: Any|SwitchEntity  # generated object
-    enabled: Any|SwitchEntity  # generated
-    status: Any|SensorEntity
-    next_run: Any|SensorEntity
-    last_ran: Any|SensorEntity
-    remaining_time: Any|SensorEntity
-    default_run_time: Any|SensorEntity
+    ignore_sensors: Any | SwitchEntity  # generated object
+    enabled: Any | SwitchEntity  # generated
+    status: Any | SensorEntity
+    next_run: Any | SensorEntity
+    last_ran: Any | SensorEntity
+    remaining_time: Any | SensorEntity
+    default_run_time: Any | SensorEntity
     rain_sensor: str  # sensor.example
     adjustment: str  # sensor.example
-    flow_rate: Any|str  # sensor.example
+    flow_rate: Any | str  # sensor.example
+
 
 @dataclass
 class IrrigationProgram:
     """Program data class."""
+
     name: str
     switch: Any
     modified: str
-    pause: Any|SwitchEntity
+    pause: Any | SwitchEntity
     rain_delay_on: bool
-    pump: str # switch.example, valve.example
+    pump: str  # switch.example, valve.example
     flow_sensor: str  # sensor.example
     water_source: str  # sensor.example
-    rain_delay: Any|SwitchEntity
-    rain_delay_days: Any|NumberEntity
+    rain_delay: Any | SwitchEntity
+    rain_delay_days: Any | NumberEntity
     unique_id: str
-    config: Any|SwitchEntity
-    start_time: Any|TimeEntity  # generated
-    delay_time: Any|SensorEntity  # generated
-    remaining_time: Any|SensorEntity  # generated
-    default_run_time: Any|SensorEntity
-    multitime: Any|TextEntity  # generated
-    sunrise_offset: Any|NumberEntity  # generated
-    sunset_offset: Any|NumberEntity  # generated
+    config: Any | SwitchEntity
+    start_time: Any | TimeEntity  # generated
+    delay_time: Any | SensorEntity  # generated
+    remaining_time: Any | SensorEntity  # generated
+    default_run_time: Any | SensorEntity
+    multitime: Any | TextEntity  # generated
+    sunrise_offset: Any | NumberEntity  # generated
+    sunset_offset: Any | NumberEntity  # generated
     start_type: str  # selector|multistart|sunrise|sunset
-    frequency: Any|SelectEntity  # generated
+    frequency: Any | SelectEntity  # generated
     freq_options: list
     freq: bool
     repeat: bool
-    repeats: Any|NumberEntity
+    repeats: Any | NumberEntity
     rain_behaviour: str  # stop|continue
-    enabled: Any|SwitchEntity  # generated
+    enabled: Any | SwitchEntity  # generated
     controller_type: str  # rainbird|generic
-    inter_zone_delay: Any|NumberEntity  # generated
+    inter_zone_delay: Any | NumberEntity  # generated
     interlock: bool
     zone_count: int
     min_sec: str  # minutes|seconds
     water_max: int
     water_step: int
     zone_delay_max: int
+    eco_max: int
     parallel: int
     pump_delay: int
     card_yaml: bool
-    latency: int=5
+    latency: int = 5
     start_latency: int = 60
     water_source_pause: bool = False
     continue_on_unexpected_state: bool = False
@@ -180,36 +184,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         config = entry.data
 
-    TIMEOUT_SECONDS = max(int(config.get(ATTR_START_LATENCY,60)), 60)
+    TIMEOUT_SECONDS = max(int(config.get(ATTR_START_LATENCY, 60)), 60)
     REQUIRED_OBJECTS = []
 
-    for zone in config.get(ATTR_ZONES,[]):
+    for zone in config.get(ATTR_ZONES, []):
         REQUIRED_OBJECTS.append(zone.get(ATTR_ZONE))
-        if zone.get(ATTR_RAIN_SENSOR,None):
+        if zone.get(ATTR_RAIN_SENSOR, None):
             REQUIRED_OBJECTS.append(zone.get(ATTR_RAIN_SENSOR))
-        if zone.get(ATTR_WATER_ADJUST,None):
+        if zone.get(ATTR_WATER_ADJUST, None):
             REQUIRED_OBJECTS.append(zone.get(ATTR_WATER_ADJUST))
     if config.get(ATTR_FLOW_SENSOR, None):
         REQUIRED_OBJECTS.append(config.get(ATTR_FLOW_SENSOR))
     if config.get(ATTR_WATER_SOURCE, None):
         REQUIRED_OBJECTS.append(config.get(ATTR_WATER_SOURCE))
 
-
     async def _async_finish_setup(_event=None):
         """Perform the actual setup logic after HA has started."""
         try:
             # Wait for all objects with a strict timeout
             await asyncio.wait_for(_wait_for_objects(), timeout=TIMEOUT_SECONDS)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             _LOGGER.warning(
                 "Timed out waiting for objects: %s, Proceeding with partial setup",
-                REQUIRED_OBJECTS
+                REQUIRED_OBJECTS,
             )
 
         program = IrrigationProgram(
             name=entry.title,
             switch=None,
-            modified=config.get("updated",""),
+            modified=config.get("updated", ""),
             pause=None,
             rain_delay_on=config.get(ATTR_RAIN_DELAY, False),
             pump=config.get(ATTR_PUMP, None),
@@ -228,28 +231,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             sunset_offset=None,
             start_type=config.get(ATTR_START_TYPE, "selector"),
             frequency=None,
-            freq_options=config.get(ATTR_FREQUENCY_OPTIONS,[]),
-            freq=config.get(ATTR_FREQUENCY,False),
-            repeat=config.get(ATTR_REPEAT,False),
+            freq_options=config.get(ATTR_FREQUENCY_OPTIONS, []),
+            freq=config.get(ATTR_FREQUENCY, False),
+            repeat=config.get(ATTR_REPEAT, False),
             repeats=None,
             rain_behaviour=config.get(ATTR_RAIN_BEHAVIOUR, "stop"),
             enabled=None,
-            controller_type=config.get(ATTR_DEVICE_TYPE,"Generic"),
+            controller_type=config.get(ATTR_DEVICE_TYPE, "Generic"),
             inter_zone_delay=None,
             interlock=config.get(ATTR_INTERLOCK, "strict"),
-            zone_count=len(config.get(ATTR_ZONES,0)),
+            zone_count=len(config.get(ATTR_ZONES, 0)),
             min_sec=config.get(ATTR_MIN_SEC, "minutes"),
             water_max=config.get(ATTR_WATER_MAX, 30),
             latency=int(config.get(ATTR_LATENCY, 5)),
-            start_latency=max(int(config.get(ATTR_START_LATENCY,60)), 60),
+            start_latency=max(int(config.get(ATTR_START_LATENCY, 60)), 60),
             water_step=config.get("water_step", 1),
             zone_delay_max=config.get(ATTR_ZONE_DELAY_MAX, 120),
+            eco_max=config.get(ATTR_ECO_MAX, 10),
             parallel=config.get(ATTR_PARALLEL, 1),
             pump_delay=config.get(ATTR_PUMP_DELAY, 1),
             card_yaml=config.get(ATTR_CARD_YAML, False),
             water_source_pause=config.get(ATTR_PAUSE_WATER_SOURCE, False),
-            continue_on_unexpected_state=config.get(ATTR_CONTINUE_ON_UNEXPECTED_STATE, False),
-            input_mode=config.get(ATTR_INPUT_MODE, "slider")
+            continue_on_unexpected_state=config.get(
+                ATTR_CONTINUE_ON_UNEXPECTED_STATE, False
+            ),
+            input_mode=config.get(ATTR_INPUT_MODE, "slider"),
         )
         # Report if any of the dependant objects haven't loaded,
         # this could be due to a slow registering device or an incorrect entity id,
@@ -267,7 +273,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         zone_data = []
         msg_parts = []
-        for zone in config.get(ATTR_ZONES,[]):
+        for zone in config.get(ATTR_ZONES, []):
             z = IrrigationZoneData(
                 zone=zone.get(ATTR_ZONE),
                 switch=None,
@@ -293,20 +299,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 flow_rate=None,
             )
             msg = ""
-            nl = "\n"
             state = hass.states.get(z.zone)
             if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                msg_parts.append(f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options.")
+                msg_parts.append(
+                    f"ERROR {z.zone} has not initialised before the Irrigation Program, this could be a slow registering device, try increasing the 'Wait time from devices that load slowly on startup' setting in the advanced options."
+                )
             zone_data.append(z)
             # check if dependant objects are ready
             if z.adjustment:
                 state = hass.states.get(z.adjustment)
                 if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                    msg_parts.append(f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration")
+                    msg_parts.append(
+                        f"Warning, {z.adjustment} has not initialised before irrigation program, check your configuration"
+                    )
             if z.rain_sensor:
                 state = hass.states.get(z.rain_sensor)
                 if state is None or state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
-                    msg_parts.append(f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration")
+                    msg_parts.append(
+                        f"Warning, {z.rain_sensor} has not initialised before irrigation program, check your configuration"
+                    )
 
         if msg_parts:
             async_create(
@@ -325,7 +336,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
 
-
     async def _wait_for_objects():
         """Wait until all target objects are actually in the state machine."""
         while True:
@@ -341,11 +351,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 break
 
             # Wait a short period before checking again to avoid blocking
-            await asyncio.sleep(.1)
+            await asyncio.sleep(0.1)
 
     # Create background task so async_setup can return True immediately
     # 1. Wait for HA to finish its internal startup first
-    if  hass.is_running:
+    if hass.is_running:
         await _async_finish_setup()
     else:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _async_finish_setup)
@@ -361,7 +371,6 @@ def exclude(hass: HomeAssistant):
             #     # this config is disabled
             #     continue
 
-
             i: IrrigationData = e.runtime_data
             p: IrrigationProgram = i.program
             output.extend(
@@ -374,7 +383,6 @@ def exclude(hass: HomeAssistant):
                     p.default_run_time.entity_id,
                     p.delay_time.entity_id,
                     p.pause.entity_id,
-
                 ]
             )
             if p.rain_delay:
@@ -453,18 +461,38 @@ async def async_queue_program(hass: HomeAssistant, program):
         await program.pause_switch.async_turn_on()
     # _LOGGER.error("Queued programs %s", [p.name for p in QUEUEDPROGRAMS])
 
+
+async def async_get_current_state_service(
+    call: ServiceCall,
+) -> dict[str, dict[str, object]]:
+    """Return the current irrigation state as a JSON-compatible dict."""
+    return update_current_state()
+
+
 async def async_setup(hass: HomeAssistant, config):
     """Irrigation object."""
 
     hass.data.setdefault(DOMAIN, {})
+
+    if not hass.services.has_service(DOMAIN, "get_current_state"):
+        hass.services.async_register(
+            DOMAIN,
+            "get_current_state",
+            async_get_current_state_service,
+            supports_response=SupportsResponse.ONLY,
+        )
     #    if not config.get("card_yaml", False):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
 
     try:
-
         await hass.http.async_register_static_paths(
-            [StaticPathConfig("/irrigationprogram/www/irrigation-card.js", str(path / "irrigation-card.js"))]
+            [
+                StaticPathConfig(
+                    "/irrigationprogram/www/irrigation-card.js",
+                    str(path / "irrigation-card.js"),
+                )
+            ]
         )
 
         # 2. Add card to resources
@@ -557,25 +585,25 @@ def migrate_5(hass: HomeAssistant, config_entry: ConfigEntry):
         + chr(10)
         + 'Frequency Options have defaulted to "1", reconfigure the program to add more options'
     )
-    msg += chr(10) + chr(10) + "Remove " + new.get("start_time","")
+    msg += chr(10) + chr(10) + "Remove " + new.get("start_time", "")
     with contextlib.suppress(KeyError):
         new.pop("start_time")
     # if this has a value set the flag and collect the options
     if new.get("run_freq"):
-        msg += chr(10) + chr(10) + "Remove " + new.get("run_freq","")
+        msg += chr(10) + chr(10) + "Remove " + new.get("run_freq", "")
         with contextlib.suppress(KeyError):
             new.pop("run_freq")
         new[ATTR_FREQUENCY] = True
     if new.get("controller_monitor"):
-        msg += chr(10) + chr(10) + "Remove " + new.get("controller_monitor","")
+        msg += chr(10) + chr(10) + "Remove " + new.get("controller_monitor", "")
         with contextlib.suppress(KeyError):
             new.pop("controller_monitor")
     if new.get("inter_zone_delay"):
-        msg += chr(10) + chr(10) + "Remove " + new.get("inter_zone_delay","")
+        msg += chr(10) + chr(10) + "Remove " + new.get("inter_zone_delay", "")
         with contextlib.suppress(KeyError):
             new.pop("inter_zone_delay")
     if new.get("irrigation_on"):
-        msg += chr(10) + chr(10) + "Remove " + new.get("irrigation_on","")
+        msg += chr(10) + chr(10) + "Remove " + new.get("irrigation_on", "")
         with contextlib.suppress(KeyError):
             new.pop("irrigation_on")
         # add required defaults
@@ -583,7 +611,7 @@ def migrate_5(hass: HomeAssistant, config_entry: ConfigEntry):
     new[ATTR_RAIN_BEHAVIOUR] = "stop"
 
     # process the zones
-    zones = new.get(ATTR_ZONES,[])
+    zones = new.get(ATTR_ZONES, [])
     newzones = []
     for zone in zones:
         newzone = zone
@@ -661,7 +689,7 @@ def migrate_5(hass: HomeAssistant, config_entry: ConfigEntry):
     new[ATTR_ZONES] = newzones
 
     # create the persistent notification
-    async_dismiss(hass,"irrigation_card")
+    async_dismiss(hass, "irrigation_card")
     async_create(
         hass,
         message=msg,
@@ -719,7 +747,7 @@ def migrate_8(hass: HomeAssistant, config_entry: ConfigEntry):
     else:
         new = {**config_entry.options}
 
-    zones = new.get(ATTR_ZONES,[])
+    zones = new.get(ATTR_ZONES, [])
     newzones = []
     for zone in zones:
         newzone = zone

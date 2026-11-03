@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Tid",
 				"volume": "Volum"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Tidsvelger",
-				"multistart":"Flere Tider",
-				"sunrise":"Soloppgang med forskyvning",
-				"sunset":"Solnedgang med forskyvning"
+				"selector": "Tidsvelger",
+				"multistart": "Flere Tider",
+				"sunrise": "Soloppgang med forskyvning",
+				"sunset": "Solnedgang med forskyvning"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Hent gjeldende status",
+			"description": "Returnerer den nåværende statusen for irrigasjonsprogrammer og soner som et JSON-kompatibelt dictionary."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Sonestatus",
+				"name": "Sonestatus",
 				"state": {
 					"off": "Av",
 					"on": "På",
@@ -67,84 +73,84 @@
 					"paused": "Program pauset"
 				}
 			},
-			"zone_next_run":{
-				"name":"Neste drift"
+			"zone_next_run": {
+				"name": "Neste drift"
 			},
-			"zone_last_ran":{
-				"name":"Siste drift"
+			"zone_last_ran": {
+				"name": "Siste drift"
 			},
-			"remaining_time":{
-				"name":"Gjenstående tid"
+			"remaining_time": {
+				"name": "Gjenstående tid"
 			},
-			"delay_time":{
-				"name":"Forsinkelsestid"
+			"delay_time": {
+				"name": "Forsinkelsestid"
 			},
-			"default_run_time":{
-				"name":"Varighet"
+			"default_run_time": {
+				"name": "Varighet"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Vanningstid"
+		"number": {
+			"water": {
+				"name": "Vanningstid"
 			},
-			"volume":{
-				"name":"Vanningsvolum"
+			"volume": {
+				"name": "Vanningsvolum"
 			},
-			"wait":{
-				"name":"Ventetid"
+			"wait": {
+				"name": "Ventetid"
 			},
-			"repeat":{
-				"name":"Gjentakelser"
+			"repeat": {
+				"name": "Gjentakelser"
 			},
-			"inter_zone_delay":{
-				"name":"Soneovergang"
+			"inter_zone_delay": {
+				"name": "Soneovergang"
 			},
-			"sunrise_offset":{
-				"name":"Soloppgangsforskyvning"
+			"sunrise_offset": {
+				"name": "Soloppgangsforskyvning"
 			},
-			"sunset_offset":{
-				"name":"Solnedgangsforskyvning"
+			"sunset_offset": {
+				"name": "Solnedgangsforskyvning"
 			},
-			"rain_delay_days":{
-				"name":"Regnforsinkelse"
+			"rain_delay_days": {
+				"name": "Regnforsinkelse"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Starttid"
+		"time": {
+			"start_time": {
+				"name": "Starttid"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Starttider"
+		"text": {
+			"start_times": {
+				"name": "Starttider"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Ignorer sensorer"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Ignorer sensorer"
 			},
-			"enable_rain_delay":{
-				"name":"Aktiver regnforsinkelse"
+			"enable_rain_delay": {
+				"name": "Aktiver regnforsinkelse"
 			},
-			"enable_program":{
-				"name":"Aktiver programmet"
+			"enable_program": {
+				"name": "Aktiver programmet"
 			},
-			"enable_zone":{
-				"name":"Aktiver sone"
+			"enable_zone": {
+				"name": "Aktiver sone"
 			},
-			"config":{
+			"config": {
 				"name": "Innstillinger"
 			},
-			"zone":{
+			"zone": {
 				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Pause"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Frekvens"
+		"select": {
+			"frequency": {
+				"name": "Frekvens"
 			}
 		}
 	},
@@ -204,7 +210,7 @@
 					"rain_sensor": "Binær Regnsensor",
 					"order": "Sonekjørerekkefølge"
 				}
-            },
+			},
 			"update_zone": {
 				"title": "Sonekonfigurasjon",
 				"description": "",
@@ -227,7 +233,7 @@
 				"description": "",
 				"title": "Avanserte innstillinger",
 				"data": {
-					"start_type":"Alternativer for starttid",
+					"start_type": "Alternativer for starttid",
 					"interlock": "Valgt, programmer vil stå i kø. Ikke valgt, kjører samtidig",
 					"rain_behaviour": "Regnsensorens oppførsel",
 					"min_sec": "Tidsenhet for vanning",
@@ -242,12 +248,13 @@
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
 					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av",
 					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone",
-					"input_mode": "Inngangsmodus for numeriske enheter"
+					"input_mode": "Inngangsmodus for numeriske enheter",
+					"eco_max": "Maksimal ventetid for ECO-modus"
 				}
 			}
 		}
 	},
- 	"options": {
+	"options": {
 		"error": {
 			"zone_defined": "Valgt sonebryter er allerede definert i dette vanningsprogrammet",
 			"mandatory": "Påkrevd felt er ikke fylt ut",
@@ -272,7 +279,7 @@
 				"title": "Avanserte innstillinger",
 				"description": "",
 				"data": {
-					"start_type":"Alternativer for starttid",
+					"start_type": "Alternativer for starttid",
 					"interlock": "Valgt, programmer vil stå i kø. Ikke valgt, kjører samtidig",
 					"rain_behaviour": "Regnsensorens oppførsel",
 					"min_sec": "Tidsenhet for vanning",
@@ -287,7 +294,8 @@
 					"start_latency": "Oppstartsforsinkelse for tregt reagerende enheter",
 					"pause_on_water_source": "Sett programmet på pause når vannkildesensoren slås av",
 					"continue_on_unexpected_state": "Sone fortsetter når tilstanden er uventet, ellers gå videre til neste sone",
-					"input_mode": "Inngangsmodus for numeriske enheter"
+					"input_mode": "Inngangsmodus for numeriske enheter",
+					"eco_max": "Maksimal ventetid for ECO-modus"
 				}
 			},
 			"update_program": {

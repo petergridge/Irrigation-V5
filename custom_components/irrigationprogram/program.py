@@ -504,6 +504,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._hass, self.point_in_time_listener, self.get_next_interval()
         )
 
+        last_state = await self.async_get_last_state()
+        if last_state.state == 'on':
+            event_data = {
+                "action": "Program_running_on_restarted",
+                "program": self.entity_id,
+            }
+            self.hass.bus.async_fire("irrigation_event", event_data)
+
         async def hass_started(event):
             """HA has started."""
             # build the zone to pump relationships

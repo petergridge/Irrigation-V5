@@ -7,8 +7,8 @@
 				"bhyve": "B-Hyve"
 			}
 		},
-		"watering_type":{
-			"options":{
+		"watering_type": {
+			"options": {
 				"time": "Czas",
 				"volume": "Objętość"
 			}
@@ -21,10 +21,10 @@
 		},
 		"start_type": {
 			"options": {
-				"selector":"Pojedynczy",
-				"multistart":"Wiele razy",
-				"sunrise":"czas przed/po wschodzie słońca (offset)",
-				"sunset":"czas przed/po zachodzie słońca (offset)"
+				"selector": "Pojedynczy",
+				"multistart": "Wiele razy",
+				"sunrise": "czas przed/po wschodzie słońca (offset)",
+				"sunset": "czas przed/po zachodzie słońca (offset)"
 			}
 		},
 		"rain_behaviour": {
@@ -47,10 +47,16 @@
 			}
 		}
 	},
+	"services": {
+		"get_current_state": {
+			"name": "Pobierz aktualny stan",
+			"description": "Zwraca aktualny stan programów i stref nawadniania jako słownik kompatybilny z JSON."
+		}
+	},
 	"entity": {
 		"sensor": {
 			"zone_status": {
-				"name":"Status strefy",
+				"name": "Status strefy",
 				"state": {
 					"off": "Wyłączony",
 					"on": "Włączony",
@@ -62,89 +68,89 @@
 					"unavailable": "Niedostępny",
 					"raining": "Pada deszcz",
 					"adjusted_off": "Dostosowano",
-						"no_water_source": "Nie wykryto źródła wody",
+					"no_water_source": "Nie wykryto źródła wody",
 					"zone_disabled": "Strefa wyłączona",
 					"paused": "Program wstrzymany"
 				}
 			},
-			"zone_next_run":{
-				"name":"Następne podlewanie"
+			"zone_next_run": {
+				"name": "Następne podlewanie"
 			},
-			"zone_last_ran":{
-				"name":"Ostatnio podlewano"
+			"zone_last_ran": {
+				"name": "Ostatnio podlewano"
 			},
-			"remaining_time":{
-				"name":"Pozostały czas"
+			"remaining_time": {
+				"name": "Pozostały czas"
 			},
-			"delay_time":{
-				"name":"Czas opóźnienia"
+			"delay_time": {
+				"name": "Czas opóźnienia"
 			},
-			"default_run_time":{
-				"name":"Czas trwania"
+			"default_run_time": {
+				"name": "Czas trwania"
 			}
 		},
-		"number":{
-			"water":{
-				"name":"Czas podlewania"
+		"number": {
+			"water": {
+				"name": "Czas podlewania"
 			},
-			"volume":{
-				"name":"Wielkość podlewania"
+			"volume": {
+				"name": "Wielkość podlewania"
 			},
-			"wait":{
-				"name":"Czas oczekiwania"
+			"wait": {
+				"name": "Czas oczekiwania"
 			},
-			"repeat":{
-				"name":"Ilość powtórzeń"
+			"repeat": {
+				"name": "Ilość powtórzeń"
 			},
-			"inter_zone_delay":{
-				"name":"Pauza między strefami"
+			"inter_zone_delay": {
+				"name": "Pauza między strefami"
 			},
-			"sunrise_offset":{
-				"name":"czas przed/po wschodzie słońca (offset)"
+			"sunrise_offset": {
+				"name": "czas przed/po wschodzie słońca (offset)"
 			},
-			"sunset_offset":{
-				"name":"czas przed/po zachodzie słońca (offset)"
+			"sunset_offset": {
+				"name": "czas przed/po zachodzie słońca (offset)"
 			},
-			"rain_delay_days":{
-				"name":"Opóźnienie po deszczu"
+			"rain_delay_days": {
+				"name": "Opóźnienie po deszczu"
 			}
 		},
-		"time":{
-			"start_time":{
-				"name":"Godzina startu"
+		"time": {
+			"start_time": {
+				"name": "Godzina startu"
 			}
 		},
-		"text":{
-			"start_times":{
-				"name":"Godziny startu"
+		"text": {
+			"start_times": {
+				"name": "Godziny startu"
 			}
 		},
-		"switch":{
-			"ignore_sensor":{
-				"name":"Ignoruj sensory"
+		"switch": {
+			"ignore_sensor": {
+				"name": "Ignoruj sensory"
 			},
-			"enable_rain_delay":{
-				"name":"Włącz opóźnienie po deszczu"
+			"enable_rain_delay": {
+				"name": "Włącz opóźnienie po deszczu"
 			},
-			"enable_program":{
-				"name":"Włącz program"
+			"enable_program": {
+				"name": "Włącz program"
 			},
-			"enable_zone":{
-				"name":"Włącz strefę"
+			"enable_zone": {
+				"name": "Włącz strefę"
 			},
-			"config":{
+			"config": {
 				"name": "Ustawienia"
 			},
-			"zone":{
+			"zone": {
 				"name": "{zone_name}"
 			},
-			"pause":{
+			"pause": {
 				"name": "Wstrzymano"
 			}
 		},
-		"select":{
-			"frequency":{
-				"name":"Częstotliwość (dni)"
+		"select": {
+			"frequency": {
+				"name": "Częstotliwość (dni)"
 			}
 		}
 	},
@@ -152,7 +158,7 @@
 		"error": {
 			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
 			"mandatory": "Nie wprowadzono wymaganych danych",
-						"zone_required": "Przynajmniej jedna strefa musi być zdefiniowana",
+			"zone_required": "Przynajmniej jedna strefa musi być zdefiniowana",
 			"invalid_days_group": "Wybrana opcja musi być jak: Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_option": "Wybrana opcja musi być numeryczna lub Mon,Tue,Wed,Thu,Fri,Sat,Sun",
 			"invalid_sensor": "Wprowadzony sensor jest niepoprawny lub jest offline"
@@ -227,7 +233,7 @@
 				"description": "",
 				"title": "Opcje zaawansowane",
 				"data": {
-					"start_type":"Opcje czasu startu",
+					"start_type": "Opcje czasu startu",
 					"interlock": "Wybrane - programy będą w kolejce. Niewybrane - będą uruchamiane jednocześnie",
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
@@ -242,12 +248,13 @@
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
 					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
 					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy",
-					"input_mode": "Tryb wprowadzania dla encji numerycznych"
+					"input_mode": "Tryb wprowadzania dla encji numerycznych",
+					"eco_max": "Maksymalny czas oczekiwania dla trybu ECO"
 				}
 			}
 		}
 	},
- 	"options": {
+	"options": {
 		"error": {
 			"zone_defined": "Ten włącznik strefy jest już zdefiniowany w tym programie",
 			"mandatory": "Nie wprowadzono wymaganych danych",
@@ -272,7 +279,7 @@
 				"title": "Opcje zaawansowane",
 				"description": "",
 				"data": {
-					"start_type":"Opcje czasu startu",
+					"start_type": "Opcje czasu startu",
 					"interlock": "Wybrane - programy będą w kolejce. Niewybrane - będą uruchamiane jednocześnie",
 					"rain_behaviour": "Zachowanie czujnika deszczu",
 					"min_sec": "Jednostka czasu podlewania",
@@ -287,7 +294,8 @@
 					"start_latency": "Czas oczekiwania dla wolnych urządzeń na starcie",
 					"pause_on_water_source": "Wstrzymaj program gdy sensor żródła wody wskaże jej brak",
 					"continue_on_unexpected_state": "Strefa kontynuuje, gdy stan jest nieoczekiwany, w przeciwnym razie przejdź do następnej strefy",
-					"input_mode": "Tryb wprowadzania dla encji numerycznych"
+					"input_mode": "Tryb wprowadzania dla encji numerycznych",
+					"eco_max": "Maksymalny czas oczekiwania dla trybu ECO"
 				}
 			},
 			"update_program": {
