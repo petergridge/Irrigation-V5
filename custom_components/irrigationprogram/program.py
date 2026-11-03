@@ -38,7 +38,7 @@ from .const import (
     CONST_PENDING,
     TIME_STR_FORMAT,
 )
-from .globals import PROGRAMS, QUEUEDPROGRAMS
+from .globals import PROGRAMS, QUEUEDPROGRAMS, update_current_state
 from .pump import PumpClass
 
 _LOGGER = logging.getLogger(__name__)
@@ -347,7 +347,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._unsub_delay()
             self._unsub_delay = None
 
-
     def get_next_interval(self):
         """Next time an update should occur."""
         now = datetime.now(UTC)
@@ -483,18 +482,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         # calculate the duration of the program
         if self._program.enabled.state == CONST_OFF:
-            #program is disabled
+            # program is disabled
             self._default_run_time = 0
             await self.default_run_time_set()
         elif self.state != CONST_ON:
-            #Don't update while the program is running
+            # Don't update while the program is running
             zones = []
             for _ in range(self.repeats_value - 1, -1, -1):
                 zones += await self.build_run_script(True)
 
-            await self.calculate_program_remaining(
-                [], zones,0, default_run_time=True
-            )
+            await self.calculate_program_remaining([], zones, 0, default_run_time=True)
 
         self.async_schedule_update_ha_state()
 
@@ -561,7 +558,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             starttime = datetime.now()
             # if the entity is not available after the timeout,
             # it will be skipped and a notification will be created to alert the user
-            while self.hass.states.get(object) is None and datetime.now() - starttime < timedelta(seconds=timeout):
+            while self.hass.states.get(
+                object
+            ) is None and datetime.now() - starttime < timedelta(seconds=timeout):
                 await asyncio.sleep(0.1)
 
             if object not in table:
@@ -580,19 +579,31 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         await monitor_append(self._program.start_time.entity_id, "start_time", monitor)
         if self._program.sunrise_offset:
-            await monitor_append(self._program.sunrise_offset.entity_id, "sunrise_offset", monitor)
+            await monitor_append(
+                self._program.sunrise_offset.entity_id, "sunrise_offset", monitor
+            )
             await monitor_append("sensor.sun_next_rising", None, monitor)
         if self._program.sunset_offset:
-            await monitor_append(self._program.sunset_offset.entity_id, "sunset_offset", monitor)
+            await monitor_append(
+                self._program.sunset_offset.entity_id, "sunset_offset", monitor
+            )
             await monitor_append("sensor.sun_next_setting", None, monitor)
         await monitor_append(self._program.enabled.entity_id, "enabled", monitor)
         if self._program.rain_delay:
-            await monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor)
-            await monitor_append(self._program.rain_delay_days.entity_id, "rain_delay_days", monitor)
+            await monitor_append(
+                self._program.rain_delay.entity_id, "rain_delay", monitor
+            )
+            await monitor_append(
+                self._program.rain_delay_days.entity_id, "rain_delay_days", monitor
+            )
         if self._program.frequency:
-            await monitor_append(self._program.frequency.entity_id, "frequency", monitor)
+            await monitor_append(
+                self._program.frequency.entity_id, "frequency", monitor
+            )
         if self._program.inter_zone_delay:
-            await monitor_append(self._program.inter_zone_delay.entity_id, "inter_zone_delay", monitor)
+            await monitor_append(
+                self._program.inter_zone_delay.entity_id, "inter_zone_delay", monitor
+            )
         if self._program.repeats:
             await monitor_append(self._program.repeats.entity_id, "repeats", monitor)
         if self._program.water_source:
@@ -606,7 +617,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             if zone.rain_sensor:
                 await monitor_append(zone.rain_sensor, "rain_sensor", monitor)
             if zone.ignore_sensors:
-                await monitor_append(zone.ignore_sensors.entity_id, "ignore_sensors", monitor)
+                await monitor_append(
+                    zone.ignore_sensors.entity_id, "ignore_sensors", monitor
+                )
             if zone.adjustment:
                 await monitor_append(zone.adjustment, "adjustment", monitor)
             if zone.water:
@@ -636,11 +649,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         if self._program.rain_delay:
             monitor4 = []
-            await monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor4)
+            await monitor_append(
+                self._program.rain_delay.entity_id, "rain_delay", monitor4
+            )
             self._unsub_delay = async_track_state_change_event(
                 self._hass, tuple(monitor4), self.delay_program
             )
-
 
     async def define_program_attributes(self):
         """Build attributes in run order."""
@@ -678,8 +692,11 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 # wait for the entity_id to be available before trying to access it
                 timeout = 5
                 starttime = datetime.now()
-                while zone.switch.entity_id is None and datetime.now() - starttime < timedelta(seconds=timeout):
-                    await asyncio.sleep(.1)
+                while (
+                    zone.switch.entity_id is None
+                    and datetime.now() - starttime < timedelta(seconds=timeout)
+                ):
+                    await asyncio.sleep(0.1)
                 zones.append(zone.switch.entity_id)
             except AttributeError:
                 async_dismiss(self.hass, "irrigation_device_error2")
@@ -947,6 +964,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if not self._program.pause.is_on:
             self._paused = False
 
+        update_current_state()
+        if getattr(self._program, "state_sensor", None):
+            self.hass.async_create_task(self._program.state_sensor.async_update())
+
         if self._state is False:
             await self._program.pause.async_turn_off()
 
@@ -955,10 +976,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         event: Event[EventStateChangedData],
     ):
         """Delay status changes."""
-        self.hass.async_create_task(
-            self._program.delay_time.set_value()
-        )
-
+        self.hass.async_create_task(self._program.delay_time.set_value())
 
     async def zone_pending(self, zone) -> bool:
         """Determine if a another instance of the zone is pending."""
@@ -974,8 +992,6 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._program_remaining = 0
             await self.remaining_time_set()
             return self._running_zones
-
-
 
         await self.calculate_program_remaining(
             self._running_zones, self._remaining_zones, 0, False
@@ -1055,10 +1071,12 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         await zone.switch.set_scheduled(self._scheduled)
         # run in the event loop to support independant executions
 
-        #need to pass the program start time to support running across midnight
-        #this will be the last_ran time for the zone
+        # need to pass the program start time to support running across midnight
+        # this will be the last_ran time for the zone
 
-        self.hass.async_create_task(zone.switch.async_turn_on_from_program(last,self._start_time))
+        self.hass.async_create_task(
+            zone.switch.async_turn_on_from_program(last, self._start_time)
+        )
         await asyncio.sleep(0)
 
     async def async_turn_on(self, **kwargs):
@@ -1100,6 +1118,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
 
         self._state = True
         self._finished = False
+        update_current_state()
+        if getattr(self._program, "state_sensor", None):
+            self.hass.async_create_task(self._program.state_sensor.async_update())
         self.async_schedule_update_ha_state()
 
         # calculate the remaining time for the program
@@ -1112,7 +1133,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         await self.run_monitor_zones()
 
         # Queue program when the interlock is enabled and there are other programs in the queue
-        if self._program.interlock :
+        if self._program.interlock:
             await queue_program(self._hass, self)
             if self._pumps:
                 await asyncio.sleep(1)
@@ -1150,6 +1171,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 await asyncio.sleep(0)
         self._state = False
         self._finished = True
+        update_current_state()
+        if getattr(self._program, "state_sensor", None):
+            self.hass.async_create_task(self._program.state_sensor.async_update())
         self.async_schedule_update_ha_state()
 
         # check the queue remove this program
