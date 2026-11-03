@@ -435,6 +435,20 @@ action: ---- Put your action here ----
 mode: single
 ```
 
+### Services
+
+irrigationprogram.get_current_state
+
+Returns a json dataset.
+
+```
+test:
+  status: Stopped
+  zones:
+    zone_1: Stopped
+```
+
+
 # Configuration[🔝](https://github.com/petergridge/Irrigation-V5/blob/main/readme_new.md#Content)
 
 The configuration of the program initiates the creation of supporting helper entities that enable scheduling you irrigation system.
