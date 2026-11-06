@@ -1,0 +1,356 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "일반",
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
+			}
+		},
+		"watering_type": {
+			"options": {
+				"time": "시간",
+				"volume": "부피"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "분",
+				"seconds": "초"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector": "시간 선택기",
+				"multistart": "여러 시간",
+				"sunrise": "일출 오프셋",
+				"sunset": "일몰 오프셋"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "프로그램 중지",
+				"continue": "프로그램 완료 허용"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "엄격함 - 시작 시 다른 프로그램 종료",
+				"loose": "느슨함 - 시작 시 모든 다른 프로그램 종료, '엄격함' 프로그램이 시작되지 않는 한 실행 유지",
+				"off": "끔 - '엄격함' 프로그램만 종료, '엄격함' 프로그램이 시작되지 않는 한 실행 유지"
+			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "슬라이더",
+				"box": "입력 상자"
+			}
+		}
+	},
+	"services": {
+		"get_current_state": {
+			"name": "현재 상태 가져오기",
+			"description": "관개 프로그램 및 구역의 현재 상태를 JSON 호환 사전으로 반환합니다."
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name": "구역 상태",
+				"state": {
+					"off": "꺼짐",
+					"on": "켜짐",
+					"disabled": "비활성화됨",
+					"pending": "보류 중",
+					"eco": "에코",
+					"program_disabled": "프로그램 비활성화됨",
+					"controller_disabled": "컨트롤러 비활성화됨",
+					"unavailable": "사용할 수 없음",
+					"raining": "비오는 중",
+					"adjusted_off": "조정됨 끔",
+					"no_water_source": "물 공급원이 감지되지 않음",
+					"zone_disabled": "구역 비활성화됨",
+					"paused": "프로그램 일시 중지됨"
+				}
+			},
+			"zone_next_run": {
+				"name": "다음 실행"
+			},
+			"zone_last_ran": {
+				"name": "마지막 실행"
+			},
+			"remaining_time": {
+				"name": "남은 시간"
+			},
+			"delay_time": {
+				"name": "지연 시간"
+			},
+			"default_run_time": {
+				"name": "지속 시간"
+			}
+		},
+		"number": {
+			"water": {
+				"name": "관수 시간"
+			},
+			"volume": {
+				"name": "관수 부피"
+			},
+			"wait": {
+				"name": "대기 시간"
+			},
+			"repeat": {
+				"name": "반복"
+			},
+			"inter_zone_delay": {
+				"name": "구역 전환"
+			},
+			"sunrise_offset": {
+				"name": "일출 오프셋"
+			},
+			"sunset_offset": {
+				"name": "일몰 오프셋"
+			},
+			"rain_delay_days": {
+				"name": "강우 지연"
+			}
+		},
+		"time": {
+			"start_time": {
+				"name": "시작 시간"
+			}
+		},
+		"text": {
+			"start_times": {
+				"name": "시작 시간"
+			}
+		},
+		"switch": {
+			"ignore_sensor": {
+				"name": "센서 무시"
+			},
+			"enable_rain_delay": {
+				"name": "강우 지연 활성화"
+			},
+			"enable_program": {
+				"name": "프로그램 활성화"
+			},
+			"enable_zone": {
+				"name": "구역 활성화"
+			},
+			"config": {
+				"name": "설정"
+			},
+			"zone": {
+				"name": "{zone_name}"
+			},
+			"pause": {
+				"name": "일시 중지"
+			}
+		},
+		"select": {
+			"frequency": {
+				"name": "주파수"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "선택한 구역 스위치가 이미 이 관개 프로그램에서 정의되었습니다",
+			"mandatory": "필수 필드가 입력되지 않았습니다",
+			"zone_required": "하나 이상의 구역을 정의해야 합니다",
+			"invalid_days_group": "목록의 빈도 옵션은 Mon,Tue,Wed,Thu,Fri,Sat,Sun이어야 합니다",
+			"invalid_option": "빈도 옵션은 숫자이거나 Mon,Tue,Wed,Thu,Fri,Sat,Sun이어야 합니다",
+			"invalid_sensor": "빈도 옵션, 입력된 센서가 잘못되었거나 오프라인 상태입니다"
+		},
+		"step": {
+			"user": {
+				"title": "프로그램 데이터",
+				"description": "프로그램 정의",
+				"data": {
+					"name": "이름",
+					"freq": "프로그램 전체 주파수 활성화",
+					"repeat": "프로그램 반복, 구역 에코 모드 대체",
+					"freq_options": "주파수 옵션 선택 또는 추가",
+					"device_type": "컨트롤러 유형",
+					"flow_sensor": "유량 센서",
+					"water_source_active": "물 공급원 바이너리 센서",
+					"pump": "펌프 스위치"
+				}
+			},
+			"add_zone": {
+				"title": "프로그램 구역",
+				"description": "구역 설정",
+				"data": {
+					"zone": "구역 스위치",
+					"freq": "구역 주파수가 프로그램 주파수를 대체합니다",
+					"eco": "대기 및 반복 에코 기능 활성화",
+					"watering_type": "관수 유형",
+					"water_adjustment": "실행 시간 조정 센서",
+					"rain_sensor": "강우 바이너리 센서",
+					"order": "구역 실행 순서"
+				}
+			},
+			"delete_zone": {
+				"title": "구역 설정",
+				"description": "",
+				"data": {
+					"zone": "삭제할 구역 선택"
+				}
+			},
+			"update_zone_data": {
+				"title": "구역 설정",
+				"description": "구역 업데이트",
+				"data": {
+					"zone": "구역 스위치",
+					"freq": "구역 주파수가 프로그램 주파수를 대체합니다",
+					"eco": "대기 및 반복 에코 기능 활성화",
+					"watering_type": "관수 유형",
+					"water_adjustment": "실행 시간 조정 센서",
+					"rain_sensor": "강우 바이너리 센서",
+					"order": "구역 실행 순서"
+				}
+			},
+			"update_zone": {
+				"title": "구역 설정",
+				"description": "",
+				"data": {
+					"zone": "업데이트할 구역 선택"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "프로그램 업데이트",
+					"add_zone": "구역 추가",
+					"update_zone": "구역 업데이트",
+					"delete_zone": "구역 삭제",
+					"finalise": "적용",
+					"advanced": "고급 옵션"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "고급 옵션",
+				"data": {
+					"start_type": "시작 시간 옵션",
+					"interlock": "선택된 경우, 프로그램이 대기열에 들어갑니다. 선택하지 않으면 동시에 실행됩니다",
+					"rain_behaviour": "강우 센서 동작",
+					"min_sec": "관수 시간 단위",
+					"water_max": "최대 관수 시간/부피",
+					"water_step": "시간/부피 단계",
+					"parallel": "구역 병렬 실행",
+					"pump_delay": "펌프 시작에 선행 또는 지연 시간 적용",
+					"card_yaml": "엔티티 카드 YAML 생성 활성화",
+					"zone_delay_max": "최대 구역 전환 지연",
+					"rain_delay_on": "강우 감지 시 다음 실행 지연",
+					"latency": "응답이 느린 (높은 지연) 장치의 대기 시간",
+					"start_latency": "시작 시 느리게 로드되는 장치의 대기 시간",
+					"pause_on_water_source": "물 공급원 센서가 꺼지면 프로그램 일시 중지",
+					"continue_on_unexpected_state": "예상치 못한 상태일 때 구역이 계속되고, 그렇지 않으면 다음 구역으로 이동합니다",
+					"input_mode": "숫자 엔티티의 입력 모드",
+					"eco_max": "에코 모드의 최대 대기 시간"
+				}
+			}
+		}
+	},
+	"options": {
+		"error": {
+			"zone_defined": "구역 스위치가 이미 이 관개 프로그램에서 정의되었습니다",
+			"mandatory": "필수 필드가 입력되지 않았습니다",
+			"zone_required": "하나 이상의 구역을 정의해야 합니다",
+			"invalid_days_group": "빈도 옵션은 Mon,Tue,Wed,Thu,Fri,Sat,Sun이어야 합니다",
+			"invalid_option": "빈도 옵션은 숫자이거나 Mon,Tue,Wed,Thu,Fri,Sat,Sun이어야 합니다",
+			"invalid_sensor": "빈도 옵션, 입력된 센서가 잘못되었거나 오프라인 상태입니다"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"user": "프로그램 업데이트",
+					"add_zone": "구역 추가",
+					"update_zone": "구역 업데이트",
+					"delete_zone": "구역 삭제",
+					"finalise": "적용",
+					"advanced": "고급 옵션"
+				}
+			},
+			"advanced": {
+				"title": "고급 옵션",
+				"description": "",
+				"data": {
+					"start_type": "시작 시간 옵션",
+					"interlock": "선택된 경우, 프로그램이 대기열에 들어갑니다. 선택하지 않으면 프로그램이 동시에 실행됩니다",
+					"rain_behaviour": "강우 센서 동작",
+					"min_sec": "관수 시간 단위",
+					"water_max": "최대 관수 시간/부피",
+					"water_step": "시간/부피 단계",
+					"parallel": "구역 병렬 실행",
+					"pump_delay": "펌프 시작에 선행 또는 지연 시간 적용",
+					"card_yaml": "엔티티 카드 YAML 생성 활성화",
+					"zone_delay_max": "최대 구역 전환 지연",
+					"eco_max": "에코 모드의 최대 대기 시간",
+					"rain_delay_on": "강우 감지 시 다음 실행 지연",
+					"latency": "응답이 느린 (높은 지연) 장치의 대기 시간",
+					"start_latency": "시작 시 느리게 로드되는 장치의 대기 시간",
+					"pause_on_water_source": "물 공급원 센서가 꺼지면 프로그램 일시 중지",
+					"continue_on_unexpected_state": "예상치 못한 상태일 때 구역이 계속되고, 그렇지 않으면 다음 구역으로 이동합니다",
+					"input_mode": "숫자 엔티티의 입력 모드"
+				}
+			},
+			"update_program": {
+				"title": "프로그램 데이터",
+				"description": "프로그램 업데이트",
+				"data": {
+					"freq": "프로그램 전체 주파수 활성화",
+					"repeat": "프로그램 반복, 구역 에코 모드 대체",
+					"freq_options": "주파수 옵션 선택 또는 추가",
+					"device_type": "컨트롤러 유형",
+					"flow_sensor": "유량 센서",
+					"water_source_active": "물 공급원 바이너리 센서",
+					"pump": "펌프 스위치"
+				}
+			},
+			"add_zone": {
+				"title": "구역 설정",
+				"description": "구역 추가",
+				"data": {
+					"zone": "구역 스위치",
+					"freq": "구역 주파수가 프로그램 주파수를 대체합니다",
+					"eco": "대기 및 반복 에코 기능 활성화",
+					"watering_type": "관수 유형",
+					"water_adjustment": "실행 시간 조정 센서",
+					"rain_sensor": "강우 바이너리 센서",
+					"order": "구역 실행 순서"
+				}
+			},
+			"update_zone_data": {
+				"title": "구역 설정",
+				"description": "구역 업데이트",
+				"data": {
+					"zone": "구역 스위치",
+					"freq": "구역 주파수가 프로그램 주파수를 대체합니다",
+					"eco": "대기 및 반복 에코 기능 활성화",
+					"watering_type": "관수 유형",
+					"water_adjustment": "실행 시간 조정 센서",
+					"rain_sensor": "강우 바이너리 센서",
+					"order": "구역 실행 순서"
+				}
+			},
+			"delete_zone": {
+				"title": "구역 설정",
+				"description": "",
+				"data": {
+					"zone": "삭제할 구역 선택"
+				}
+			},
+			"update_zone": {
+				"title": "구역 설정",
+				"description": "",
+				"data": {
+					"zone": "업데이트할 구역 선택"
+				}
+			}
+		}
+	}
+}

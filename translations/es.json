@@ -1,0 +1,356 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "Genérico",
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
+			}
+		},
+		"watering_type": {
+			"options": {
+				"time": "Tiempo",
+				"volume": "Volumen"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "Minutes",
+				"seconds": "Seconds"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector": "Selector de hora",
+				"multistart": "Múltiples horas",
+				"sunrise": "Amanecer con ajuste",
+				"sunset": "Atardecer con ajuste"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "Detener el programa",
+				"continue": "Permitir que se complete el programa"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "Strict - turn off other programs when starting, turn off when another program starts",
+				"loose": "Loose - turn off all other programs when starting, stay running unless a 'strict' program starts",
+				"off": "Off - turn off 'strict' programs only, stay running unless a 'strict' program starts"
+			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "Schieberegler",
+				"box": "Eingabefeld"
+			}
+		}
+	},
+	"services": {
+		"get_current_state": {
+			"name": "Obtener estado actual",
+			"description": "Devuelve el estado actual de los programas y zonas de riego como un diccionario compatible con JSON."
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name": "Estado de Zona",
+				"state": {
+					"off": "Desactivada",
+					"on": "Activada",
+					"disabled": "Deshabilitada",
+					"pending": "Pendiente",
+					"eco": "ECO",
+					"program_disabled": "Programa deshabilitado",
+					"controller_disabled": "Controlador deshabilitado",
+					"unavailable": "No disponible",
+					"raining": "Lloviendo",
+					"adjusted_off": "Ajustado a apagado",
+					"no_water_source": "No se detecta origen de agua",
+					"zone_disabled": "Zona deshabilitada",
+					"paused": "Programa pausado"
+				}
+			},
+			"zone_next_run": {
+				"name": "Próxima activación"
+			},
+			"zone_last_ran": {
+				"name": "Última activación"
+			},
+			"remaining_time": {
+				"name": "Tiempo restante"
+			},
+			"delay_time": {
+				"name": "Tiempo de retraso"
+			},
+			"default_run_time": {
+				"name": "Duración"
+			}
+		},
+		"number": {
+			"water": {
+				"name": "Tiempo de riego"
+			},
+			"volume": {
+				"name": "Volumen de riego"
+			},
+			"wait": {
+				"name": "Tiempo de espera"
+			},
+			"repeat": {
+				"name": "Repeticiones"
+			},
+			"inter_zone_delay": {
+				"name": "Transición de zona"
+			},
+			"sunrise_offset": {
+				"name": "Ajuste de amanecer"
+			},
+			"sunset_offset": {
+				"name": "Ajuste de atardecer"
+			},
+			"rain_delay_days": {
+				"name": "Retraso por lluvia"
+			}
+		},
+		"time": {
+			"start_time": {
+				"name": "Hora de inicio"
+			}
+		},
+		"text": {
+			"start_times": {
+				"name": "Horas de inicio"
+			}
+		},
+		"switch": {
+			"ignore_sensor": {
+				"name": "Ignorar sensores"
+			},
+			"enable_rain_delay": {
+				"name": "Habilitar retraso por lluvia"
+			},
+			"enable_program": {
+				"name": "Habilitar programa"
+			},
+			"enable_zone": {
+				"name": "Habilitar zona"
+			},
+			"config": {
+				"name": "Ajustes"
+			},
+			"zone": {
+				"name": "{zone_name}"
+			},
+			"pause": {
+				"name": "Pausa"
+			}
+		},
+		"select": {
+			"frequency": {
+				"name": "Frecuencia"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "El interruptor de zona seleccionado ya se encuentra definido en este programa de riego",
+			"mandatory": "Campo requerido no completado",
+			"zone_required": "Al menos una zona debe ser definida",
+			"invalid_days_group": "Las opciones de frecuiencia en la lista deben ser Lun,Mar,Mie,Jue,Vie,Sáb,Dom",
+			"invalid_option": "La opción de frecuencia debe ser numérica o Lun,Mar,Mie,Jue,Vie,Sáb,Dom",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+		},
+		"step": {
+			"user": {
+				"title": "Información de programa",
+				"description": "Defina el programa",
+				"data": {
+					"name": "Nombre",
+					"freq": "Habilitar frecuencia de programa",
+					"repeat": "Repetir programa, reemplaza el modo ECO de la zona",
+					"freq_options": "Seleccione o agregue opciones de frecuencia",
+					"device_type": "Tipo de controladora",
+					"flow_sensor": "Sensor de flujo",
+					"water_source_active": "Sensor binario de origen de agua",
+					"pump": "Interruptor de la bomba"
+				}
+			},
+			"add_zone": {
+				"title": "Zonas del Programa",
+				"description": "Ajustes de Zona",
+				"data": {
+					"zone": "Interruptor de Zona",
+					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
+					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Tipo de riego",
+					"water_adjustment": "Sensor de ajuste de tiempo de riego",
+					"rain_sensor": "Sensor binario de lluvia",
+					"order": "Orden de ejecución de zona"
+				}
+			},
+			"delete_zone": {
+				"title": "Ajustes de zona",
+				"description": "",
+				"data": {
+					"zone": "Seleccione zona a eliminar"
+				}
+			},
+			"update_zone_data": {
+				"title": "Ajustes de zona",
+				"description": "Actualizar zona",
+				"data": {
+					"zone": "Interruptor de Zona",
+					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
+					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
+					"water_adjustment": "Sensor de ajuste de tiempo de riego",
+					"rain_sensor": "Sensor binario de lluvia",
+					"order": "Orden de ejecución de zona"
+				}
+			},
+			"update_zone": {
+				"title": "Ajustes de zona",
+				"description": "",
+				"data": {
+					"zone": "Seleccione zona a actualizar"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "Actualizar programa",
+					"add_zone": "Agregar zona",
+					"update_zone": "Actualizar zona",
+					"delete_zone": "Eliminar zona",
+					"finalise": "Aplicar",
+					"advanced": "Opciones avanzadas"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "Opciones avanzadas",
+				"data": {
+					"start_type": "Opciones de hora de inicio",
+					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
+					"rain_behaviour": "Comportamiento del sensor de lluvia",
+					"min_sec": "Watering time unit",
+					"water_max": "Tiempo/volumen máximo de riego",
+					"water_step": "Paso de Tiempo/volumen",
+					"parallel": "Ejecución de zonas en paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
+					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Modo de entrada para entidades numéricas",
+					"eco_max": "Tiempo máximo de espera para el modo ECO"
+				}
+			}
+		}
+	},
+	"options": {
+		"error": {
+			"zone_defined": "El interruptor de zona seleccionado ya se encuentra definido en este programa de riego",
+			"mandatory": "Campo requerido no completado",
+			"zone_required": "Al menos una zona debe ser definida",
+			"invalid_days_group": "Las opciones de frecuiencia en la lista deben ser Lun,Mar,Mie,Jue,Vie,Sáb,Dom",
+			"invalid_option": "La opción de frecuencia debe ser numérica o Lun,Mar,Mie,Jue,Vie,Sáb,Dom",
+			"invalid_sensor": "Frequency option, entered sensor is incorrect or offline"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"user": "Actualizar programa",
+					"add_zone": "Agregar zona",
+					"update_zone": "Actualizar zona",
+					"delete_zone": "Eliminar zona",
+					"finalise": "Aplicar",
+					"advanced": "Opciones avanzadas"
+				}
+			},
+			"advanced": {
+				"title": "Opciones avanzadas",
+				"description": "",
+				"data": {
+					"start_type": "Opciones de hora de inicio",
+					"interlock": "Selected, programs will queue. Unselected, will run simultaneously",
+					"rain_behaviour": "Comportamiento del sensor de lluvia",
+					"min_sec": "Watering time unit",
+					"water_max": "Tiempo/volumen máximo de riego",
+					"water_step": "Paso de Tiempo/volumen",
+					"parallel": "Ejecución de zonas en paralelo",
+					"pump_delay": "Apply lead or lag time for pump starting",
+					"card_yaml": "Habilitar la creción de tarjeta de entidades en yaml",
+					"zone_delay_max": "Maximum zone transition delay",
+					"rain_delay_on": "Delay the next run when rain detected",
+					"latency": "Wait time for slow responding (high latency) devices",
+					"start_latency": "Wait time for devices that load slowly on startup",
+					"pause_on_water_source": "Pause program when water source sensor turns off",
+					"continue_on_unexpected_state": "Zone continues when state is unexpected, otherwise continue to next zone",
+					"input_mode": "Modo de entrada para entidades numéricas",
+					"eco_max": "Tiempo máximo de espera para el modo ECO"
+				}
+			},
+			"update_program": {
+				"title": "Información de programa",
+				"description": "Actualizar programa",
+				"data": {
+					"freq": "Habilitar frecuencia de programa",
+					"repeat": "Repetir programa, reemplaza el modo ECO de la zona",
+					"freq_options": "Seleccione o agregue opciones de frecuencia",
+					"device_type": "Tipo de controladora",
+					"flow_sensor": "Sensor de flujo",
+					"water_source_active": "Sensor binario de origen de agua",
+					"pump": "Interruptor de la bomba"
+				}
+			},
+			"add_zone": {
+				"title": "Ajustes de zona",
+				"description": "Agregar zona",
+				"data": {
+					"zone": "Interruptor de Zona",
+					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
+					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
+					"water_adjustment": "Sensor de ajuste de tiempo de riego",
+					"rain_sensor": "Sensor binario de lluvia",
+					"order": "Orden de ejecución de zona"
+				}
+			},
+			"update_zone_data": {
+				"title": "Ajustes de zona",
+				"description": "Actualizar zona",
+				"data": {
+					"zone": "Interruptor de Zona",
+					"freq": "Remplazar la frecuencia del programa con la frecuencia de la zona",
+					"eco": "Habilitar opción eco esperar y reiterar",
+					"watering_type": "Watering type",
+					"water_adjustment": "Sensor de ajuste de tiempo de riego",
+					"rain_sensor": "Sensor binario de lluvia",
+					"order": "Orden de ejecución de zona"
+				}
+			},
+			"delete_zone": {
+				"title": "Ajustes de zona",
+				"description": "",
+				"data": {
+					"zone": "Seleccione zona a eliminar"
+				}
+			},
+			"update_zone": {
+				"title": "Ajustes de zona",
+				"description": "",
+				"data": {
+					"zone": "Seleccione zona a actualizar"
+				}
+			}
+		}
+	}
+}
