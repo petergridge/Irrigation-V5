@@ -109,6 +109,9 @@ class Zone(SwitchEntity, RestoreEntity):
         self._water_adjust_prior = 1
         self._zone_manual_start = False
         self._latency = programdata.latency
+        self._latency_task = None
+        self._solenoid_commanded_open = False
+        self._solenoid_open_confirmed = False
         self._pump = programdata.pump
         self._continue_on_unexpected_state = programdata.continue_on_unexpected_state
         self._next_run = None
@@ -543,6 +546,61 @@ class Zone(SwitchEntity, RestoreEntity):
             return True, self.solenoid_state
         return None, self.solenoid_state
 
+    def cancel_latency_check(self):
+        """Cancel a pending latency check."""
+        if self._latency_task and self._latency_task is not asyncio.current_task():
+            self._latency_task.cancel()
+            self._latency_task = None
+
+    async def recheck_latency(self, expected):
+        """Allow extra time for the solenoid to respond."""
+        timeout = max(self._latency * 4, 30)
+        starttime = datetime.now()
+        state = CONST_ON if expected else CONST_OFF
+        while datetime.now() - starttime < timedelta(seconds=timeout):
+            if self._aborted or self._status == CONST_PAUSED:
+                return
+            check_state, _value = await self.check_switch_state()
+            if check_state is expected:
+                if expected:
+                    self._solenoid_open_confirmed = True
+                else:
+                    self._solenoid_commanded_open = False
+                    self._solenoid_open_confirmed = False
+                async_dismiss(self.hass, "irrigation_latency")
+                async_create(
+                    self.hass,
+                    message=f"{self.name} now confirmed {state} after latency",
+                    title="Irrigation Controller",
+                    notification_id="irrigation_latency",
+                )
+                event_data = {
+                    "action": "latency_cleared",
+                    "device_id": self.entity_id,
+                    "scheduled": self._scheduled,
+                    "program": self.name,
+                    "state": state,
+                }
+                self.hass.bus.async_fire("irrigation_event", event_data)
+                return
+            if expected:
+                await self.async_solenoid_turn_on()
+            else:
+                await self.async_solenoid_turn_off()
+            await asyncio.sleep(0.1)
+        async_dismiss(self.hass, "irrigation_latency")
+        async_create(
+            self.hass,
+            message=f"Could not confirm {self.name} is {state} after {timeout} seconds, check the valve",
+            title="Irrigation Controller",
+            notification_id="irrigation_latency",
+        )
+
+    async def async_will_remove_from_hass(self):
+        """Cancel the latency check."""
+        self.cancel_latency_check()
+        await super().async_will_remove_from_hass()
+
     async def check_is_on(self):
         """Ensure the switch has turned on."""
         await self.async_solenoid_turn_on()
@@ -562,6 +620,7 @@ class Zone(SwitchEntity, RestoreEntity):
                 # if not the expected state loop again
                 await self.async_solenoid_turn_on()
                 continue
+            self._solenoid_open_confirmed = True
             break
         else:
             async_dismiss(self.hass, "irrigation_latency")
@@ -579,6 +638,8 @@ class Zone(SwitchEntity, RestoreEntity):
                 "program": self.name,
             }
             self.hass.bus.async_fire("irrigation_event", event_data)
+            self.cancel_latency_check()
+            self._latency_task = self.hass.async_create_task(self.recheck_latency(True))
 
     async def check_is_off(self):
         """Ensure the switch is off."""
@@ -599,6 +660,8 @@ class Zone(SwitchEntity, RestoreEntity):
                 # if not the expected state loop again
                 await self.async_solenoid_turn_off()
                 continue
+            self._solenoid_commanded_open = False
+            self._solenoid_open_confirmed = False
             break
         else:
             async_dismiss(self.hass, "irrigation_latency")
@@ -616,6 +679,8 @@ class Zone(SwitchEntity, RestoreEntity):
                 "program": self.name,
             }
             self.hass.bus.async_fire("irrigation_event", event_data)
+            self.cancel_latency_check()
+            self._latency_task = self.hass.async_create_task(self.recheck_latency(False))
 
     async def toggle_pause(self):
         """Pause the zone."""
@@ -997,6 +1062,7 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_solenoid_turn_on(self):
         """Turn on the zone."""
+        self.cancel_latency_check()
 
         if self._pump:
             delay = 0
@@ -1075,6 +1141,8 @@ class Zone(SwitchEntity, RestoreEntity):
                     CONST_SWITCH, SERVICE_TURN_ON, {ATTR_ENTITY_ID: self.solenoid}
                 )
 
+            self._solenoid_commanded_open = True
+
             event_data = {
                 "action": "zone_turned_on",
                 "device_id": self.solenoid,
@@ -1090,9 +1158,14 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def async_solenoid_turn_off(self):
         """Turn off the device."""
-        #if already off do nothing
+        self.cancel_latency_check()
+        # Close even if an unconfirmed open still reports off.
         check_state, _value = await self.check_switch_state()
-        if check_state is False:
+        if check_state is False and not (
+            self._solenoid_commanded_open and not self._solenoid_open_confirmed
+        ):
+            self._solenoid_commanded_open = False
+            self._solenoid_open_confirmed = False
             return
 
         # is it a valve or a switch
@@ -1296,6 +1369,8 @@ class Zone(SwitchEntity, RestoreEntity):
         self.async_schedule_update_ha_state()
         self._stop = False
         self._aborted = False
+        self._solenoid_commanded_open = False
+        self._solenoid_open_confirmed = False
 
         if self.ignore_sensors:
             water_adjust_value = 1
@@ -1451,6 +1526,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     # if not on loop again
                     status = value
                     continue
+                self._solenoid_open_confirmed = True
                 break
             else:
                 if not self._continue_on_unexpected_state:
@@ -1549,6 +1625,7 @@ class Zone(SwitchEntity, RestoreEntity):
                     # if not on loop again
                     status = value
                     continue
+                self._solenoid_open_confirmed = True
                 break
             else:
                 if not self._continue_on_unexpected_state:
