@@ -70,10 +70,15 @@ async def test_settle_timeout(zone, expected, latency, timeout):
     zone.hass.states.get.return_value.state = "off" if expected else "on"
     now = datetime.now()
     clock = MagicMock()
-    clock.now.side_effect = [now, now, now + timedelta(seconds=timeout + 1)]
+    clock.now.return_value = now
+
+    async def elapsed(seconds):
+        assert seconds == 1
+        clock.now.return_value = now + timedelta(seconds=timeout + 1)
+
     with (
         patch("custom_components.irrigationprogram.zone.datetime", clock),
-        patch("custom_components.irrigationprogram.zone.asyncio.sleep", AsyncMock()),
+        patch("custom_components.irrigationprogram.zone.asyncio.sleep", elapsed),
         patch("custom_components.irrigationprogram.zone.async_create") as notify,
         patch("custom_components.irrigationprogram.zone.async_dismiss"),
     ):
@@ -125,3 +130,35 @@ async def test_missing_state_keeps_checking(zone):
     zone.hass.services.async_call.assert_awaited_once()
     assert not zone._solenoid_commanded_open
     assert not zone._solenoid_open_confirmed
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("expected", [True, False])
+@pytest.mark.parametrize("latency", [0, 10])
+async def test_settle_throttles_commands(zone, expected, latency):
+    zone._latency = latency
+    zone.hass.states.get.return_value.state = "off" if expected else "on"
+    start = datetime.now()
+    clock = MagicMock()
+    clock.now.return_value = start
+    sent = []
+
+    async def command(*args, **kwargs):
+        sent.append(int((clock.now.return_value - start).total_seconds()))
+
+    async def elapsed(seconds):
+        assert seconds == 1
+        clock.now.return_value += timedelta(seconds=seconds)
+
+    zone.hass.services.async_call.side_effect = command
+    with (
+        patch("custom_components.irrigationprogram.zone.datetime", clock),
+        patch("custom_components.irrigationprogram.zone.asyncio.sleep", elapsed),
+        patch("custom_components.irrigationprogram.zone.async_create"),
+        patch("custom_components.irrigationprogram.zone.async_dismiss"),
+        patch.object(zone, "check_switch_state", wraps=zone.check_switch_state) as check,
+    ):
+        await zone.recheck_latency(expected)
+    timeout = max(latency * 4, 30)
+    assert sent == list(range(0, timeout, max(latency, 5)))
+    assert check.await_count == timeout + len(sent)

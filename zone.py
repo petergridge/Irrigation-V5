@@ -556,6 +556,7 @@ class Zone(SwitchEntity, RestoreEntity):
         """Allow extra time for the solenoid to respond."""
         timeout = max(self._latency * 4, 30)
         starttime = datetime.now()
+        retrytime = starttime
         state = CONST_ON if expected else CONST_OFF
         while datetime.now() - starttime < timedelta(seconds=timeout):
             if self._aborted or self._status == CONST_PAUSED:
@@ -583,11 +584,13 @@ class Zone(SwitchEntity, RestoreEntity):
                 }
                 self.hass.bus.async_fire("irrigation_event", event_data)
                 return
-            if expected:
-                await self.async_solenoid_turn_on()
-            else:
-                await self.async_solenoid_turn_off()
-            await asyncio.sleep(0.1)
+            if datetime.now() >= retrytime:
+                if expected:
+                    await self.async_solenoid_turn_on()
+                else:
+                    await self.async_solenoid_turn_off()
+                retrytime = datetime.now() + timedelta(seconds=max(self._latency, 5))
+            await asyncio.sleep(1)
         async_dismiss(self.hass, "irrigation_latency")
         async_create(
             self.hass,
