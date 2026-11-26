@@ -1,0 +1,356 @@
+{
+	"selector": {
+		"device_type": {
+			"options": {
+				"generic": "通用",
+				"rainbird": "RainBird",
+				"bhyve": "B-Hyve"
+			}
+		},
+		"watering_type":{
+			"options":{
+				"time": "時間",
+				"volume": "水量"
+			}
+		},
+		"min_sec": {
+			"options": {
+				"minutes": "分鐘",
+				"seconds": "秒"
+			}
+		},
+		"start_type": {
+			"options": {
+				"selector":"時間選擇器",
+				"multistart":"多個時間",
+				"sunrise":"日出（含偏移）",
+				"sunset":"日落（含偏移）"
+			}
+		},
+		"rain_behaviour": {
+			"options": {
+				"stop": "停止程式",
+				"continue": "允許程式執行完畢"
+			}
+		},
+		"input_mode": {
+			"options": {
+				"slider": "滑桿",
+				"box": "輸入框"
+			}
+		},
+		"interlock": {
+			"options": {
+				"strict": "嚴格：啟動時關閉其他程式",
+				"loose": "寬鬆：啟動時關閉所有其他程式，除非有「嚴格」程式啟動，否則持續執行",
+				"off": "關閉：僅關閉「嚴格」程式，除非有「嚴格」程式啟動，否則持續執行"
+			}
+		}
+	},
+	"services": {
+		"get_current_state": {
+			"name": "取得目前狀態",
+			"description": "以相容 JSON 的字典格式回傳目前的灌溉程式與區域狀態。"
+		}
+	},
+	"entity": {
+		"sensor": {
+			"zone_status": {
+				"name":"區域狀態",
+				"state": {
+					"off": "關閉",
+					"on": "開啟",
+					"disabled": "已停用",
+					"pending": "等待中",
+					"eco": "ECO",
+					"program_disabled": "程式已停用",
+					"controller_disabled": "控制器已停用",
+					"unavailable": "無法使用",
+					"raining": "下雨中",
+					"adjusted_off": "已調整為關閉",
+					"no_water_source": "偵測不到水源",
+					"zone_disabled": "區域已停用",
+					"paused": "程式已暫停"
+				}
+			},
+			"zone_next_run":{
+				"name":"下次執行"
+			},
+			"zone_last_ran":{
+				"name":"上次執行"
+			},
+			"remaining_time":{
+				"name":"剩餘時間"
+			},
+			"delay_time":{
+				"name":"延遲時間"
+			},
+			"default_run_time":{
+				"name":"持續時間"
+			}
+		},
+		"number":{
+			"water":{
+				"name":"澆水時間"
+			},
+			"volume":{
+				"name":"澆水量"
+			},
+			"wait":{
+				"name":"等待時間"
+			},
+			"repeat":{
+				"name":"重複次數"
+			},
+			"inter_zone_delay":{
+				"name":"區域切換"
+			},
+			"sunrise_offset":{
+				"name":"日出偏移"
+			},
+			"sunset_offset":{
+				"name":"日落偏移"
+			},
+			"rain_delay_days":{
+				"name":"降雨延後"
+			}
+		},
+		"time":{
+			"start_time":{
+				"name":"開始時間"
+			}
+		},
+		"text":{
+			"start_times":{
+				"name":"多個開始時間"
+			}
+		},
+		"switch":{
+			"ignore_sensor":{
+				"name":"忽略感測器"
+			},
+			"enable_rain_delay":{
+				"name":"啟用降雨延後"
+			},
+			"enable_program":{
+				"name":"啟用程式"
+			},
+			"enable_zone":{
+				"name":"啟用區域"
+			},
+			"config":{
+				"name": "設定"
+			},
+			"zone":{
+				"name": "{zone_name}"
+			},
+			"pause":{
+				"name": "暫停"
+			}
+		},
+		"select":{
+			"frequency":{
+				"name":"頻率"
+			}
+		}
+	},
+	"config": {
+		"error": {
+			"zone_defined": "所選的區域開關已在此灌溉程式中定義",
+			"mandatory": "尚未填寫必填欄位",
+			"zone_required": "至少必須定義一個區域",
+			"invalid_days_group": "清單中的頻率選項必須是 Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_option": "頻率選項必須是數字或 Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+			"invalid_sensor": "頻率選項：輸入的感測器不正確或已離線"
+		},
+		"step": {
+			"user": {
+				"title": "程式資料",
+				"description": "定義程式",
+				"data": {
+					"name": "名稱",
+					"freq": "啟用整個程式的頻率",
+					"repeat": "重複執行程式，取代區域的 ECO 模式",
+					"freq_options": "選擇或新增頻率選項",
+					"device_type": "控制器類型",
+					"flow_sensor": "流量感測器",
+					"water_source_active": "水源二元感測器",
+					"pump": "幫浦開關"
+				}
+			},
+			"add_zone": {
+				"title": "程式區域",
+				"description": "區域設定",
+				"data": {
+					"zone": "區域開關",
+					"freq": "區域頻率取代程式頻率",
+					"eco": "啟用等待並重複的 ECO 功能",
+					"watering_type": "澆水類型",
+					"water_adjustment": "執行時間調整感測器",
+					"rain_sensor": "降雨二元感測器",
+					"order": "區域執行順序"
+				}
+			},
+			"delete_zone": {
+				"title": "區域設定",
+				"description": "",
+				"data": {
+					"zone": "選擇要刪除的區域"
+				}
+			},
+			"update_zone_data": {
+				"title": "區域設定",
+				"description": "更新區域",
+				"data": {
+					"zone": "區域開關",
+					"freq": "區域頻率取代程式頻率",
+					"eco": "啟用等待並重複的 ECO 功能",
+					"watering_type": "澆水類型",
+					"water_adjustment": "執行時間調整感測器",
+					"rain_sensor": "降雨二元感測器",
+					"order": "區域執行順序"
+				}
+			},
+			"update_zone": {
+				"title": "區域設定",
+				"description": "",
+				"data": {
+					"zone": "選擇要更新的區域"
+				}
+			},
+			"menu": {
+				"description": "",
+				"menu_options": {
+					"user": "更新程式",
+					"add_zone": "新增區域",
+					"update_zone": "更新區域",
+					"delete_zone": "刪除區域",
+					"finalise": "套用",
+					"advanced": "進階選項"
+				}
+			},
+			"advanced": {
+				"description": "",
+				"title": "進階選項",
+				"data": {
+					"start_type":"開始時間選項",
+					"interlock": "勾選時，程式會排隊執行；未勾選時，程式會同時執行",
+					"rain_behaviour": "降雨感測器行為",
+					"min_sec": "澆水時間單位",
+					"water_max": "最大澆水時間／水量",
+					"water_step": "時間／水量步進值",
+					"parallel": "區域平行執行",
+					"pump_delay": "套用幫浦啟動的提前或延後時間",
+					"card_yaml": "啟用建立實體卡片的 YAML",
+					"zone_delay_max": "區域切換的最大延遲",
+					"eco_max": "ECO 模式的最長等待時間",
+					"rain_delay_on": "偵測到降雨時，啟用手動延後下次執行",
+					"latency": "回應緩慢（高延遲）裝置的等待時間",
+					"start_latency": "啟動時載入緩慢的裝置的等待時間",
+					"pause_on_water_source": "水源感測器關閉時暫停程式",
+					"continue_on_unexpected_state": "狀態異常時繼續執行該區域，否則繼續下一個區域",
+					"input_mode": "數值實體的輸入模式"
+				}
+			}
+		}
+	},
+ 	"options": {
+		"error": {
+			"zone_defined": "區域開關已在此灌溉程式中定義",
+			"mandatory": "尚未填寫必填欄位",
+			"zone_required": "至少必須定義一個區域",
+			"invalid_days_group": "頻率選項必須是 mon,tue,wed,thu,fri,sat,sun",
+			"invalid_option": "頻率選項必須是數字或 mon,tue,wed,thu,fri,sat,sun",
+			"invalid_sensor": "頻率選項：輸入的感測器不正確或已離線"
+		},
+		"step": {
+			"user": {
+				"description": "",
+				"menu_options": {
+					"update_program": "更新程式",
+					"update_zone": "更新區域",
+					"delete_zone": "刪除區域",
+					"add_zone": "新增區域",
+					"finalise": "套用",
+					"advanced": "進階選項"
+				}
+			},
+			"advanced": {
+				"title": "進階選項",
+				"description": "",
+				"data": {
+					"start_type":"開始時間選項",
+					"interlock": "勾選時，程式會排隊執行；未勾選時，程式會同時執行",
+					"rain_behaviour": "降雨感測器行為",
+					"min_sec": "澆水時間單位",
+					"water_max": "最大澆水時間／水量",
+					"water_step": "時間／水量步進值",
+					"parallel": "區域平行執行",
+					"pump_delay": "套用幫浦啟動的提前或延後時間",
+					"card_yaml": "啟用建立實體卡片的 YAML",
+					"zone_delay_max": "區域切換的最大延遲",
+					"eco_max": "ECO 模式的最長等待時間",
+					"rain_delay_on": "偵測到降雨時，啟用手動延後下次執行",
+					"latency": "回應緩慢（高延遲）裝置的等待時間",
+					"start_latency": "啟動時載入緩慢的裝置的等待時間",
+					"pause_on_water_source": "水源感測器關閉時暫停程式",
+					"continue_on_unexpected_state": "狀態異常時繼續執行該區域，否則繼續下一個區域",
+					"input_mode": "數值實體的輸入模式"
+				}
+			},
+			"update_program": {
+				"title": "程式資料",
+				"description": "更新程式",
+				"data": {
+					"freq": "啟用整個程式的頻率",
+					"repeat": "重複執行程式，取代區域的 ECO 模式",
+					"freq_options": "選擇或新增頻率選項",
+					"device_type": "控制器類型",
+					"flow_sensor": "流量感測器",
+					"water_source_active": "水源二元感測器",
+					"pump": "幫浦開關"
+				}
+			},
+			"add_zone": {
+				"title": "區域設定",
+				"description": "新增區域",
+				"data": {
+					"zone": "區域開關",
+					"freq": "區域頻率取代程式頻率",
+					"eco": "啟用等待並重複的 ECO 功能",
+					"watering_type": "澆水類型",
+					"water_adjustment": "執行時間調整感測器",
+					"rain_sensor": "降雨二元感測器",
+					"order": "區域執行順序"
+				}
+			},
+			"update_zone_data": {
+				"title": "區域設定",
+				"description": "更新區域",
+				"data": {
+					"zone": "區域開關",
+					"freq": "區域頻率取代程式頻率",
+					"eco": "啟用等待並重複的 ECO 功能",
+					"watering_type": "澆水類型",
+					"water_adjustment": "執行時間調整感測器",
+					"rain_sensor": "降雨二元感測器",
+					"order": "區域執行順序"
+				}
+			},
+			"delete_zone": {
+				"title": "區域設定",
+				"description": "",
+				"data": {
+					"zone": "選擇要刪除的區域"
+				}
+			},
+			"update_zone": {
+				"title": "區域設定",
+				"description": "",
+				"data": {
+					"zone": "選擇要更新的區域"
+				}
+			}
+		}
+	}
+}
